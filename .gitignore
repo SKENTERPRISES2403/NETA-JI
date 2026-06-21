@@ -1,0 +1,12 @@
+# Local server and OS noise
+.DS_Store
+Thumbs.db
+
+# Dependency folders for future builds
+node_modules/
+dist/
+build/
+
+# Logs
+*.log
+

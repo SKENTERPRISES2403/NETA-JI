@@ -1,0 +1,76 @@
+{
+  "opponentParties": [
+    {
+      "name": "Chai Biscuit Front",
+      "color": "#2f7de1",
+      "symbol": "cup"
+    },
+    {
+      "name": "WiFi Vikas Dal",
+      "color": "#13a99a",
+      "symbol": "wheel"
+    },
+    {
+      "name": "Homework Mukti Morcha",
+      "color": "#f4c542",
+      "symbol": "kite"
+    }
+  ],
+  "randomEvents": [
+    {
+      "title": "Mega rally speaker boost",
+      "effect": "speedUp",
+      "copy": "Your rally van got louder. Speed up for a bit."
+    },
+    {
+      "title": "Poster printer jam",
+      "effect": "speedDown",
+      "copy": "The printer needs a thappad. Speed drops for a bit."
+    },
+    {
+      "title": "Tea stall debate won",
+      "effect": "claimBurst",
+      "copy": "Local voters liked the joke. Nearby influence grows."
+    },
+    {
+      "title": "Sticker wave",
+      "effect": "claimLine",
+      "copy": "Volunteers pasted stickers across the route."
+    },
+    {
+      "title": "Rain delay",
+      "effect": "neutral",
+      "copy": "Everyone waited under the same tent. No damage, only drama."
+    }
+  ],
+  "blockedTerms": [
+    "bjp",
+    "bharatiya janata party",
+    "congress",
+    "inc",
+    "aap",
+    "aam aadmi party",
+    "modi",
+    "rahul",
+    "gandhi",
+    "kejriwal",
+    "yogi",
+    "amit shah",
+    "shivsena",
+    "rss",
+    "vhp",
+    "hindu",
+    "muslim",
+    "sikh",
+    "christian",
+    "dalit",
+    "brahmin",
+    "rajput",
+    "yadav",
+    "terror",
+    "violence",
+    "kill",
+    "nazi"
+  ]
+}
+

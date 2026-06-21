@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NETA JI</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="game-frame" aria-label="NETA JI game">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Fictional Election Arcade</p>
+            <h1>NETA JI</h1>
+          </div>
+          <div class="stats" aria-live="polite">
+            <span id="influenceStat">0%</span>
+            <span id="timeStat">90s</span>
+            <span id="eventStat">Ready</span>
+          </div>
+        </header>
+
+        <div class="canvas-wrap">
+          <canvas id="gameCanvas" width="960" height="630" aria-label="Campaign arena"></canvas>
+          <div id="toast" class="toast" role="status"></div>
+        </div>
+
+        <div class="controls">
+          <button class="dir-btn" data-dir="up" aria-label="Move up"><span></span></button>
+          <div class="middle-controls">
+            <button class="dir-btn" data-dir="left" aria-label="Move left"><span></span></button>
+            <button id="boostBtn" class="boost-btn" type="button">Rally</button>
+            <button class="dir-btn" data-dir="right" aria-label="Move right"><span></span></button>
+          </div>
+          <button class="dir-btn" data-dir="down" aria-label="Move down"><span></span></button>
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <div class="party-preview">
+          <span id="partySwatch"></span>
+          <div>
+            <p id="partyNamePreview">Nayi Party</p>
+            <small id="partySloganPreview">Sabka meme, sabka game</small>
+          </div>
+        </div>
+        <div class="log-panel">
+          <p class="panel-title">Campaign Feed</p>
+          <ul id="feedList"></ul>
+        </div>
+      </aside>
+    </main>
+
+    <section id="setupModal" class="modal is-open" aria-label="Create party">
+      <div class="modal-card">
+        <p class="eyebrow">Create a fictional party</p>
+        <h2>NETA JI</h2>
+        <label>
+          Party Name
+          <input id="partyNameInput" maxlength="28" value="Momo Lovers Party" autocomplete="off" />
+        </label>
+        <label>
+          Slogan
+          <input id="sloganInput" maxlength="42" value="Vote for extra chutney" autocomplete="off" />
+        </label>
+        <div class="form-row">
+          <label>
+            Color
+            <input id="colorInput" type="color" value="#f05d23" />
+          </label>
+          <label>
+            Symbol
+            <select id="symbolInput">
+              <option value="star">Star</option>
+              <option value="kite">Kite</option>
+              <option value="mic">Mic</option>
+              <option value="cup">Cup</option>
+              <option value="wheel">Wheel</option>
+            </select>
+          </label>
+        </div>
+        <p id="nameError" class="error-text"></p>
+        <button id="startBtn" class="primary-btn" type="button">Start Campaign</button>
+        <p class="fine-print">Fictional names only. Real parties, leaders, hate terms, and sensitive identity terms are blocked.</p>
+      </div>
+    </section>
+
+    <section id="resultModal" class="modal" aria-label="Result">
+      <div class="modal-card result-card">
+        <p class="eyebrow">Breaking Poster News</p>
+        <h2 id="resultHeadline">Mandate Won</h2>
+        <div class="leader-figure" aria-hidden="true">
+          <span class="leader-head"></span>
+          <span class="leader-body"></span>
+          <span class="leader-hand left"></span>
+          <span class="leader-hand right"></span>
+        </div>
+        <p id="resultCopy"></p>
+        <div class="result-actions">
+          <button id="restartBtn" class="secondary-btn" type="button">Play Again</button>
+          <button id="shareBtn" class="primary-btn" type="button">Share Text</button>
+        </div>
+      </div>
+    </section>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>
