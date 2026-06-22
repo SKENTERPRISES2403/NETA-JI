@@ -1,6 +1,46 @@
 const COLS = 64;
 const ROWS = 42;
 const ROUND_SECONDS = 90;
+const PROGRESS_KEY = "netaJiCampaignProgressV1";
+
+const REGIONS = [
+  { id: "andhra-pradesh", name: "Andhra Pradesh", type: "State" },
+  { id: "arunachal-pradesh", name: "Arunachal Pradesh", type: "State" },
+  { id: "assam", name: "Assam", type: "State" },
+  { id: "bihar", name: "Bihar", type: "State" },
+  { id: "chhattisgarh", name: "Chhattisgarh", type: "State" },
+  { id: "goa", name: "Goa", type: "State" },
+  { id: "gujarat", name: "Gujarat", type: "State" },
+  { id: "haryana", name: "Haryana", type: "State" },
+  { id: "himachal-pradesh", name: "Himachal Pradesh", type: "State" },
+  { id: "jharkhand", name: "Jharkhand", type: "State" },
+  { id: "karnataka", name: "Karnataka", type: "State" },
+  { id: "kerala", name: "Kerala", type: "State" },
+  { id: "madhya-pradesh", name: "Madhya Pradesh", type: "State" },
+  { id: "maharashtra", name: "Maharashtra", type: "State" },
+  { id: "manipur", name: "Manipur", type: "State" },
+  { id: "meghalaya", name: "Meghalaya", type: "State" },
+  { id: "mizoram", name: "Mizoram", type: "State" },
+  { id: "nagaland", name: "Nagaland", type: "State" },
+  { id: "odisha", name: "Odisha", type: "State" },
+  { id: "punjab", name: "Punjab", type: "State" },
+  { id: "rajasthan", name: "Rajasthan", type: "State" },
+  { id: "sikkim", name: "Sikkim", type: "State" },
+  { id: "tamil-nadu", name: "Tamil Nadu", type: "State" },
+  { id: "telangana", name: "Telangana", type: "State" },
+  { id: "tripura", name: "Tripura", type: "State" },
+  { id: "uttar-pradesh", name: "Uttar Pradesh", type: "State" },
+  { id: "uttarakhand", name: "Uttarakhand", type: "State" },
+  { id: "west-bengal", name: "West Bengal", type: "State" },
+  { id: "andaman-nicobar", name: "Andaman and Nicobar Islands", type: "UT" },
+  { id: "chandigarh", name: "Chandigarh", type: "UT" },
+  { id: "dadra-daman-diu", name: "Dadra and Nagar Haveli and Daman and Diu", type: "UT" },
+  { id: "delhi", name: "Delhi", type: "UT" },
+  { id: "jammu-kashmir", name: "Jammu and Kashmir", type: "UT" },
+  { id: "ladakh", name: "Ladakh", type: "UT" },
+  { id: "lakshadweep", name: "Lakshadweep", type: "UT" },
+  { id: "puducherry", name: "Puducherry", type: "UT" }
+];
 
 const fallbackData = {
   opponentParties: [
@@ -29,8 +69,34 @@ const fallbackData = {
     "yogi",
     "amit shah",
     "shivsena",
+    "shiv sena",
+    "tmc",
+    "trinamool",
+    "samajwadi",
+    "bahujan",
+    "bsp",
+    "dmk",
+    "aiadmk",
+    "ncp",
+    "jdu",
+    "rjd",
+    "brs",
+    "trs",
+    "tdp",
+    "ysr",
+    "janata dal",
     "rss",
     "vhp",
+    "nitish",
+    "mamata",
+    "stalin",
+    "akhilesh",
+    "mayawati",
+    "uddhav",
+    "shinde",
+    "pawar",
+    "lalu",
+    "naidu",
     "hindu",
     "muslim",
     "sikh",
@@ -42,13 +108,23 @@ const fallbackData = {
     "terror",
     "violence",
     "kill",
-    "nazi"
+    "nazi",
+    "bomb",
+    "gun",
+    "riot",
+    "attack",
+    "hate",
+    "abuse",
+    "slur",
+    "porn",
+    "rape"
   ]
 };
 
 const canvas = document.querySelector("#gameCanvas");
 const ctx = canvas.getContext("2d");
 const setupModal = document.querySelector("#setupModal");
+const regionModal = document.querySelector("#regionModal");
 const resultModal = document.querySelector("#resultModal");
 const partyNameInput = document.querySelector("#partyNameInput");
 const sloganInput = document.querySelector("#sloganInput");
@@ -57,11 +133,14 @@ const symbolInput = document.querySelector("#symbolInput");
 const nameError = document.querySelector("#nameError");
 const startBtn = document.querySelector("#startBtn");
 const restartBtn = document.querySelector("#restartBtn");
+const nextRegionBtn = document.querySelector("#nextRegionBtn");
 const shareBtn = document.querySelector("#shareBtn");
 const boostBtn = document.querySelector("#boostBtn");
+const openMapBtn = document.querySelector("#openMapBtn");
 const influenceStat = document.querySelector("#influenceStat");
 const timeStat = document.querySelector("#timeStat");
 const eventStat = document.querySelector("#eventStat");
+const regionStat = document.querySelector("#regionStat");
 const toast = document.querySelector("#toast");
 const feedList = document.querySelector("#feedList");
 const partySwatch = document.querySelector("#partySwatch");
@@ -69,6 +148,10 @@ const partyNamePreview = document.querySelector("#partyNamePreview");
 const partySloganPreview = document.querySelector("#partySloganPreview");
 const resultHeadline = document.querySelector("#resultHeadline");
 const resultCopy = document.querySelector("#resultCopy");
+const activeRegionCopy = document.querySelector("#activeRegionCopy");
+const miniRegionGrid = document.querySelector("#miniRegionGrid");
+const regionGrid = document.querySelector("#regionGrid");
+const regionModalCopy = document.querySelector("#regionModalCopy");
 
 const state = {
   data: fallbackData,
@@ -86,6 +169,11 @@ const state = {
   supporters: [],
   conversionBursts: [],
   supportersConverted: 0,
+  campaign: {
+    activeRegionId: null,
+    completed: {},
+    lastWonRegionId: null
+  },
   keys: new Set(),
   lastTime: 0,
   timeLeft: ROUND_SECONDS,
@@ -126,20 +214,32 @@ function normalizeName(value) {
     .trim();
 }
 
-function validatePartyName(name) {
-  const normalized = normalizeName(name);
-  if (normalized.length < 3) {
-    return "Party name thoda bada rakho.";
+function validateSafeText(value, label, minLength) {
+  const normalized = normalizeName(value);
+  if (normalized.length < minLength) {
+    return `${label} thoda bada rakho.`;
   }
   if (!/^[a-z0-9 ]+$/.test(normalized)) {
     return "Abhi prototype me English letters, numbers, aur spaces use karo.";
   }
+  if (/(.)\1{4,}/.test(normalized.replace(/\s+/g, ""))) {
+    return `${label} me repeated spam letters kam rakho.`;
+  }
   const blocked = state.data.blockedTerms || fallbackData.blockedTerms;
   const matched = blocked.find((term) => normalized.includes(normalizeName(term)));
   if (matched) {
-    return "Fictional comedy name rakho. Real politics ya sensitive terms blocked hain.";
+    return "Fictional comedy text rakho. Real politics, hate, abuse, ya sensitive terms blocked hain.";
   }
   return "";
+}
+
+function validatePartyName(name) {
+  return validateSafeText(name, "Party name", 3);
+}
+
+function validateSlogan(slogan) {
+  if (!slogan.trim()) return "";
+  return validateSafeText(slogan, "Slogan", 4);
 }
 
 function setPartyPreview() {
@@ -161,6 +261,108 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add("is-visible");
   state.toastClock = 2.4;
+}
+
+function getActiveRegion() {
+  return REGIONS.find((region) => region.id === state.campaign.activeRegionId) || null;
+}
+
+function loadCampaignProgress() {
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    state.campaign.activeRegionId = parsed.activeRegionId || null;
+    state.campaign.completed = parsed.completed && typeof parsed.completed === "object" ? parsed.completed : {};
+    state.campaign.lastWonRegionId = parsed.lastWonRegionId || null;
+  } catch {
+    state.campaign.activeRegionId = null;
+    state.campaign.completed = {};
+    state.campaign.lastWonRegionId = null;
+  }
+}
+
+function saveCampaignProgress() {
+  const payload = {
+    activeRegionId: state.campaign.activeRegionId,
+    completed: state.campaign.completed,
+    lastWonRegionId: state.campaign.lastWonRegionId
+  };
+  localStorage.setItem(PROGRESS_KEY, JSON.stringify(payload));
+}
+
+function renderRegionHub() {
+  const activeRegion = getActiveRegion();
+  regionStat.textContent = activeRegion ? activeRegion.name : "Choose State";
+  activeRegionCopy.textContent = activeRegion
+    ? `${activeRegion.name} is active. Won regions stay in ${state.party.name} color.`
+    : "Create a party, then choose a state or UT.";
+  miniRegionGrid.innerHTML = "";
+  regionGrid.innerHTML = "";
+  miniRegionGrid.style.setProperty("--region-color", state.party.color);
+  regionGrid.style.setProperty("--region-color", state.party.color);
+
+  for (const region of REGIONS) {
+    const won = Boolean(state.campaign.completed[region.id]);
+    const active = state.campaign.activeRegionId === region.id;
+
+    const mini = document.createElement("button");
+    mini.type = "button";
+    mini.className = `mini-region-cell${won ? " is-won" : ""}${active ? " is-active" : ""}`;
+    mini.title = `${region.name}${won ? " won" : ""}`;
+    mini.setAttribute("aria-label", mini.title);
+    mini.addEventListener("click", () => selectRegion(region.id));
+    miniRegionGrid.append(mini);
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `region-btn${won ? " is-won" : ""}${active ? " is-active" : ""}`;
+    button.innerHTML = `${region.name}<small>${won ? "Won mandate" : active ? "Active campaign" : region.type}</small>`;
+    button.addEventListener("click", () => selectRegion(region.id));
+    regionGrid.append(button);
+  }
+}
+
+function openRegionModal() {
+  setupModal.classList.remove("is-open");
+  resultModal.classList.remove("is-open");
+  regionModalCopy.textContent = state.campaign.lastWonRegionId
+    ? "Choose the next yatra stop. Won regions keep your party color."
+    : "Pick the first fictional mandate. Real politics stays out.";
+  renderRegionHub();
+  regionModal.classList.add("is-open");
+  state.mode = "map";
+}
+
+function selectRegion(regionId) {
+  const region = REGIONS.find((item) => item.id === regionId);
+  if (!region) return;
+  const previous = getActiveRegion();
+  state.campaign.activeRegionId = region.id;
+  saveCampaignProgress();
+  renderRegionHub();
+  regionModal.classList.remove("is-open");
+  resetGame();
+  resultModal.classList.remove("is-open");
+  setupModal.classList.remove("is-open");
+  state.mode = "playing";
+  const yatraCopy = previous && previous.id !== region.id ? `Paidal yatra moved from ${previous.name} to ${region.name}.` : `${region.name} campaign opened.`;
+  addFeed(yatraCopy);
+  showToast(yatraCopy);
+}
+
+function markActiveRegionWon() {
+  const activeRegion = getActiveRegion();
+  if (!activeRegion) return null;
+  state.campaign.completed[activeRegion.id] = {
+    wonAt: Date.now(),
+    influence: state.influence,
+    party: state.party.name
+  };
+  state.campaign.lastWonRegionId = activeRegion.id;
+  saveCampaignProgress();
+  renderRegionHub();
+  return activeRegion;
 }
 
 function resizeCanvas() {
@@ -213,7 +415,8 @@ function createAgent(ownerId, name, color, symbol, x, y) {
     dirY: 0,
     speed: 4.1,
     turnClock: 0.8 + Math.random() * 0.9,
-    trailCells: []
+    trailCells: [],
+    trailPoints: []
   };
 }
 
@@ -227,6 +430,7 @@ function createSupporter(source, color) {
     phase: Math.random() * Math.PI * 2,
     driftX: (Math.random() - 0.5) * 2.6,
     driftY: (Math.random() - 0.5) * 2.6,
+    spread: 0.7 + Math.random() * 1.9,
     followSpeed: 4.4 + Math.random() * 2.2,
     size: 0.36 + Math.random() * 0.18
   };
@@ -295,6 +499,7 @@ function resetGame() {
   state.supporters = [];
   state.conversionBursts = [];
   state.supportersConverted = 0;
+  state.keys.clear();
   state.timeLeft = ROUND_SECONDS;
   state.eventClock = 8;
   state.boostClock = 0;
@@ -315,29 +520,29 @@ function resetGame() {
     claimRect(agent.ownerId, x, y, 6, 6);
   });
 
-  addFeed("District arena opened. Close a campaign loop to win influence.");
+  const activeRegion = getActiveRegion();
+  addFeed(`${activeRegion ? activeRegion.name : "District"} arena opened. Close a campaign loop to win influence.`);
   addFeed("Use WASD, arrow keys, touch, or the control pad.");
   updateStats();
 }
 
 function startGame() {
   const name = partyNameInput.value.trim();
-  const error = validatePartyName(name);
+  const slogan = sloganInput.value.trim();
+  const error = validatePartyName(name) || validateSlogan(slogan);
   nameError.textContent = error;
   if (error) return;
 
   state.party = {
     name,
-    slogan: sloganInput.value.trim() || "Sabka meme, sabka game",
+    slogan: slogan || "Sabka meme, sabka game",
     color: colorInput.value,
     symbol: symbolInput.value
   };
   setPartyPreview();
-  resetGame();
-  setupModal.classList.remove("is-open");
-  resultModal.classList.remove("is-open");
-  state.mode = "playing";
-  showToast(`${state.party.name} starts the campaign.`);
+  renderRegionHub();
+  openRegionModal();
+  showToast(`${state.party.name} is ready. Choose a state or UT.`);
 }
 
 function setDirection(agent, dir) {
@@ -398,6 +603,8 @@ function recordTrail(agent, x, y) {
   }
   state.trail[idx] = agent.ownerId;
   agent.trailCells.push(idx);
+  agent.trailPoints.push({ x: agent.x, y: agent.y });
+  if (agent.trailPoints.length > 180) agent.trailPoints.shift();
 }
 
 function clearTrail(ownerId) {
@@ -405,7 +612,10 @@ function clearTrail(ownerId) {
     if (state.trail[i] === ownerId) state.trail[i] = 0;
   }
   const agent = ownerId === 1 ? state.player : state.opponents.find((item) => item.ownerId === ownerId);
-  if (agent) agent.trailCells = [];
+  if (agent) {
+    agent.trailCells = [];
+    agent.trailPoints = [];
+  }
 }
 
 function closeLoop(agent) {
@@ -454,6 +664,7 @@ function closeLoop(agent) {
     showToast("Campaign loop closed. Influence gained.");
   }
   agent.trailCells = [];
+  agent.trailPoints = [];
 }
 
 function updateAgent(agent, dt) {
@@ -528,6 +739,7 @@ function triggerEvent() {
       state.trail[idx] = 0;
     }
     state.player.trailCells = [];
+    state.player.trailPoints = [];
   }
 }
 
@@ -540,8 +752,8 @@ function updateSupporters(dt) {
 
   state.supporters.forEach((supporter, i) => {
     supporter.phase += dt * (1.5 + supporter.size * 2);
-    const looseBack = 1.1 + (i % 5) * 0.22 + Math.sin(supporter.phase) * 0.25;
-    const looseSide = supporter.driftX + Math.cos(supporter.phase * 0.9) * 0.85;
+    const looseBack = 1.1 + supporter.spread + Math.sin(supporter.phase) * 0.38;
+    const looseSide = supporter.driftX + Math.cos(supporter.phase * 0.9) * (0.72 + supporter.spread * 0.16);
     const targetX = state.player.x + backX * looseBack + sideX * looseSide + Math.sin(supporter.phase * 1.7) * 0.22;
     const targetY = state.player.y + backY * looseBack + sideY * looseSide + supporter.driftY * 0.35 + Math.cos(supporter.phase * 1.3) * 0.22;
     const dx = targetX - supporter.x;
@@ -551,6 +763,25 @@ function updateSupporters(dt) {
     supporter.x = clamp(supporter.x + (dx / distance) * step, 1, COLS - 1.01);
     supporter.y = clamp(supporter.y + (dy / distance) * step, 1, ROWS - 1.01);
   });
+
+  for (let i = 0; i < state.supporters.length; i += 1) {
+    for (let j = i + 1; j < state.supporters.length; j += 1) {
+      const a = state.supporters[i];
+      const b = state.supporters[j];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const distance = Math.hypot(dx, dy) || 1;
+      if (distance < 0.72) {
+        const push = (0.72 - distance) * 0.22;
+        const nx = dx / distance;
+        const ny = dy / distance;
+        a.x = clamp(a.x - nx * push, 1, COLS - 1.01);
+        a.y = clamp(a.y - ny * push, 1, ROWS - 1.01);
+        b.x = clamp(b.x + nx * push, 1, COLS - 1.01);
+        b.y = clamp(b.y + ny * push, 1, ROWS - 1.01);
+      }
+    }
+  }
 }
 
 function updateConversionBursts(dt) {
@@ -571,6 +802,8 @@ function updateStats() {
     if (cell === 1) playerCells += 1;
   }
   state.influence = Math.round((playerCells / state.owner.length) * 100);
+  const activeRegion = getActiveRegion();
+  regionStat.textContent = activeRegion ? activeRegion.name : "Choose State";
   influenceStat.textContent = `${state.influence}%`;
   timeStat.textContent = `${Math.ceil(state.timeLeft)}s`;
 }
@@ -580,15 +813,22 @@ function finishRound(won, reason) {
   state.mode = "result";
   clearTrail(1);
   const victory = won || state.influence >= 45;
+  const activeRegion = getActiveRegion();
+  const wonRegion = victory ? markActiveRegionWon() : null;
+  const regionName = (wonRegion || activeRegion)?.name || "district";
+  const supporterLine = state.supportersConverted
+    ? ` ${state.supportersConverted} converted supporters joined the yatra.`
+    : " The poster team is already posing for the reel.";
   const headline = victory
-    ? `${state.party.name} wins the district mandate`
-    : `${state.party.name} gets a comedy recount`;
+    ? `${state.party.name} wins ${regionName} mandate`
+    : `${state.party.name} gets a ${regionName} recount`;
   const copy = victory
-    ? `${state.influence}% influence, one namaste leader, and enough posters for a viral reel.`
-    : `${reason} Final influence: ${state.influence}%. New strategy meeting starts now.`;
-  state.shareText = `NETA JI: ${state.party.name} scored ${state.influence}% influence. ${state.party.slogan}`;
+    ? `${state.influence}% influence in ${regionName}.${supporterLine}`
+    : `${reason} Final influence: ${state.influence}% in ${regionName}. New strategy meeting starts now.`;
+  state.shareText = `NETA JI: ${state.party.name} scored ${state.influence}% influence in ${regionName}. ${state.party.slogan}`;
   resultHeadline.textContent = headline;
   resultCopy.textContent = copy;
+  nextRegionBtn.hidden = !victory;
   resultModal.classList.add("is-open");
 }
 
@@ -775,6 +1015,39 @@ function drawTrails() {
   ctx.globalAlpha = 1;
 }
 
+function drawTrailPaths() {
+  const agents = [state.player, ...state.opponents].filter(Boolean);
+  ctx.save();
+  ctx.translate(state.offsetX, state.offsetY);
+  const s = state.cellSize;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  for (const agent of agents) {
+    if (!agent.trailPoints || agent.trailPoints.length < 2) continue;
+    const isPlayerTrail = agent.ownerId === 1;
+    const color = isPlayerTrail ? shadeHex(ownerColor(agent.ownerId), -62) : ownerColor(agent.ownerId);
+    ctx.globalAlpha = isPlayerTrail ? 0.96 : 0.72;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = isPlayerTrail ? s * 0.86 : s * 0.64;
+    ctx.beginPath();
+    agent.trailPoints.forEach((point, i) => {
+      const x = (point.x + 0.5) * s;
+      const y = (point.y + 0.5) * s;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    if (isPlayerTrail) {
+      ctx.globalAlpha = 0.9;
+      ctx.strokeStyle = "rgba(21, 21, 21, 0.62)";
+      ctx.lineWidth = Math.max(1, s * 0.12);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
 function drawSupporters() {
   if (state.supporters.length === 0) return;
   ctx.save();
@@ -877,6 +1150,7 @@ function draw() {
   drawGridBackground(rect.width, rect.height);
   drawTerritory();
   drawTrails();
+  drawTrailPaths();
   drawLeaderStatue();
   drawConversionBursts();
   for (const opponent of state.opponents) drawAgent(opponent, false);
@@ -927,12 +1201,21 @@ function bindEvents() {
   startBtn.addEventListener("click", startGame);
   restartBtn.addEventListener("click", () => {
     resultModal.classList.remove("is-open");
-    setupModal.classList.add("is-open");
-    state.mode = "setup";
+    if (getActiveRegion()) {
+      selectRegion(state.campaign.activeRegionId);
+    } else {
+      setupModal.classList.add("is-open");
+      state.mode = "setup";
+    }
   });
+  nextRegionBtn.addEventListener("click", openRegionModal);
+  openMapBtn.addEventListener("click", openRegionModal);
   shareBtn.addEventListener("click", shareResult);
   partyNameInput.addEventListener("input", () => {
-    nameError.textContent = validatePartyName(partyNameInput.value.trim());
+    nameError.textContent = validatePartyName(partyNameInput.value.trim()) || validateSlogan(sloganInput.value.trim());
+  });
+  sloganInput.addEventListener("input", () => {
+    nameError.textContent = validatePartyName(partyNameInput.value.trim()) || validateSlogan(sloganInput.value.trim());
   });
 }
 
@@ -959,7 +1242,9 @@ async function shareResult() {
 
 async function init() {
   await loadGameData();
+  loadCampaignProgress();
   setPartyPreview();
+  renderRegionHub();
   bindEvents();
   resizeCanvas();
   resetGame();

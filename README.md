@@ -11,8 +11,12 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - Party name, color, slogan, and symbol customization
 - Paper-style campaign route and territory fill
 - Fictional AI opponents
+- Opponent conversion into supporters
+- Rough India state/UT campaign hub
+- State/UT win progression with saved progress
+- Paidal-yatra style next-region flow
 - Random comedy campaign events
-- Safety filter for user-generated party names
+- Safety filter for party names and slogans
 - Meme-style result card with share text
 
 ## Run Locally
@@ -35,12 +39,11 @@ Build order:
 
 1. Playable district arena
 2. Better capture algorithm and AI
-3. Fictional state campaign mode
-4. India map using open map data
+3. Stronger crowd movement and follower polish
+4. Real map geometry using open map data after license review
 5. PWA and Android APK
 6. Optional multiplayer after the offline version is fun
 
 ## Safety Direction
 
 NETA JI should feel like a funny fictional election game, not a real politics simulator. See [docs/safety-policy.md](docs/safety-policy.md).
-

@@ -16,6 +16,7 @@
             <h1>NETA JI</h1>
           </div>
           <div class="stats" aria-live="polite">
+            <span id="regionStat">Choose State</span>
             <span id="influenceStat">0%</span>
             <span id="timeStat">90s</span>
             <span id="eventStat">Ready</span>
@@ -45,6 +46,14 @@
             <p id="partyNamePreview">Nayi Party</p>
             <small id="partySloganPreview">Sabka meme, sabka game</small>
           </div>
+        </div>
+        <div class="map-panel">
+          <div class="panel-row">
+            <p class="panel-title">India Map</p>
+            <button id="openMapBtn" class="mini-btn" type="button">Map</button>
+          </div>
+          <p id="activeRegionCopy" class="map-copy">Create a party, then choose a state or UT.</p>
+          <div id="miniRegionGrid" class="mini-region-grid" aria-label="State progress map"></div>
         </div>
         <div class="log-panel">
           <p class="panel-title">Campaign Feed</p>
@@ -87,6 +96,15 @@
       </div>
     </section>
 
+    <section id="regionModal" class="modal" aria-label="Choose state or union territory">
+      <div class="modal-card map-modal-card">
+        <p class="eyebrow">India campaign hub</p>
+        <h2>Choose State or UT</h2>
+        <p id="regionModalCopy" class="fine-print">Pick the next fictional mandate. Won regions keep your party color.</p>
+        <div id="regionGrid" class="region-grid"></div>
+      </div>
+    </section>
+
     <section id="resultModal" class="modal" aria-label="Result">
       <div class="modal-card result-card">
         <p class="eyebrow">Breaking Poster News</p>
@@ -100,6 +118,7 @@
         <p id="resultCopy"></p>
         <div class="result-actions">
           <button id="restartBtn" class="secondary-btn" type="button">Play Again</button>
+          <button id="nextRegionBtn" class="secondary-btn" type="button">Next State</button>
           <button id="shareBtn" class="primary-btn" type="button">Share Text</button>
         </div>
       </div>
