@@ -306,8 +306,7 @@ function recordTrail(agent, x, y) {
     return;
   }
   if (state.trail[idx] === agent.ownerId) {
-    if (agent.trailCells[agent.trailCells.length - 1] === idx) return;
-    if (agent.ownerId === 1) finishRound(false, "Your rally route folded into itself. The poster team is confused.");
+    // Self-crossing is allowed so players can draw messier, more natural routes.
     return;
   }
   if (state.trail[idx] && state.trail[idx] !== agent.ownerId) {
@@ -514,6 +513,15 @@ function ownerColor(ownerId) {
   return opponent ? opponent.color : "#cbc2b3";
 }
 
+function shadeHex(hex, amount) {
+  const value = hex.replace("#", "");
+  if (value.length !== 6) return hex;
+  const next = [0, 2, 4]
+    .map((start) => clamp(parseInt(value.slice(start, start + 2), 16) + amount, 0, 255).toString(16).padStart(2, "0"))
+    .join("");
+  return "#" + next;
+}
+
 function drawGridBackground(width, height) {
   ctx.fillStyle = "#ebe4d4";
   ctx.fillRect(0, 0, width, height);
@@ -634,9 +642,16 @@ function drawTrails() {
     for (let x = 0; x < COLS; x += 1) {
       const ownerId = state.trail[index(x, y)];
       if (!ownerId) continue;
-      ctx.fillStyle = ownerColor(ownerId);
-      ctx.globalAlpha = ownerId === 1 ? 1 : 0.8;
-      ctx.fillRect(x * s + s * 0.12, y * s + s * 0.12, s * 0.76, s * 0.76);
+      const baseColor = ownerColor(ownerId);
+      const isPlayerTrail = ownerId === 1;
+      ctx.fillStyle = isPlayerTrail ? shadeHex(baseColor, -55) : baseColor;
+      ctx.globalAlpha = isPlayerTrail ? 1 : 0.8;
+      ctx.fillRect(x * s + s * 0.05, y * s + s * 0.05, s * 0.9, s * 0.9);
+      if (isPlayerTrail) {
+        ctx.strokeStyle = "rgba(21, 21, 21, 0.72)";
+        ctx.lineWidth = Math.max(1, s * 0.12);
+        ctx.strokeRect(x * s + s * 0.05, y * s + s * 0.05, s * 0.9, s * 0.9);
+      }
     }
   }
   ctx.restore();
