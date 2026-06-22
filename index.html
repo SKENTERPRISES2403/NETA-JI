@@ -26,6 +26,17 @@
         <div class="canvas-wrap">
           <canvas id="gameCanvas" width="960" height="630" aria-label="Campaign arena"></canvas>
           <div id="toast" class="toast" role="status"></div>
+          <div id="confirmPanel" class="confirm-panel" hidden>
+            <div>
+              <p class="eyebrow">Election Notice</p>
+              <strong id="confirmTitle">Start campaign?</strong>
+              <small id="confirmCopy">Touch OK to begin this state election.</small>
+            </div>
+            <div class="confirm-actions">
+              <button id="cancelRegionBtn" class="secondary-btn compact-btn" type="button">Cancel</button>
+              <button id="confirmRegionBtn" class="primary-btn compact-btn" type="button">OK</button>
+            </div>
+          </div>
         </div>
 
         <div class="controls">

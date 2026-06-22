@@ -2,6 +2,7 @@ const COLS = 64;
 const ROWS = 42;
 const ROUND_SECONDS = 90;
 const PROGRESS_KEY = "netaJiCampaignProgressV1";
+const MAP_ASSET_URL = "assets/india-map.jpg";
 
 const REGIONS = [
   { id: "andhra-pradesh", name: "Andhra Pradesh", type: "State" },
@@ -41,6 +42,48 @@ const REGIONS = [
   { id: "lakshadweep", name: "Lakshadweep", type: "UT" },
   { id: "puducherry", name: "Puducherry", type: "UT" }
 ];
+
+const REGION_POSITIONS = {
+  "andhra-pradesh": [0.54, 0.68],
+  "arunachal-pradesh": [0.89, 0.25],
+  assam: [0.83, 0.34],
+  bihar: [0.64, 0.39],
+  chhattisgarh: [0.5, 0.52],
+  goa: [0.34, 0.72],
+  gujarat: [0.25, 0.49],
+  haryana: [0.4, 0.32],
+  "himachal-pradesh": [0.43, 0.23],
+  jharkhand: [0.58, 0.48],
+  karnataka: [0.42, 0.7],
+  kerala: [0.43, 0.86],
+  "madhya-pradesh": [0.42, 0.48],
+  maharashtra: [0.38, 0.59],
+  manipur: [0.86, 0.43],
+  meghalaya: [0.78, 0.38],
+  mizoram: [0.85, 0.5],
+  nagaland: [0.89, 0.39],
+  odisha: [0.58, 0.57],
+  punjab: [0.36, 0.28],
+  rajasthan: [0.3, 0.38],
+  sikkim: [0.7, 0.32],
+  "tamil-nadu": [0.5, 0.82],
+  telangana: [0.5, 0.62],
+  tripura: [0.81, 0.47],
+  "uttar-pradesh": [0.49, 0.36],
+  uttarakhand: [0.48, 0.28],
+  "west-bengal": [0.68, 0.47],
+  "andaman-nicobar": [0.83, 0.85],
+  chandigarh: [0.39, 0.29],
+  "dadra-daman-diu": [0.29, 0.55],
+  delhi: [0.43, 0.34],
+  "jammu-kashmir": [0.35, 0.18],
+  ladakh: [0.48, 0.16],
+  lakshadweep: [0.25, 0.82],
+  puducherry: [0.55, 0.82]
+};
+
+const mapImage = new Image();
+mapImage.src = MAP_ASSET_URL;
 
 const fallbackData = {
   opponentParties: [
@@ -126,6 +169,9 @@ const ctx = canvas.getContext("2d");
 const setupModal = document.querySelector("#setupModal");
 const regionModal = document.querySelector("#regionModal");
 const resultModal = document.querySelector("#resultModal");
+const confirmPanel = document.querySelector("#confirmPanel");
+const confirmTitle = document.querySelector("#confirmTitle");
+const confirmCopy = document.querySelector("#confirmCopy");
 const partyNameInput = document.querySelector("#partyNameInput");
 const sloganInput = document.querySelector("#sloganInput");
 const colorInput = document.querySelector("#colorInput");
@@ -137,6 +183,8 @@ const nextRegionBtn = document.querySelector("#nextRegionBtn");
 const shareBtn = document.querySelector("#shareBtn");
 const boostBtn = document.querySelector("#boostBtn");
 const openMapBtn = document.querySelector("#openMapBtn");
+const confirmRegionBtn = document.querySelector("#confirmRegionBtn");
+const cancelRegionBtn = document.querySelector("#cancelRegionBtn");
 const influenceStat = document.querySelector("#influenceStat");
 const timeStat = document.querySelector("#timeStat");
 const eventStat = document.querySelector("#eventStat");
@@ -157,6 +205,8 @@ const state = {
   data: fallbackData,
   owner: new Uint8Array(COLS * ROWS),
   trail: new Uint8Array(COLS * ROWS),
+  regionMask: new Uint8Array(COLS * ROWS),
+  activePolygon: [],
   mode: "setup",
   party: {
     name: "Momo Lovers Party",
@@ -171,6 +221,7 @@ const state = {
   supportersConverted: 0,
   campaign: {
     activeRegionId: null,
+    pendingRegionId: null,
     completed: {},
     lastWonRegionId: null
   },
@@ -185,6 +236,8 @@ const state = {
   cellSize: 12,
   offsetX: 0,
   offsetY: 0,
+  mapRect: { x: 0, y: 0, width: 0, height: 0 },
+  pointer: { x: 0, y: 0, active: false },
   shareText: ""
 };
 
@@ -311,14 +364,14 @@ function renderRegionHub() {
     mini.className = `mini-region-cell${won ? " is-won" : ""}${active ? " is-active" : ""}`;
     mini.title = `${region.name}${won ? " won" : ""}`;
     mini.setAttribute("aria-label", mini.title);
-    mini.addEventListener("click", () => selectRegion(region.id));
+    mini.addEventListener("click", () => showRegionPrompt(region.id));
     miniRegionGrid.append(mini);
 
     const button = document.createElement("button");
     button.type = "button";
     button.className = `region-btn${won ? " is-won" : ""}${active ? " is-active" : ""}`;
     button.innerHTML = `${region.name}<small>${won ? "Won mandate" : active ? "Active campaign" : region.type}</small>`;
-    button.addEventListener("click", () => selectRegion(region.id));
+    button.addEventListener("click", () => showRegionPrompt(region.id));
     regionGrid.append(button);
   }
 }
@@ -326,12 +379,24 @@ function renderRegionHub() {
 function openRegionModal() {
   setupModal.classList.remove("is-open");
   resultModal.classList.remove("is-open");
-  regionModalCopy.textContent = state.campaign.lastWonRegionId
-    ? "Choose the next yatra stop. Won regions keep your party color."
-    : "Pick the first fictional mandate. Real politics stays out.";
+  regionModal.classList.remove("is-open");
+  confirmPanel.hidden = true;
+  state.campaign.pendingRegionId = null;
   renderRegionHub();
-  regionModal.classList.add("is-open");
   state.mode = "map";
+  showToast("Touch any black flag on the India map.");
+}
+
+function showRegionPrompt(regionId) {
+  const region = REGIONS.find((item) => item.id === regionId);
+  if (!region) return;
+  state.campaign.pendingRegionId = region.id;
+  confirmTitle.textContent = `${region.name} election?`;
+  confirmCopy.textContent = state.campaign.completed[region.id]
+    ? "This mandate is already won. OK to replay this region."
+    : "OK dabao, phir sirf is region ka bada outline arena khulega.";
+  confirmPanel.hidden = false;
+  state.mode = "confirm";
 }
 
 function selectRegion(regionId) {
@@ -349,6 +414,14 @@ function selectRegion(regionId) {
   const yatraCopy = previous && previous.id !== region.id ? `Paidal yatra moved from ${previous.name} to ${region.name}.` : `${region.name} campaign opened.`;
   addFeed(yatraCopy);
   showToast(yatraCopy);
+}
+
+function confirmPendingRegion() {
+  if (!state.campaign.pendingRegionId) return;
+  const regionId = state.campaign.pendingRegionId;
+  state.campaign.pendingRegionId = null;
+  confirmPanel.hidden = true;
+  selectRegion(regionId);
 }
 
 function markActiveRegionWon() {
@@ -376,6 +449,88 @@ function resizeCanvas() {
   state.offsetY = (rect.height - state.cellSize * ROWS) / 2;
 }
 
+function hashText(value) {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function seededNoise(seed, indexValue) {
+  let value = seed + indexValue * 1013904223;
+  value ^= value << 13;
+  value ^= value >>> 17;
+  value ^= value << 5;
+  return ((value >>> 0) % 10000) / 10000;
+}
+
+function generateRegionPolygon(region) {
+  const seed = hashText(region?.id || "district");
+  const points = [];
+  const count = region?.type === "UT" ? 15 : 20;
+  const centerX = COLS / 2;
+  const centerY = ROWS / 2;
+  const radiusX = region?.type === "UT" ? 17.5 : 22.5;
+  const radiusY = region?.type === "UT" ? 14.5 : 16.8;
+  for (let i = 0; i < count; i += 1) {
+    const t = i / count;
+    const angle = Math.PI * 2 * t - Math.PI / 2;
+    const wobble = 0.76 + seededNoise(seed, i) * 0.34;
+    const skew = Math.sin(angle * 2 + seed * 0.00001) * 0.12;
+    points.push({
+      x: centerX + Math.cos(angle) * radiusX * wobble + skew * radiusX,
+      y: centerY + Math.sin(angle) * radiusY * (0.84 + seededNoise(seed, i + 33) * 0.28)
+    });
+  }
+  return points;
+}
+
+function pointInPolygon(x, y, points) {
+  if (!points.length) return true;
+  let inside = false;
+  for (let i = 0, j = points.length - 1; i < points.length; j = i, i += 1) {
+    const xi = points[i].x;
+    const yi = points[i].y;
+    const xj = points[j].x;
+    const yj = points[j].y;
+    const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi || 1) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+function isMaskedCell(x, y) {
+  if (!state.activePolygon.length) return true;
+  if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return false;
+  return state.regionMask[index(Math.floor(x), Math.floor(y))] === 1;
+}
+
+function generateRegionMask(region) {
+  state.regionMask.fill(0);
+  state.activePolygon = generateRegionPolygon(region);
+  for (let y = 0; y < ROWS; y += 1) {
+    for (let x = 0; x < COLS; x += 1) {
+      if (pointInPolygon(x + 0.5, y + 0.5, state.activePolygon)) {
+        state.regionMask[index(x, y)] = 1;
+      }
+    }
+  }
+}
+
+function findMaskedSpawn(preferredX, preferredY) {
+  if (isMaskedCell(preferredX, preferredY)) return { x: preferredX, y: preferredY };
+  for (let r = 1; r < 22; r += 1) {
+    for (let y = Math.max(1, Math.floor(preferredY - r)); y <= Math.min(ROWS - 2, Math.ceil(preferredY + r)); y += 1) {
+      for (let x = Math.max(1, Math.floor(preferredX - r)); x <= Math.min(COLS - 2, Math.ceil(preferredX + r)); x += 1) {
+        if (isMaskedCell(x, y)) return { x, y };
+      }
+    }
+  }
+  return { x: COLS / 2, y: ROWS / 2 };
+}
+
 function claimRect(ownerId, cx, cy, w, h) {
   const x0 = clamp(Math.floor(cx - w / 2), 1, COLS - 2);
   const x1 = clamp(Math.floor(cx + w / 2), 1, COLS - 2);
@@ -383,6 +538,7 @@ function claimRect(ownerId, cx, cy, w, h) {
   const y1 = clamp(Math.floor(cy + h / 2), 1, ROWS - 2);
   for (let y = y0; y <= y1; y += 1) {
     for (let x = x0; x <= x1; x += 1) {
+      if (!isMaskedCell(x, y)) continue;
       state.owner[index(x, y)] = ownerId;
       state.trail[index(x, y)] = 0;
     }
@@ -395,7 +551,7 @@ function claimDisk(ownerId, cx, cy, radius) {
     for (let x = Math.max(1, Math.floor(cx - radius)); x <= Math.min(COLS - 2, Math.ceil(cx + radius)); x += 1) {
       const dx = x - cx;
       const dy = y - cy;
-      if (dx * dx + dy * dy <= r2) {
+      if (dx * dx + dy * dy <= r2 && isMaskedCell(x, y)) {
         state.owner[index(x, y)] = ownerId;
         state.trail[index(x, y)] = 0;
       }
@@ -491,10 +647,15 @@ function convertOpponent(ownerId, cutX, cutY) {
 }
 
 function resetGame() {
+  const activeRegion = getActiveRegion();
+  generateRegionMask(activeRegion);
   state.owner.fill(0);
   state.trail.fill(0);
-  state.player = createAgent(1, state.party.name, state.party.color, state.party.symbol, 31, 21);
+  const playerSpawn = findMaskedSpawn(31, 21);
+  state.player = createAgent(1, state.party.name, state.party.color, state.party.symbol, playerSpawn.x, playerSpawn.y);
   state.player.speed = 6.4;
+  state.player.dirX = 0;
+  state.player.dirY = 0;
   state.opponents = [];
   state.supporters = [];
   state.conversionBursts = [];
@@ -507,20 +668,20 @@ function resetGame() {
   state.influence = 0;
   feedList.innerHTML = "";
 
-  claimRect(1, 31, 21, 7, 7);
+  claimDisk(1, state.player.x, state.player.y, 3.8);
   const spots = [
     [11, 10],
     [52, 11],
     [51, 32]
   ];
   state.data.opponentParties.slice(0, 3).forEach((party, i) => {
-    const [x, y] = spots[i];
+    const [sx, sy] = spots[i];
+    const { x, y } = findMaskedSpawn(sx, sy);
     const agent = createAgent(i + 2, party.name, party.color, party.symbol, x, y);
     state.opponents.push(agent);
-    claimRect(agent.ownerId, x, y, 6, 6);
+    claimDisk(agent.ownerId, x, y, 3.2);
   });
 
-  const activeRegion = getActiveRegion();
   addFeed(`${activeRegion ? activeRegion.name : "District"} arena opened. Close a campaign loop to win influence.`);
   addFeed("Use WASD, arrow keys, touch, or the control pad.");
   updateStats();
@@ -628,7 +789,7 @@ function closeLoop(agent) {
   const queue = [];
   const push = (x, y) => {
     const idx = index(x, y);
-    if (visited[idx] || state.owner[idx] === agent.ownerId) return;
+    if (!isMaskedCell(x, y) || visited[idx] || state.owner[idx] === agent.ownerId) return;
     visited[idx] = 1;
     queue.push([x, y]);
   };
@@ -652,7 +813,7 @@ function closeLoop(agent) {
 
   let gained = 0;
   for (let i = 0; i < state.owner.length; i += 1) {
-    if (!visited[i] && state.owner[i] !== agent.ownerId) {
+    if (state.regionMask[i] && !visited[i] && state.owner[i] !== agent.ownerId) {
       state.owner[i] = agent.ownerId;
       state.trail[i] = 0;
       gained += 1;
@@ -669,8 +830,16 @@ function closeLoop(agent) {
 
 function updateAgent(agent, dt) {
   const speed = agent.ownerId === 1 ? agent.speed * state.speedMul : agent.speed;
-  agent.x = clamp(agent.x + agent.dirX * speed * dt, 1, COLS - 1.01);
-  agent.y = clamp(agent.y + agent.dirY * speed * dt, 1, ROWS - 1.01);
+  const nextX = clamp(agent.x + agent.dirX * speed * dt, 1, COLS - 1.01);
+  const nextY = clamp(agent.y + agent.dirY * speed * dt, 1, ROWS - 1.01);
+  if (isMaskedCell(nextX, nextY)) {
+    agent.x = nextX;
+    agent.y = nextY;
+  } else if (agent.ownerId !== 1) {
+    agent.dirX = -agent.dirX || (Math.random() > 0.5 ? 1 : -1);
+    agent.dirY = -agent.dirY;
+    agent.turnClock = 0;
+  }
   const { x, y } = cellFromAgent(agent);
   recordTrail(agent, x, y);
 }
@@ -798,10 +967,13 @@ function updateConversionBursts(dt) {
 
 function updateStats() {
   let playerCells = 0;
-  for (const cell of state.owner) {
-    if (cell === 1) playerCells += 1;
+  let playableCells = 0;
+  for (let i = 0; i < state.owner.length; i += 1) {
+    if (!state.regionMask[i]) continue;
+    playableCells += 1;
+    if (state.owner[i] === 1) playerCells += 1;
   }
-  state.influence = Math.round((playerCells / state.owner.length) * 100);
+  state.influence = Math.round((playerCells / Math.max(1, playableCells)) * 100);
   const activeRegion = getActiveRegion();
   regionStat.textContent = activeRegion ? activeRegion.name : "Choose State";
   influenceStat.textContent = `${state.influence}%`;
@@ -829,6 +1001,12 @@ function finishRound(won, reason) {
   resultHeadline.textContent = headline;
   resultCopy.textContent = copy;
   nextRegionBtn.hidden = !victory;
+  if (victory) {
+    addFeed(`${regionName} mandate won. Red flag raised on the India map.`);
+    openRegionModal();
+    showToast(`${regionName} won. Choose the next black flag.`);
+    return;
+  }
   resultModal.classList.add("is-open");
 }
 
@@ -877,6 +1055,155 @@ function shadeHex(hex, amount) {
     .map((start) => clamp(parseInt(value.slice(start, start + 2), 16) + amount, 0, 255).toString(16).padStart(2, "0"))
     .join("");
   return "#" + next;
+}
+
+function getRegionMapPoint(region, rect = state.mapRect) {
+  const position = REGION_POSITIONS[region.id] || [0.5, 0.5];
+  return {
+    x: rect.x + position[0] * rect.width,
+    y: rect.y + position[1] * rect.height
+  };
+}
+
+function drawFlag(x, y, color, scale = 1) {
+  ctx.save();
+  ctx.lineWidth = 2 * scale;
+  ctx.strokeStyle = "#151515";
+  ctx.fillStyle = "#151515";
+  ctx.beginPath();
+  ctx.moveTo(x, y - 12 * scale);
+  ctx.lineTo(x, y + 15 * scale);
+  ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x + 1 * scale, y - 12 * scale);
+  ctx.lineTo(x + 20 * scale, y - 8 * scale);
+  ctx.lineTo(x + 2 * scale, y - 2 * scale);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#fffdf7";
+  ctx.beginPath();
+  ctx.arc(x, y + 16 * scale, 4.5 * scale, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawWonPatch(region, rect) {
+  const point = getRegionMapPoint(region, rect);
+  const seed = hashText(region.id);
+  const radius = region.type === "UT" ? 15 : 24;
+  ctx.save();
+  ctx.globalAlpha = 0.72;
+  ctx.fillStyle = state.party.color;
+  ctx.strokeStyle = "rgba(21, 21, 21, 0.55)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let i = 0; i < 12; i += 1) {
+    const angle = (Math.PI * 2 * i) / 12;
+    const wobble = 0.75 + seededNoise(seed, i) * 0.5;
+    const x = point.x + Math.cos(angle) * radius * wobble;
+    const y = point.y + Math.sin(angle) * radius * 0.72 * wobble;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawMapHome(width, height) {
+  ctx.fillStyle = "#d8edf7";
+  ctx.fillRect(0, 0, width, height);
+  const imgW = mapImage.naturalWidth || 235;
+  const imgH = mapImage.naturalHeight || 244;
+  const scale = Math.min((width * 0.95) / imgW, (height * 0.9) / imgH);
+  const mapW = imgW * scale;
+  const mapH = imgH * scale;
+  const x = (width - mapW) / 2;
+  const y = Math.max(8, (height - mapH) / 2 - 4);
+  state.mapRect = { x, y, width: mapW, height: mapH };
+
+  ctx.save();
+  ctx.fillStyle = "#fffdf7";
+  ctx.fillRect(x - 8, y - 8, mapW + 16, mapH + 16);
+  if (mapImage.complete && mapImage.naturalWidth) {
+    ctx.filter = "contrast(1.18) saturate(1.06)";
+    ctx.drawImage(mapImage, x, y, mapW, mapH);
+    ctx.filter = "none";
+  } else {
+    ctx.fillStyle = "#f7f4ec";
+    ctx.fillRect(x, y, mapW, mapH);
+    ctx.fillStyle = "#151515";
+    ctx.font = "900 18px ui-sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("India Map", x + mapW / 2, y + mapH / 2);
+  }
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(x - 3, y - 3, mapW + 6, mapH + 6);
+
+  for (const region of REGIONS) {
+    if (state.campaign.completed[region.id]) drawWonPatch(region, state.mapRect);
+  }
+
+  for (const region of REGIONS) {
+    const point = getRegionMapPoint(region);
+    const won = Boolean(state.campaign.completed[region.id]);
+    const pending = state.campaign.pendingRegionId === region.id;
+    if (pending) {
+      ctx.fillStyle = "rgba(244, 197, 66, 0.5)";
+      ctx.beginPath();
+      ctx.arc(point.x + 8, point.y + 3, 18, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    drawFlag(point.x, point.y, won ? "#d92d20" : "#151515", region.type === "UT" ? 0.65 : 0.82);
+  }
+
+  ctx.fillStyle = "rgba(21, 21, 21, 0.88)";
+  ctx.fillRect(14, height - 62, Math.min(width - 28, 560), 44);
+  ctx.fillStyle = "#fffdf7";
+  ctx.font = "900 14px ui-sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("Touch a black flag to start election. Red flags are won.", 28, height - 35);
+  ctx.restore();
+}
+
+function drawRegionArena() {
+  ctx.save();
+  ctx.translate(state.offsetX, state.offsetY);
+  const s = state.cellSize;
+  ctx.fillStyle = "rgba(21, 21, 21, 0.12)";
+  for (let y = 0; y < ROWS; y += 1) {
+    for (let x = 0; x < COLS; x += 1) {
+      if (!state.regionMask[index(x, y)]) {
+        ctx.fillRect(x * s, y * s, s + 0.5, s + 0.5);
+      }
+    }
+  }
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = Math.max(3, s * 0.32);
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  state.activePolygon.forEach((point, i) => {
+    const x = point.x * s;
+    const y = point.y * s;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+  ctx.stroke();
+
+  const activeRegion = getActiveRegion();
+  if (activeRegion) {
+    ctx.fillStyle = "rgba(21, 21, 21, 0.84)";
+    ctx.font = `900 ${Math.max(12, s * 1.05)}px ui-sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText(activeRegion.name, (COLS / 2) * s, 4.4 * s);
+  }
+  ctx.restore();
 }
 
 function drawGridBackground(width, height) {
@@ -968,6 +1295,7 @@ function drawTerritory() {
   for (let y = 0; y < ROWS; y += 1) {
     for (let x = 0; x < COLS; x += 1) {
       const idx = index(x, y);
+      if (!state.regionMask[idx]) continue;
       const ownerId = state.owner[idx];
       if (!ownerId) continue;
       ctx.fillStyle = ownerColor(ownerId);
@@ -1147,7 +1475,15 @@ function drawLeaderStatue() {
 
 function draw() {
   const rect = canvas.getBoundingClientRect();
+  if (document.body.dataset.mode !== state.mode) {
+    document.body.dataset.mode = state.mode;
+  }
+  if (state.mode === "map" || state.mode === "confirm") {
+    drawMapHome(rect.width, rect.height);
+    return;
+  }
   drawGridBackground(rect.width, rect.height);
+  drawRegionArena();
   drawTerritory();
   drawTrails();
   drawTrailPaths();
@@ -1166,11 +1502,48 @@ function loop(timestamp) {
   requestAnimationFrame(loop);
 }
 
-function pointerToDirection(event) {
-  if (!state.player || state.mode !== "playing") return;
+function canvasPointFromEvent(event) {
   const rect = canvas.getBoundingClientRect();
-  const px = (event.clientX - rect.left - state.offsetX) / state.cellSize;
-  const py = (event.clientY - rect.top - state.offsetY) / state.cellSize;
+  return {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top
+  };
+}
+
+function pickRegionFromMap(point) {
+  let best = null;
+  let bestDistance = Infinity;
+  for (const region of REGIONS) {
+    const flag = getRegionMapPoint(region);
+    const distance = Math.hypot(point.x - flag.x, point.y - flag.y);
+    const threshold = region.type === "UT" ? 24 : 30;
+    if (distance < threshold && distance < bestDistance) {
+      best = region;
+      bestDistance = distance;
+    }
+  }
+  return best;
+}
+
+function handleMapPointer(event) {
+  const region = pickRegionFromMap(canvasPointFromEvent(event));
+  if (region) {
+    showRegionPrompt(region.id);
+  } else {
+    confirmPanel.hidden = true;
+    state.campaign.pendingRegionId = null;
+  }
+}
+
+function pointerToDirection(event) {
+  if (state.mode === "map" || state.mode === "confirm") {
+    handleMapPointer(event);
+    return;
+  }
+  if (!state.player || state.mode !== "playing") return;
+  const point = canvasPointFromEvent(event);
+  const px = (point.x - state.offsetX) / state.cellSize;
+  const py = (point.y - state.offsetY) / state.cellSize;
   const dx = px - state.player.x;
   const dy = py - state.player.y;
   if (Math.abs(dx) > Math.abs(dy)) {
@@ -1190,9 +1563,27 @@ function bindEvents() {
     if (event.key === " ") useRallyBoost();
   });
   window.addEventListener("keyup", (event) => state.keys.delete(event.key));
-  canvas.addEventListener("pointerdown", pointerToDirection);
+  canvas.addEventListener("pointerdown", (event) => {
+    const point = canvasPointFromEvent(event);
+    state.pointer = { x: point.x, y: point.y, active: true };
+    pointerToDirection(event);
+  });
   canvas.addEventListener("pointermove", (event) => {
-    if (event.buttons) pointerToDirection(event);
+    if (!state.pointer.active || state.mode !== "playing") return;
+    const point = canvasPointFromEvent(event);
+    const dx = point.x - state.pointer.x;
+    const dy = point.y - state.pointer.y;
+    if (Math.hypot(dx, dy) > 12) {
+      if (Math.abs(dx) > Math.abs(dy)) setDirection(state.player, dx > 0 ? "right" : "left");
+      else setDirection(state.player, dy > 0 ? "down" : "up");
+      state.pointer = { x: point.x, y: point.y, active: true };
+    }
+  });
+  canvas.addEventListener("pointerup", () => {
+    state.pointer.active = false;
+  });
+  canvas.addEventListener("pointercancel", () => {
+    state.pointer.active = false;
   });
   document.querySelectorAll(".dir-btn").forEach((button) => {
     button.addEventListener("click", () => setDirection(state.player, button.dataset.dir));
@@ -1210,6 +1601,12 @@ function bindEvents() {
   });
   nextRegionBtn.addEventListener("click", openRegionModal);
   openMapBtn.addEventListener("click", openRegionModal);
+  confirmRegionBtn.addEventListener("click", confirmPendingRegion);
+  cancelRegionBtn.addEventListener("click", () => {
+    state.campaign.pendingRegionId = null;
+    confirmPanel.hidden = true;
+    state.mode = "map";
+  });
   shareBtn.addEventListener("click", shareResult);
   partyNameInput.addEventListener("input", () => {
     nameError.textContent = validatePartyName(partyNameInput.value.trim()) || validateSlogan(sloganInput.value.trim());

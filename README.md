@@ -13,6 +13,9 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - Fictional AI opponents
 - Opponent conversion into supporters
 - Rough India state/UT campaign hub
+- India map home screen using the local map image asset
+- Flag-touch state/UT selection with confirmation
+- Selected region opens as a large outlined gameplay arena
 - State/UT win progression with saved progress
 - Paidal-yatra style next-region flow
 - Random comedy campaign events
