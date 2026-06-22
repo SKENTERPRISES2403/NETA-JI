@@ -83,6 +83,9 @@ const state = {
   },
   player: null,
   opponents: [],
+  supporters: [],
+  conversionBursts: [],
+  supportersConverted: 0,
   keys: new Set(),
   lastTime: 0,
   timeLeft: ROUND_SECONDS,
@@ -214,12 +217,84 @@ function createAgent(ownerId, name, color, symbol, x, y) {
   };
 }
 
+function createSupporter(source, color) {
+  const angle = Math.random() * Math.PI * 2;
+  const distance = 0.3 + Math.random() * 1.4;
+  return {
+    x: clamp(source.x + Math.cos(angle) * distance, 1, COLS - 1.01),
+    y: clamp(source.y + Math.sin(angle) * distance, 1, ROWS - 1.01),
+    color,
+    phase: Math.random() * Math.PI * 2,
+    driftX: (Math.random() - 0.5) * 2.6,
+    driftY: (Math.random() - 0.5) * 2.6,
+    followSpeed: 4.4 + Math.random() * 2.2,
+    size: 0.36 + Math.random() * 0.18
+  };
+}
+
+function addConversionBurst(x, y, color) {
+  for (let i = 0; i < 18; i += 1) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 2 + Math.random() * 5;
+    state.conversionBursts.push({
+      x,
+      y,
+      color,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 0.45 + Math.random() * 0.45,
+      maxLife: 0.9,
+      size: 0.22 + Math.random() * 0.28
+    });
+  }
+}
+
+function convertOpponent(ownerId, cutX, cutY) {
+  const opponentIndex = state.opponents.findIndex((agent) => agent.ownerId === ownerId);
+  if (opponentIndex === -1) return false;
+
+  const [opponent] = state.opponents.splice(opponentIndex, 1);
+  let convertedCells = 0;
+  for (let i = 0; i < state.owner.length; i += 1) {
+    if (state.owner[i] === ownerId) {
+      state.owner[i] = 1;
+      convertedCells += 1;
+    }
+    if (state.trail[i] === ownerId) {
+      state.trail[i] = 0;
+      convertedCells += 1;
+    }
+  }
+
+  const joinPoint = {
+    x: typeof cutX === "number" ? cutX : opponent.x,
+    y: typeof cutY === "number" ? cutY : opponent.y
+  };
+  const joined = clamp(5 + Math.floor(convertedCells / 18), 5, 16);
+  for (let i = 0; i < joined; i += 1) {
+    state.supporters.push(createSupporter(joinPoint, opponent.color));
+  }
+  while (state.supporters.length > 42) state.supporters.shift();
+  state.supportersConverted += joined;
+  addConversionBurst(joinPoint.x, joinPoint.y, opponent.color);
+  addFeed(`${opponent.name} joined your rally. +${joined} supporters.`);
+  showToast(`${opponent.name} converted. Supporters joined.`);
+  if (state.opponents.length === 0) {
+    addFeed("All local rivals joined your rally. Keep winning booths.");
+  }
+  updateStats();
+  return true;
+}
+
 function resetGame() {
   state.owner.fill(0);
   state.trail.fill(0);
   state.player = createAgent(1, state.party.name, state.party.color, state.party.symbol, 31, 21);
   state.player.speed = 6.4;
   state.opponents = [];
+  state.supporters = [];
+  state.conversionBursts = [];
+  state.supportersConverted = 0;
   state.timeLeft = ROUND_SECONDS;
   state.eventClock = 8;
   state.boostClock = 0;
@@ -311,6 +386,10 @@ function recordTrail(agent, x, y) {
   }
   if (state.trail[idx] && state.trail[idx] !== agent.ownerId) {
     const cutOwner = state.trail[idx];
+    if (agent.ownerId === 1 && cutOwner > 1) {
+      convertOpponent(cutOwner, x, y);
+      return;
+    }
     clearTrail(cutOwner);
     if (cutOwner === 1) {
       finishRound(false, "Opposition cut your campaign route.");
@@ -411,13 +490,15 @@ function handleTrailCuts() {
   const playerCell = cellFromAgent(state.player);
   const playerIdx = index(playerCell.x, playerCell.y);
   if (state.trail[playerIdx] > 1) {
-    const ownerId = state.trail[playerIdx];
-    clearTrail(ownerId);
-    addFeed("You cut an opponent rally route. Their posters came down.");
-    showToast("Opponent route cut.");
+    convertOpponent(state.trail[playerIdx], playerCell.x, playerCell.y);
   }
 
-  for (const agent of state.opponents) {
+  for (const agent of [...state.opponents]) {
+    const distanceToPlayer = Math.hypot(agent.x - state.player.x, agent.y - state.player.y);
+    if (distanceToPlayer < 1.15) {
+      convertOpponent(agent.ownerId, agent.x, agent.y);
+      continue;
+    }
     const cell = cellFromAgent(agent);
     const idx = index(cell.x, cell.y);
     if (state.trail[idx] === 1) {
@@ -448,6 +529,40 @@ function triggerEvent() {
     }
     state.player.trailCells = [];
   }
+}
+
+function updateSupporters(dt) {
+  if (!state.player || state.supporters.length === 0) return;
+  const sideX = -state.player.dirY;
+  const sideY = state.player.dirX;
+  const backX = -state.player.dirX;
+  const backY = -state.player.dirY;
+
+  state.supporters.forEach((supporter, i) => {
+    supporter.phase += dt * (1.5 + supporter.size * 2);
+    const looseBack = 1.1 + (i % 5) * 0.22 + Math.sin(supporter.phase) * 0.25;
+    const looseSide = supporter.driftX + Math.cos(supporter.phase * 0.9) * 0.85;
+    const targetX = state.player.x + backX * looseBack + sideX * looseSide + Math.sin(supporter.phase * 1.7) * 0.22;
+    const targetY = state.player.y + backY * looseBack + sideY * looseSide + supporter.driftY * 0.35 + Math.cos(supporter.phase * 1.3) * 0.22;
+    const dx = targetX - supporter.x;
+    const dy = targetY - supporter.y;
+    const distance = Math.hypot(dx, dy) || 1;
+    const step = Math.min(distance, supporter.followSpeed * dt);
+    supporter.x = clamp(supporter.x + (dx / distance) * step, 1, COLS - 1.01);
+    supporter.y = clamp(supporter.y + (dy / distance) * step, 1, ROWS - 1.01);
+  });
+}
+
+function updateConversionBursts(dt) {
+  if (state.conversionBursts.length === 0) return;
+  for (const particle of state.conversionBursts) {
+    particle.life -= dt;
+    particle.x += particle.vx * dt;
+    particle.y += particle.vy * dt;
+    particle.vx *= 0.96;
+    particle.vy *= 0.96;
+  }
+  state.conversionBursts = state.conversionBursts.filter((particle) => particle.life > 0);
 }
 
 function updateStats() {
@@ -492,6 +607,8 @@ function update(dt) {
 
   updateAgent(state.player, dt);
   updateOpponents(dt);
+  updateSupporters(dt);
+  updateConversionBursts(dt);
   handleTrailCuts();
 
   if (state.eventClock <= 0) {
@@ -658,6 +775,51 @@ function drawTrails() {
   ctx.globalAlpha = 1;
 }
 
+function drawSupporters() {
+  if (state.supporters.length === 0) return;
+  ctx.save();
+  ctx.translate(state.offsetX, state.offsetY);
+  const s = state.cellSize;
+  for (const supporter of state.supporters) {
+    const cx = (supporter.x + 0.5) * s;
+    const cy = (supporter.y + 0.5) * s;
+    ctx.globalAlpha = 0.96;
+    ctx.fillStyle = supporter.color;
+    ctx.strokeStyle = "rgba(21, 21, 21, 0.82)";
+    ctx.lineWidth = Math.max(1, s * 0.1);
+    ctx.beginPath();
+    ctx.arc(cx, cy, s * supporter.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#fffdf7";
+    ctx.beginPath();
+    ctx.arc(cx, cy - s * supporter.size * 0.16, s * supporter.size * 0.34, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+function drawConversionBursts() {
+  if (state.conversionBursts.length === 0) return;
+  ctx.save();
+  ctx.translate(state.offsetX, state.offsetY);
+  const s = state.cellSize;
+  for (const particle of state.conversionBursts) {
+    const alpha = clamp(particle.life / particle.maxLife, 0, 1);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = particle.color;
+    ctx.strokeStyle = "rgba(21, 21, 21, 0.72)";
+    ctx.lineWidth = Math.max(1, s * 0.08);
+    ctx.beginPath();
+    ctx.arc((particle.x + 0.5) * s, (particle.y + 0.5) * s, s * particle.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
 function drawAgent(agent, isPlayer) {
   const s = state.cellSize;
   const cx = state.offsetX + (agent.x + 0.5) * s;
@@ -716,7 +878,9 @@ function draw() {
   drawTerritory();
   drawTrails();
   drawLeaderStatue();
+  drawConversionBursts();
   for (const opponent of state.opponents) drawAgent(opponent, false);
+  drawSupporters();
   if (state.player) drawAgent(state.player, true);
 }
 
