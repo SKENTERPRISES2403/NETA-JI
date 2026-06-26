@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#f05d23"/>
+  <path d="M96 118h268v76H96z" fill="#fffdf7" stroke="#151515" stroke-width="18" stroke-linejoin="round"/>
+  <path d="M178 120v280" stroke="#151515" stroke-width="22" stroke-linecap="round"/>
+  <path d="M184 214l180 34-180 48z" fill="#13a99a" stroke="#151515" stroke-width="18" stroke-linejoin="round"/>
+  <circle cx="250" cy="352" r="56" fill="#f0b37e" stroke="#151515" stroke-width="18"/>
+  <path d="M172 450c20-56 136-56 156 0" fill="#fffdf7" stroke="#151515" stroke-width="18" stroke-linecap="round"/>
+  <path d="M226 402l28 38 28-38" fill="none" stroke="#151515" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="256" y="178" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" font-weight="900" fill="#151515">JI</text>
+</svg>

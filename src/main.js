@@ -238,6 +238,8 @@ const state = {
   offsetY: 0,
   mapRect: { x: 0, y: 0, width: 0, height: 0 },
   pointer: { x: 0, y: 0, active: false },
+  audioContext: null,
+  audioUnlocked: false,
   shareText: ""
 };
 
@@ -314,6 +316,51 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add("is-visible");
   state.toastClock = 2.4;
+}
+
+function ensureAudio() {
+  if (state.audioUnlocked) return;
+  const AudioCtor = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtor) return;
+  state.audioContext = state.audioContext || new AudioCtor();
+  if (state.audioContext.state === "suspended") {
+    state.audioContext.resume();
+  }
+  state.audioUnlocked = true;
+}
+
+function playSound(kind) {
+  if (!state.audioUnlocked || !state.audioContext) return;
+  const ctxAudio = state.audioContext;
+  const now = ctxAudio.currentTime;
+  const patterns = {
+    tap: [420, 0.045, 0.05],
+    rally: [240, 0.09, 0.09, 360, 0.09, 0.07],
+    convert: [520, 0.07, 0.08, 760, 0.11, 0.06],
+    loop: [300, 0.08, 0.08, 460, 0.08, 0.06, 620, 0.1, 0.05],
+    event: [180, 0.06, 0.08, 260, 0.12, 0.06],
+    win: [392, 0.1, 0.08, 523, 0.1, 0.07, 659, 0.18, 0.06],
+    lose: [260, 0.12, 0.07, 180, 0.18, 0.06]
+  };
+  const pattern = patterns[kind] || patterns.tap;
+  let cursor = now;
+  for (let i = 0; i < pattern.length; i += 3) {
+    const frequency = pattern[i];
+    const duration = pattern[i + 1];
+    const gain = pattern[i + 2];
+    const oscillator = ctxAudio.createOscillator();
+    const volume = ctxAudio.createGain();
+    oscillator.type = kind === "rally" ? "square" : "triangle";
+    oscillator.frequency.setValueAtTime(frequency, cursor);
+    volume.gain.setValueAtTime(0.0001, cursor);
+    volume.gain.exponentialRampToValueAtTime(gain, cursor + 0.01);
+    volume.gain.exponentialRampToValueAtTime(0.0001, cursor + duration);
+    oscillator.connect(volume);
+    volume.connect(ctxAudio.destination);
+    oscillator.start(cursor);
+    oscillator.stop(cursor + duration + 0.02);
+    cursor += duration * 0.92;
+  }
 }
 
 function getActiveRegion() {
@@ -397,6 +444,8 @@ function openRegionModal() {
 function showRegionPrompt(regionId) {
   const region = REGIONS.find((item) => item.id === regionId);
   if (!region) return;
+  ensureAudio();
+  playSound("tap");
   state.campaign.pendingRegionId = region.id;
   confirmTitle.textContent = `${region.name} election?`;
   confirmCopy.textContent = state.campaign.completed[region.id]
@@ -425,6 +474,8 @@ function selectRegion(regionId) {
 
 function confirmPendingRegion() {
   if (!state.campaign.pendingRegionId) return;
+  ensureAudio();
+  playSound("rally");
   const regionId = state.campaign.pendingRegionId;
   state.campaign.pendingRegionId = null;
   confirmPanel.hidden = true;
@@ -647,6 +698,7 @@ function convertOpponent(ownerId, cutX, cutY) {
   addConversionBurst(joinPoint.x, joinPoint.y, opponent.color);
   addFeed(`${opponent.name} joined your rally. +${joined} supporters.`);
   showToast(`${opponent.name} converted. Supporters joined.`);
+  playSound("convert");
   if (state.opponents.length === 0) {
     addFeed("All local rivals joined your rally. Keep winning booths.");
   }
@@ -696,6 +748,7 @@ function resetGame() {
 }
 
 function startGame() {
+  ensureAudio();
   const name = partyNameInput.value.trim();
   const slogan = sloganInput.value.trim();
   const error = validatePartyName(name) || validateSlogan(slogan);
@@ -841,6 +894,7 @@ function closeLoop(agent) {
   if (agent.ownerId === 1 && agent.trailCells.length + gained > 5) {
     addFeed(`${state.party.name} won ${agent.trailCells.length + gained} new booths.`);
     showToast("Campaign loop closed. Influence gained.");
+    playSound("loop");
   }
   agent.trailCells = [];
   agent.trailPoints = [];
@@ -911,6 +965,7 @@ function triggerEvent() {
   eventStat.textContent = event.title;
   addFeed(event.title);
   showToast(event.copy);
+  playSound("event");
 
   if (event.effect === "speedUp") {
     state.speedMul = 1.28;
@@ -1021,10 +1076,12 @@ function finishRound(won, reason) {
   nextRegionBtn.hidden = !victory;
   if (victory) {
     addFeed(`${regionName} mandate won. Red flag raised on the India map.`);
+    playSound("win");
     openRegionModal();
     showToast(`${regionName} won. Choose the next black flag.`);
     return;
   }
+  playSound("lose");
   resultModal.classList.add("is-open");
 }
 
@@ -1306,6 +1363,135 @@ function drawSymbol(symbol, cx, cy, size, color) {
   ctx.restore();
 }
 
+function drawTinyPoster(x, y, s, color, label = "NETA JI") {
+  ctx.save();
+  ctx.fillStyle = "#fffdf7";
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = Math.max(1, s * 0.08);
+  ctx.fillRect(x, y, s * 2.5, s * 1.32);
+  ctx.strokeRect(x, y, s * 2.5, s * 1.32);
+  ctx.fillStyle = color;
+  ctx.fillRect(x + s * 0.12, y + s * 0.15, s * 0.44, s * 1.02);
+  ctx.fillStyle = "#151515";
+  ctx.font = `900 ${Math.max(7, s * 0.46)}px ui-sans-serif`;
+  ctx.textAlign = "left";
+  ctx.fillText(label, x + s * 0.68, y + s * 0.86);
+  ctx.restore();
+}
+
+function drawTinyFlag(x, y, s, color) {
+  ctx.save();
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = Math.max(1, s * 0.1);
+  ctx.beginPath();
+  ctx.moveTo(x, y - s * 0.9);
+  ctx.lineTo(x, y + s * 1.2);
+  ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x, y - s * 0.9);
+  ctx.lineTo(x + s * 1.18, y - s * 0.58);
+  ctx.lineTo(x, y - s * 0.2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawMiniPerson(cx, cy, size, options = {}) {
+  const color = options.color || state.party.color;
+  const accent = options.accent || "#fffdf7";
+  const skin = options.skin || "#f0b37e";
+  const phase = options.phase || 0;
+  const bob = Math.sin((state.lastTime || 0) * 0.012 + phase) * size * 0.05;
+  const walk = Math.sin((state.lastTime || 0) * 0.018 + phase);
+  const bodyW = size * 0.54;
+  const bodyH = size * 0.76;
+
+  ctx.save();
+  ctx.translate(cx, cy + bob);
+  ctx.fillStyle = "rgba(21, 21, 21, 0.18)";
+  ctx.beginPath();
+  ctx.ellipse(0, size * 0.72, size * 0.46, size * 0.16, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = Math.max(1.2, size * 0.08);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  ctx.strokeStyle = "#151515";
+  ctx.beginPath();
+  ctx.moveTo(-bodyW * 0.18, size * 0.34);
+  ctx.lineTo(-bodyW * 0.28 + walk * size * 0.06, size * 0.78);
+  ctx.moveTo(bodyW * 0.18, size * 0.34);
+  ctx.lineTo(bodyW * 0.28 - walk * size * 0.06, size * 0.78);
+  ctx.stroke();
+
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.roundRect(-bodyW / 2, -size * 0.08, bodyW, bodyH, size * 0.12);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = accent;
+  ctx.beginPath();
+  ctx.moveTo(-bodyW * 0.2, -size * 0.04);
+  ctx.lineTo(bodyW * 0.2, -size * 0.04);
+  ctx.lineTo(0, size * 0.34);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = skin;
+  if (options.foldedHands) {
+    ctx.beginPath();
+    ctx.moveTo(-bodyW * 0.48, size * 0.1);
+    ctx.lineTo(-bodyW * 0.06, size * 0.35);
+    ctx.moveTo(bodyW * 0.48, size * 0.1);
+    ctx.lineTo(bodyW * 0.06, size * 0.35);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(-bodyW * 0.04, size * 0.36, size * 0.12, size * 0.18, -0.4, 0, Math.PI * 2);
+    ctx.ellipse(bodyW * 0.04, size * 0.36, size * 0.12, size * 0.18, 0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(-bodyW * 0.5, size * 0.04);
+    ctx.lineTo(-bodyW * 0.7, size * 0.38 + walk * size * 0.08);
+    ctx.moveTo(bodyW * 0.5, size * 0.04);
+    ctx.lineTo(bodyW * 0.7, size * 0.38 - walk * size * 0.08);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.arc(0, -size * 0.42, size * 0.32, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#151515";
+  ctx.beginPath();
+  ctx.arc(0, -size * 0.52, size * 0.28, Math.PI, Math.PI * 2);
+  ctx.fill();
+
+  if (options.symbol) {
+    drawSymbol(options.symbol, 0, size * 0.2, size * 0.36, accent);
+  }
+
+  if (options.flag) {
+    drawTinyFlag(size * 0.42, -size * 0.2, size * 0.32, color);
+  }
+
+  if (options.label) {
+    ctx.fillStyle = "#151515";
+    ctx.font = `900 ${Math.max(7, size * 0.34)}px ui-sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText(options.label, 0, size * 1.12);
+  }
+  ctx.restore();
+}
+
 function drawTerritory() {
   ctx.save();
   ctx.translate(state.offsetX, state.offsetY);
@@ -1322,14 +1508,12 @@ function drawTerritory() {
 
       if (ownerId === 1 && x % 8 === 2 && y % 6 === 2) {
         ctx.globalAlpha = 1;
-        ctx.fillStyle = "#fffdf7";
-        ctx.fillRect(x * s + s * 0.1, y * s + s * 0.18, s * 2.4, s * 1.2);
-        ctx.strokeStyle = "#151515";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(x * s + s * 0.1, y * s + s * 0.18, s * 2.4, s * 1.2);
-        ctx.fillStyle = "#151515";
-        ctx.font = `${Math.max(7, s * 0.58)}px ui-sans-serif`;
-        ctx.fillText("NETA JI", x * s + s * 0.22, y * s + s * 0.98);
+        drawTinyPoster(x * s + s * 0.1, y * s + s * 0.18, s, state.party.color);
+      }
+
+      if (ownerId === 1 && x % 11 === 6 && y % 7 === 4) {
+        ctx.globalAlpha = 1;
+        drawTinyFlag(x * s + s * 0.4, y * s + s * 0.9, s * 0.8, state.party.color);
       }
     }
   }
@@ -1399,22 +1583,16 @@ function drawSupporters() {
   ctx.save();
   ctx.translate(state.offsetX, state.offsetY);
   const s = state.cellSize;
-  for (const supporter of state.supporters) {
+  state.supporters.forEach((supporter, i) => {
     const cx = (supporter.x + 0.5) * s;
     const cy = (supporter.y + 0.5) * s;
-    ctx.globalAlpha = 0.96;
-    ctx.fillStyle = supporter.color;
-    ctx.strokeStyle = "rgba(21, 21, 21, 0.82)";
-    ctx.lineWidth = Math.max(1, s * 0.1);
-    ctx.beginPath();
-    ctx.arc(cx, cy, s * supporter.size, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = "#fffdf7";
-    ctx.beginPath();
-    ctx.arc(cx, cy - s * supporter.size * 0.16, s * supporter.size * 0.34, 0, Math.PI * 2);
-    ctx.fill();
-  }
+    drawMiniPerson(cx, cy, s * (1.45 + supporter.size), {
+      color: supporter.color,
+      accent: "#fffdf7",
+      phase: supporter.phase + i * 0.8,
+      flag: i % 4 === 0
+    });
+  });
   ctx.restore();
   ctx.globalAlpha = 1;
 }
@@ -1439,24 +1617,72 @@ function drawConversionBursts() {
   ctx.globalAlpha = 1;
 }
 
+function drawCampaignProps() {
+  if (state.mode !== "playing") return;
+  ctx.save();
+  ctx.translate(state.offsetX, state.offsetY);
+  const s = state.cellSize;
+  const props = [
+    { x: 18, y: 14, type: "booth" },
+    { x: 45, y: 13, type: "stage" },
+    { x: 20, y: 30, type: "poster" },
+    { x: 47, y: 30, type: "booth" }
+  ];
+  for (const prop of props) {
+    const spot = findMaskedSpawn(prop.x, prop.y);
+    const px = spot.x * s;
+    const py = spot.y * s;
+    if (prop.type === "stage") {
+      ctx.fillStyle = "rgba(21, 21, 21, 0.18)";
+      ctx.fillRect(px - s * 2, py + s * 1.6, s * 4.4, s * 0.48);
+      ctx.fillStyle = "#fffdf7";
+      ctx.strokeStyle = "#151515";
+      ctx.lineWidth = Math.max(1, s * 0.1);
+      ctx.fillRect(px - s * 2, py - s * 1.1, s * 4.2, s * 2.4);
+      ctx.strokeRect(px - s * 2, py - s * 1.1, s * 4.2, s * 2.4);
+      drawTinyFlag(px - s * 1.5, py - s * 0.1, s * 0.85, state.party.color);
+      drawTinyFlag(px + s * 1.5, py - s * 0.1, s * 0.85, state.party.color);
+      ctx.fillStyle = "#151515";
+      ctx.font = `900 ${Math.max(7, s * 0.52)}px ui-sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText("RALLY", px + s * 0.1, py + s * 0.25);
+    } else if (prop.type === "booth") {
+      ctx.fillStyle = "#fffdf7";
+      ctx.strokeStyle = "#151515";
+      ctx.lineWidth = Math.max(1, s * 0.1);
+      ctx.fillRect(px - s * 1.1, py - s * 0.9, s * 2.2, s * 1.8);
+      ctx.strokeRect(px - s * 1.1, py - s * 0.9, s * 2.2, s * 1.8);
+      ctx.fillStyle = state.party.color;
+      ctx.fillRect(px - s * 0.95, py - s * 0.75, s * 0.42, s * 1.5);
+      ctx.fillStyle = "#151515";
+      ctx.font = `900 ${Math.max(7, s * 0.45)}px ui-sans-serif`;
+      ctx.textAlign = "left";
+      ctx.fillText("BOOTH", px - s * 0.42, py + s * 0.2);
+    } else {
+      drawTinyPoster(px - s * 1.2, py - s * 0.6, s, state.party.color, "VOTE");
+    }
+  }
+  ctx.restore();
+}
+
 function drawAgent(agent, isPlayer) {
   const s = state.cellSize;
   const cx = state.offsetX + (agent.x + 0.5) * s;
   const cy = state.offsetY + (agent.y + 0.5) * s;
   ctx.save();
-  ctx.fillStyle = agent.color;
-  ctx.strokeStyle = "#151515";
-  ctx.lineWidth = Math.max(2, s * 0.18);
-  ctx.beginPath();
-  ctx.arc(cx, cy, s * (isPlayer ? 0.9 : 0.74), 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  drawSymbol(agent.symbol, cx, cy, s * (isPlayer ? 1.15 : 0.9), "#fffdf7");
+  drawMiniPerson(cx, cy, s * (isPlayer ? 2.55 : 2.12), {
+    color: agent.color,
+    accent: "#fffdf7",
+    symbol: agent.symbol,
+    phase: agent.ownerId * 1.7,
+    foldedHands: isPlayer,
+    flag: !isPlayer
+  });
   if (isPlayer) {
     ctx.fillStyle = "#151515";
-    ctx.font = `900 ${Math.max(10, s * 0.8)}px ui-sans-serif`;
+    ctx.font = `900 ${Math.max(10, s * 0.9)}px ui-sans-serif`;
     ctx.textAlign = "center";
-    ctx.fillText("JI", cx, cy + s * 1.7);
+    ctx.fillText("JI", cx, cy + s * 3);
   }
   ctx.restore();
 }
@@ -1466,28 +1692,17 @@ function drawLeaderStatue() {
   const x = state.offsetX + 31 * s;
   const y = state.offsetY + 19 * s;
   ctx.save();
-  ctx.translate(x, y);
-  ctx.fillStyle = "#f0b37e";
-  ctx.strokeStyle = "#151515";
-  ctx.lineWidth = Math.max(1.5, s * 0.12);
-  ctx.beginPath();
-  ctx.arc(0, 0, s * 0.9, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = "#fffdf7";
-  ctx.fillRect(-s * 0.8, s * 0.75, s * 1.6, s * 1.6);
-  ctx.strokeRect(-s * 0.8, s * 0.75, s * 1.6, s * 1.6);
-  ctx.fillStyle = "#f0b37e";
-  ctx.save();
-  ctx.rotate(-0.46);
-  ctx.fillRect(-s * 0.55, s * 0.88, s * 0.44, s * 1.15);
-  ctx.strokeRect(-s * 0.55, s * 0.88, s * 0.44, s * 1.15);
-  ctx.restore();
-  ctx.save();
-  ctx.rotate(0.46);
-  ctx.fillRect(s * 0.12, s * 0.88, s * 0.44, s * 1.15);
-  ctx.strokeRect(s * 0.12, s * 0.88, s * 0.44, s * 1.15);
-  ctx.restore();
+  drawMiniPerson(x, y, s * 2.8, {
+    color: "#fffdf7",
+    accent: state.party.color,
+    symbol: state.party.symbol,
+    foldedHands: true,
+    phase: 0.2
+  });
+  ctx.fillStyle = "#151515";
+  ctx.font = `900 ${Math.max(8, s * 0.62)}px ui-sans-serif`;
+  ctx.textAlign = "center";
+  ctx.fillText("CM FACE", x, y + s * 3.6);
   ctx.restore();
 }
 
@@ -1503,9 +1718,9 @@ function draw() {
   drawGridBackground(rect.width, rect.height);
   drawRegionArena();
   drawTerritory();
+  drawCampaignProps();
   drawTrails();
   drawTrailPaths();
-  drawLeaderStatue();
   drawConversionBursts();
   for (const opponent of state.opponents) drawAgent(opponent, false);
   drawSupporters();
@@ -1582,6 +1797,7 @@ function bindEvents() {
   });
   window.addEventListener("keyup", (event) => state.keys.delete(event.key));
   canvas.addEventListener("pointerdown", (event) => {
+    ensureAudio();
     const point = canvasPointFromEvent(event);
     state.pointer = { x: point.x, y: point.y, active: true };
     pointerToDirection(event);
@@ -1636,9 +1852,16 @@ function bindEvents() {
 
 function useRallyBoost() {
   if (state.mode !== "playing" || state.boostClock > 0) return;
+  ensureAudio();
   state.speedMul = 1.42;
   state.boostClock = 2.2;
   showToast("Rally sprint activated.");
+  playSound("rally");
+}
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 
 async function shareResult() {
@@ -1663,6 +1886,7 @@ async function init() {
   bindEvents();
   resizeCanvas();
   resetGame();
+  registerServiceWorker();
   requestAnimationFrame(loop);
 }
 

@@ -12,6 +12,8 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - Paper-style campaign route and territory fill
 - Fictional AI opponents
 - Opponent conversion into supporters
+- Miniature leader, opponent candidate, and supporter worker visuals
+- Rally booths, posters, flags, and stage props inside arenas
 - Rough India state/UT campaign hub
 - India map home screen using the local map image asset
 - Flag-touch state/UT selection with confirmation
@@ -21,6 +23,8 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - Random comedy campaign events
 - Safety filter for party names and slogans
 - Meme-style result card with share text
+- Lightweight generated sound effects
+- PWA manifest and service worker for mobile install/offline prep
 
 ## Run Locally
 
