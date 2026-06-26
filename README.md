@@ -24,6 +24,7 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - Paidal-yatra style next-region flow
 - Random comedy campaign events
 - Safety filter for party names and slogans
+- Obfuscation-aware filtering for real politics, hate, abuse, and sensitive identity terms
 - Meme-style result card with share text
 - Lightweight generated sound effects
 - PWA manifest and service worker for mobile install/offline prep

@@ -44,7 +44,7 @@ Avoid:
 
 ## Moderation Notes
 
-The current build uses a strict local blocked-term list for party names. This is not enough for production. Before public release, add:
+The current build uses a strict local blocked-term list for party names and slogans. It normalizes spacing, repeated letters, and common number substitutions so simple obfuscations are blocked. This is not enough for production. Before public release, add:
 
 - Server-side moderation for shared names
 - Better multilingual filtering

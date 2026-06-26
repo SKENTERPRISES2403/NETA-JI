@@ -198,9 +198,17 @@ const fallbackData = {
     "inc",
     "aap",
     "aam aadmi party",
+    "aimim",
+    "cpi",
+    "cpim",
+    "ljp",
     "modi",
+    "narendra",
     "rahul",
     "gandhi",
+    "sonia",
+    "priyanka",
+    "kharge",
     "kejriwal",
     "yogi",
     "amit shah",
@@ -223,6 +231,7 @@ const fallbackData = {
     "janata dal",
     "rss",
     "vhp",
+    "owaisi",
     "nitish",
     "mamata",
     "stalin",
@@ -233,14 +242,31 @@ const fallbackData = {
     "pawar",
     "lalu",
     "naidu",
+    "bhagwat",
     "hindu",
     "muslim",
+    "islam",
+    "hindutva",
+    "sanatan",
     "sikh",
     "christian",
+    "mandir",
+    "masjid",
+    "temple",
+    "mosque",
+    "church",
+    "gurdwara",
     "dalit",
     "brahmin",
     "rajput",
     "yadav",
+    "khalistan",
+    "jihad",
+    "pakistan",
+    "china",
+    "andhbhakt",
+    "bhakt",
+    "sanghi",
     "terror",
     "violence",
     "kill",
@@ -476,19 +502,45 @@ function normalizeName(value) {
     .trim();
 }
 
-function validateSafeText(value, label, minLength) {
+function compactSafetyText(value, collapseRepeats = true) {
+  const leetFixed = value
+    .toLowerCase()
+    .replace(/0/g, "o")
+    .replace(/1/g, "i")
+    .replace(/3/g, "e")
+    .replace(/4/g, "a")
+    .replace(/5/g, "s")
+    .replace(/7/g, "t")
+    .replace(/8/g, "b");
+  const compact = normalizeName(leetFixed).replace(/\s+/g, "");
+  return collapseRepeats ? compact.replace(/(.)\1{2,}/g, "$1$1") : compact;
+}
+
+function findBlockedTerm(value) {
   const normalized = normalizeName(value);
+  const compact = compactSafetyText(value);
+  const blocked = state.data.blockedTerms || fallbackData.blockedTerms;
+  return blocked.find((term) => {
+    const safeTerm = normalizeName(term);
+    const compactTerm = compactSafetyText(term, false);
+    if (!safeTerm || !compactTerm) return false;
+    return normalized.includes(safeTerm) || compact.includes(compactTerm);
+  });
+}
+
+function validateSafeText(value, label, minLength) {
+  const raw = value.trim().toLowerCase();
+  if (!/^[a-z0-9 ]+$/.test(raw)) {
+    return "English letters, numbers, aur spaces use karo.";
+  }
+  const normalized = normalizeName(raw);
   if (normalized.length < minLength) {
     return `${label} thoda bada rakho.`;
-  }
-  if (!/^[a-z0-9 ]+$/.test(normalized)) {
-    return "English letters, numbers, aur spaces use karo.";
   }
   if (/(.)\1{4,}/.test(normalized.replace(/\s+/g, ""))) {
     return `${label} me repeated spam letters kam rakho.`;
   }
-  const blocked = state.data.blockedTerms || fallbackData.blockedTerms;
-  const matched = blocked.find((term) => normalized.includes(normalizeName(term)));
+  const matched = findBlockedTerm(normalized);
   if (matched) {
     return "Fictional comedy text rakho. Real politics, hate, abuse, ya sensitive terms blocked hain.";
   }
@@ -1380,7 +1432,7 @@ function finishRound(won, reason) {
   const copy = victory
     ? `${state.influence}% influence, ${state.neta.support} support, mandate score ${finalScore} in ${regionName}.${supporterLine}`
     : `${reason} Final mandate score: ${finalScore} in ${regionName}. Support ${state.neta.support}, reputation ${state.neta.reputation}. New strategy meeting starts now.`;
-  state.shareText = `NETA JI: ${state.party.name} scored ${finalScore} mandate in ${regionName}. ${state.party.slogan}`;
+  state.shareText = `NETA JI: ${state.party.name} scored ${finalScore} fictional comedy mandate in ${regionName}. ${state.party.slogan}`;
   resultHeadline.textContent = headline;
   resultCopy.textContent = copy;
   nextRegionBtn.hidden = !victory;
