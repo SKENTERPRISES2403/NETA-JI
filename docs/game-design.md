@@ -21,8 +21,23 @@ Create a fictional party, run campaign routes, close loops, and turn the arena i
 2. Move outside and leave a campaign route.
 3. Return to owned area to close the loop.
 4. New booths become your influence.
-5. Random events change the pace.
-6. Win by crossing the mandate target before time ends.
+5. Booth wins increase public support, funds, and local power.
+6. Pick short campaign decisions when the team is ready.
+7. Random events change the pace and the Neta Meter.
+8. Win by crossing the mandate target before time ends.
+
+## Neta Meter
+
+- Public support: helps convert influence into mandate score.
+- Funds: spent on rallies and poster waves.
+- Local power: grows through booths, rivals joining, and campaign work.
+- Reputation: boosts mandate score but can be traded for quick funds.
+
+## Current Decisions
+
+- Tea Rally: spends funds for public support and reputation.
+- Poster Wave: spends funds, claims nearby booths, and adds local power.
+- Donor Lunch: gains funds and power, but costs reputation and a little support.
 
 ## Theme Rules
 
@@ -56,5 +71,4 @@ Avoid these words in user-facing UI:
 
 ## Data Plan
 
-Prototype data is local and fictional. Future map data should come only from open/public map sources with license review. Do not import real party, real leader, real slogan, voter targeting, caste, religion, or election result data into gameplay.
-
+Current data is local and fictional. Future map data should come only from open/public map sources with license review. Do not import real party, real leader, real slogan, voter targeting, caste, religion, or election result data into gameplay.

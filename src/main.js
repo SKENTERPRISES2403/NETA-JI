@@ -1,8 +1,9 @@
 const COLS = 64;
 const ROWS = 42;
 const ROUND_SECONDS = 90;
+const MIN_WIN_SECONDS = 10;
 const PROGRESS_KEY = "netaJiCampaignProgressV1";
-const MAP_ASSET_URL = "assets/india-map.jpg";
+const MAP_ASPECT = 0.82;
 
 const REGIONS = [
   { id: "andhra-pradesh", name: "Andhra Pradesh", type: "State" },
@@ -44,46 +45,101 @@ const REGIONS = [
 ];
 
 const REGION_POSITIONS = {
-  "andhra-pradesh": [0.54, 0.68],
-  "arunachal-pradesh": [0.89, 0.25],
-  assam: [0.83, 0.34],
-  bihar: [0.64, 0.39],
-  chhattisgarh: [0.5, 0.52],
-  goa: [0.34, 0.72],
-  gujarat: [0.25, 0.49],
-  haryana: [0.4, 0.32],
-  "himachal-pradesh": [0.43, 0.23],
-  jharkhand: [0.58, 0.48],
-  karnataka: [0.42, 0.7],
-  kerala: [0.43, 0.86],
-  "madhya-pradesh": [0.42, 0.48],
-  maharashtra: [0.38, 0.59],
-  manipur: [0.86, 0.43],
-  meghalaya: [0.78, 0.38],
-  mizoram: [0.85, 0.5],
-  nagaland: [0.89, 0.39],
-  odisha: [0.58, 0.57],
-  punjab: [0.36, 0.28],
-  rajasthan: [0.3, 0.38],
+  "andhra-pradesh": [0.58, 0.69],
+  "arunachal-pradesh": [0.9, 0.27],
+  assam: [0.82, 0.37],
+  bihar: [0.64, 0.4],
+  chhattisgarh: [0.53, 0.54],
+  goa: [0.35, 0.73],
+  gujarat: [0.21, 0.53],
+  haryana: [0.4, 0.31],
+  "himachal-pradesh": [0.43, 0.22],
+  jharkhand: [0.62, 0.5],
+  karnataka: [0.43, 0.74],
+  kerala: [0.44, 0.89],
+  "madhya-pradesh": [0.43, 0.48],
+  maharashtra: [0.37, 0.61],
+  manipur: [0.89, 0.45],
+  meghalaya: [0.78, 0.42],
+  mizoram: [0.87, 0.53],
+  nagaland: [0.91, 0.39],
+  odisha: [0.62, 0.59],
+  punjab: [0.35, 0.25],
+  rajasthan: [0.27, 0.39],
   sikkim: [0.7, 0.32],
-  "tamil-nadu": [0.5, 0.82],
-  telangana: [0.5, 0.62],
-  tripura: [0.81, 0.47],
-  "uttar-pradesh": [0.49, 0.36],
-  uttarakhand: [0.48, 0.28],
-  "west-bengal": [0.68, 0.47],
-  "andaman-nicobar": [0.83, 0.85],
-  chandigarh: [0.39, 0.29],
-  "dadra-daman-diu": [0.29, 0.55],
+  "tamil-nadu": [0.52, 0.85],
+  telangana: [0.49, 0.62],
+  tripura: [0.82, 0.51],
+  "uttar-pradesh": [0.51, 0.38],
+  uttarakhand: [0.49, 0.27],
+  "west-bengal": [0.7, 0.49],
+  "andaman-nicobar": [0.79, 0.88],
+  chandigarh: [0.39, 0.25],
+  "dadra-daman-diu": [0.28, 0.61],
   delhi: [0.43, 0.34],
-  "jammu-kashmir": [0.35, 0.18],
-  ladakh: [0.48, 0.16],
-  lakshadweep: [0.25, 0.82],
-  puducherry: [0.55, 0.82]
+  "jammu-kashmir": [0.35, 0.12],
+  ladakh: [0.5, 0.1],
+  lakshadweep: [0.24, 0.86],
+  puducherry: [0.58, 0.83]
 };
 
-const mapImage = new Image();
-mapImage.src = MAP_ASSET_URL;
+const INDIA_OUTLINE = [
+  [0.41, 0.04],
+  [0.34, 0.08],
+  [0.29, 0.16],
+  [0.34, 0.23],
+  [0.28, 0.27],
+  [0.25, 0.34],
+  [0.18, 0.42],
+  [0.21, 0.53],
+  [0.27, 0.57],
+  [0.29, 0.66],
+  [0.35, 0.76],
+  [0.42, 0.94],
+  [0.5, 0.99],
+  [0.56, 0.87],
+  [0.57, 0.75],
+  [0.65, 0.67],
+  [0.68, 0.57],
+  [0.75, 0.52],
+  [0.72, 0.45],
+  [0.66, 0.42],
+  [0.64, 0.35],
+  [0.57, 0.29],
+  [0.55, 0.19],
+  [0.48, 0.13],
+  [0.47, 0.06]
+];
+
+const NORTH_EAST_OUTLINE = [
+  [0.72, 0.34],
+  [0.82, 0.27],
+  [0.95, 0.27],
+  [0.98, 0.36],
+  [0.93, 0.47],
+  [0.89, 0.57],
+  [0.8, 0.52],
+  [0.77, 0.45],
+  [0.7, 0.43]
+];
+
+const REGION_BLOB_SIZE = {
+  "jammu-kashmir": [0.09, 0.055],
+  ladakh: [0.095, 0.05],
+  rajasthan: [0.12, 0.085],
+  gujarat: [0.1, 0.075],
+  "madhya-pradesh": [0.12, 0.085],
+  maharashtra: [0.12, 0.08],
+  "uttar-pradesh": [0.12, 0.065],
+  bihar: [0.09, 0.05],
+  karnataka: [0.09, 0.085],
+  "tamil-nadu": [0.085, 0.085],
+  "west-bengal": [0.07, 0.08],
+  "andaman-nicobar": [0.035, 0.08],
+  lakshadweep: [0.03, 0.055],
+  defaultState: [0.074, 0.056],
+  defaultUt: [0.035, 0.035]
+};
 
 const fallbackData = {
   opponentParties: [
@@ -92,11 +148,48 @@ const fallbackData = {
     { name: "Homework Mukti Morcha", color: "#f4c542", symbol: "kite" }
   ],
   randomEvents: [
-    { title: "Mega rally speaker boost", effect: "speedUp", copy: "Your rally van got louder. Speed up for a bit." },
-    { title: "Poster printer jam", effect: "speedDown", copy: "The printer needs a thappad. Speed drops for a bit." },
-    { title: "Tea stall debate won", effect: "claimBurst", copy: "Local voters liked the joke. Nearby influence grows." },
-    { title: "Sticker wave", effect: "claimLine", copy: "Volunteers pasted stickers across the route." },
-    { title: "Rain delay", effect: "neutral", copy: "Everyone waited under the same tent. No damage, only drama." }
+    {
+      title: "Mega rally speaker boost",
+      effect: "speedUp",
+      copy: "Your rally van got louder. Speed up for a bit.",
+      impact: { support: 3, power: 1, funds: -2 }
+    },
+    {
+      title: "Poster printer jam",
+      effect: "speedDown",
+      copy: "The printer needs a thappad. Speed drops for a bit.",
+      impact: { funds: -5, reputation: -1 }
+    },
+    {
+      title: "Tea stall debate won",
+      effect: "claimBurst",
+      copy: "Local voters liked the joke. Nearby influence grows.",
+      impact: { support: 5, reputation: 2 }
+    },
+    {
+      title: "Sticker wave",
+      effect: "claimLine",
+      copy: "Volunteers pasted stickers across the route.",
+      impact: { funds: -4, power: 2 }
+    },
+    {
+      title: "Rain delay",
+      effect: "neutral",
+      copy: "Everyone waited under the same tent. No damage, only drama.",
+      impact: { reputation: 1 }
+    },
+    {
+      title: "Meme slogan trending",
+      effect: "supportSwing",
+      copy: "The slogan became a reel caption. Public support jumps.",
+      impact: { support: 6, reputation: 1 }
+    },
+    {
+      title: "Donation box full",
+      effect: "fundsUp",
+      copy: "Small donors filled the campaign dabba.",
+      impact: { funds: 12, reputation: 1 }
+    }
   ],
   blockedTerms: [
     "bjp",
@@ -164,6 +257,36 @@ const fallbackData = {
   ]
 };
 
+const DECISIONS = {
+  teaRally: {
+    label: "Tea rally",
+    cost: { funds: 8 },
+    impact: { support: 7, reputation: 1 },
+    toast: "Tea rally clicked. Support is warming up."
+  },
+  posterWave: {
+    label: "Poster wave",
+    cost: { funds: 14 },
+    impact: { support: 2, power: 3 },
+    claimRadius: 3.6,
+    toast: "Poster wave rolled out. Nearby booths turn your color."
+  },
+  donorLunch: {
+    label: "Donor lunch",
+    cost: { reputation: 3 },
+    impact: { funds: 18, power: 2, support: -1 },
+    toast: "Donor lunch done. Funds up, public mood watches closely."
+  }
+};
+
+const DEFAULT_NETA = {
+  support: 42,
+  funds: 68,
+  power: 16,
+  reputation: 52,
+  decisionClock: 0
+};
+
 const canvas = document.querySelector("#gameCanvas");
 const ctx = canvas.getContext("2d");
 const setupModal = document.querySelector("#setupModal");
@@ -200,6 +323,12 @@ const activeRegionCopy = document.querySelector("#activeRegionCopy");
 const miniRegionGrid = document.querySelector("#miniRegionGrid");
 const regionGrid = document.querySelector("#regionGrid");
 const regionModalCopy = document.querySelector("#regionModalCopy");
+const publicSupportStat = document.querySelector("#publicSupportStat");
+const fundsStat = document.querySelector("#fundsStat");
+const powerStat = document.querySelector("#powerStat");
+const reputationStat = document.querySelector("#reputationStat");
+const mandateMood = document.querySelector("#mandateMood");
+const decisionButtons = document.querySelectorAll("[data-decision]");
 
 const state = {
   data: fallbackData,
@@ -226,9 +355,11 @@ const state = {
     completed: {},
     lastWonRegionId: null
   },
+  neta: { ...DEFAULT_NETA },
   keys: new Set(),
   lastTime: 0,
   timeLeft: ROUND_SECONDS,
+  roundElapsed: 0,
   eventClock: 12,
   boostClock: 0,
   speedMul: 1,
@@ -262,6 +393,79 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+function clampNetaValue(key, value) {
+  const max = key === "funds" ? 140 : 100;
+  return clamp(Math.round(Number(value) || 0), 0, max);
+}
+
+function hydrateNeta(raw) {
+  return {
+    support: clampNetaValue("support", raw?.support ?? DEFAULT_NETA.support),
+    funds: clampNetaValue("funds", raw?.funds ?? DEFAULT_NETA.funds),
+    power: clampNetaValue("power", raw?.power ?? DEFAULT_NETA.power),
+    reputation: clampNetaValue("reputation", raw?.reputation ?? DEFAULT_NETA.reputation),
+    decisionClock: 0
+  };
+}
+
+function mandateScore() {
+  const supportBonus = (state.neta.support - 50) * 0.14;
+  const repBonus = (state.neta.reputation - 50) * 0.1;
+  const powerBonus = state.neta.power * 0.04;
+  return clamp(Math.round(state.influence + supportBonus + repBonus + powerBonus), 0, 100);
+}
+
+function mandateMoodLabel() {
+  const score = mandateScore();
+  if (score >= 72) return "Wave";
+  if (score >= 55) return "Mandate";
+  if (score >= 42) return "Fight";
+  return "Tight";
+}
+
+function canAfford(cost = {}) {
+  return Object.entries(cost).every(([key, value]) => state.neta[key] >= value);
+}
+
+function updateDecisionButtons() {
+  decisionButtons.forEach((button) => {
+    const decision = DECISIONS[button.dataset.decision];
+    const unavailable = !decision || state.mode !== "playing" || state.neta.decisionClock > 0 || !canAfford(decision.cost);
+    button.disabled = unavailable;
+  });
+}
+
+function updateNetaPanel() {
+  if (!publicSupportStat) return;
+  publicSupportStat.textContent = state.neta.support;
+  fundsStat.textContent = state.neta.funds;
+  powerStat.textContent = state.neta.power;
+  reputationStat.textContent = state.neta.reputation;
+  mandateMood.textContent = `${mandateMoodLabel()} ${mandateScore()}`;
+  updateDecisionButtons();
+}
+
+function adjustNeta(delta = {}, save = true) {
+  for (const key of ["support", "funds", "power", "reputation"]) {
+    if (typeof delta[key] === "number") {
+      state.neta[key] = clampNetaValue(key, state.neta[key] + delta[key]);
+    }
+  }
+  updateNetaPanel();
+  if (save) saveCampaignProgress();
+}
+
+function combineResourceChanges(...changes) {
+  const combined = {};
+  for (const change of changes) {
+    if (!change) continue;
+    for (const [key, value] of Object.entries(change)) {
+      combined[key] = (combined[key] || 0) + value;
+    }
+  }
+  return combined;
+}
+
 function normalizeName(value) {
   return value
     .toLowerCase()
@@ -276,7 +480,7 @@ function validateSafeText(value, label, minLength) {
     return `${label} thoda bada rakho.`;
   }
   if (!/^[a-z0-9 ]+$/.test(normalized)) {
-    return "Abhi prototype me English letters, numbers, aur spaces use karo.";
+    return "English letters, numbers, aur spaces use karo.";
   }
   if (/(.)\1{4,}/.test(normalized.replace(/\s+/g, ""))) {
     return `${label} me repeated spam letters kam rakho.`;
@@ -382,10 +586,12 @@ function loadCampaignProgress() {
     state.campaign.activeRegionId = parsed.activeRegionId || null;
     state.campaign.completed = parsed.completed && typeof parsed.completed === "object" ? parsed.completed : {};
     state.campaign.lastWonRegionId = parsed.lastWonRegionId || null;
+    state.neta = hydrateNeta(parsed.neta);
   } catch {
     state.campaign.activeRegionId = null;
     state.campaign.completed = {};
     state.campaign.lastWonRegionId = null;
+    state.neta = hydrateNeta();
   }
 }
 
@@ -393,7 +599,13 @@ function saveCampaignProgress() {
   const payload = {
     activeRegionId: state.campaign.activeRegionId,
     completed: state.campaign.completed,
-    lastWonRegionId: state.campaign.lastWonRegionId
+    lastWonRegionId: state.campaign.lastWonRegionId,
+    neta: {
+      support: state.neta.support,
+      funds: state.neta.funds,
+      power: state.neta.power,
+      reputation: state.neta.reputation
+    }
   };
   localStorage.setItem(PROGRESS_KEY, JSON.stringify(payload));
 }
@@ -429,6 +641,7 @@ function renderRegionHub() {
     button.addEventListener("click", () => showRegionPrompt(region.id));
     regionGrid.append(button);
   }
+  updateNetaPanel();
 }
 
 function openRegionModal() {
@@ -489,6 +702,9 @@ function markActiveRegionWon() {
   state.campaign.completed[activeRegion.id] = {
     wonAt: Date.now(),
     influence: state.influence,
+    mandateScore: mandateScore(),
+    support: state.neta.support,
+    reputation: state.neta.reputation,
     party: state.party.name
   };
   state.campaign.lastWonRegionId = activeRegion.id;
@@ -616,16 +832,20 @@ function claimRect(ownerId, cx, cy, w, h) {
 
 function claimDisk(ownerId, cx, cy, radius) {
   const r2 = radius * radius;
+  const changed = [];
   for (let y = Math.max(1, Math.floor(cy - radius)); y <= Math.min(ROWS - 2, Math.ceil(cy + radius)); y += 1) {
     for (let x = Math.max(1, Math.floor(cx - radius)); x <= Math.min(COLS - 2, Math.ceil(cx + radius)); x += 1) {
       const dx = x - cx;
       const dy = y - cy;
       if (dx * dx + dy * dy <= r2 && isMaskedCell(x, y)) {
-        state.owner[index(x, y)] = ownerId;
-        state.trail[index(x, y)] = 0;
+        const idx = index(x, y);
+        if (state.owner[idx] !== ownerId) changed.push(idx);
+        state.owner[idx] = ownerId;
+        state.trail[idx] = 0;
       }
     }
   }
+  return changed;
 }
 
 function createAgent(ownerId, name, color, symbol, x, y) {
@@ -728,6 +948,7 @@ function convertOpponent(ownerId, cutX, cutY) {
   }
   while (state.supporters.length > 42) state.supporters.shift();
   state.supportersConverted += joined;
+  adjustNeta({ support: Math.ceil(joined / 2), power: 4, reputation: 2 });
   addConversionBurst(joinPoint.x, joinPoint.y, opponent.color);
   addFeed(`${opponent.name} joined your rally. +${joined} supporters.`);
   showToast(`${opponent.name} converted. Supporters joined.`);
@@ -756,10 +977,12 @@ function resetGame() {
   state.supportersConverted = 0;
   state.keys.clear();
   state.timeLeft = ROUND_SECONDS;
+  state.roundElapsed = 0;
   state.eventClock = 8;
   state.boostClock = 0;
   state.speedMul = 1;
   state.influence = 0;
+  state.neta.decisionClock = 0;
   feedList.innerHTML = "";
 
   claimDisk(1, state.player.x, state.player.y, 3.8);
@@ -777,8 +1000,10 @@ function resetGame() {
   });
 
   addFeed(`${activeRegion ? activeRegion.name : "District"} campaign office opened.`);
+  addFeed(`Neta meter: support ${state.neta.support}, funds ${state.neta.funds}, reputation ${state.neta.reputation}.`);
   addFeed("Volunteers are ready near the booths.");
   updateStats();
+  updateNetaPanel();
 }
 
 function startGame() {
@@ -928,10 +1153,16 @@ function closeLoop(agent) {
   }
 
   if (agent.ownerId === 1 && agent.trailCells.length + gained > 5) {
-    addFeed(`${state.party.name} won ${agent.trailCells.length + gained} new booths.`);
+    const boothGain = agent.trailCells.length + gained;
+    const supportGain = clamp(Math.floor(boothGain / 18), 1, 8);
+    const fundsGain = clamp(Math.floor(boothGain / 24), 0, 7);
+    const powerGain = boothGain > 34 ? 2 : 1;
+    adjustNeta({ support: supportGain, funds: fundsGain, power: powerGain }, false);
+    addFeed(`${state.party.name} won ${boothGain} new booths. Support +${supportGain}.`);
     showToast("Campaign loop closed. Influence gained.");
     addClaimBurst(claimedCells, state.party.color);
     playSound("loop");
+    saveCampaignProgress();
   }
   agent.trailCells = [];
   agent.trailPoints = [];
@@ -1021,7 +1252,8 @@ function triggerEvent() {
     state.speedMul = 0.82;
     state.boostClock = 5;
   } else if (event.effect === "claimBurst") {
-    claimDisk(1, state.player.x, state.player.y, 3.8);
+    const cells = claimDisk(1, state.player.x, state.player.y, 3.8);
+    addClaimBurst(cells, state.party.color);
   } else if (event.effect === "claimLine") {
     for (const idx of state.player.trailCells.slice(-16)) {
       state.owner[idx] = 1;
@@ -1029,6 +1261,9 @@ function triggerEvent() {
     }
     state.player.trailCells = [];
     state.player.trailPoints = [];
+  }
+  if (event.impact) {
+    adjustNeta(event.impact);
   }
 }
 
@@ -1110,13 +1345,15 @@ function updateStats() {
   regionStat.textContent = activeRegion ? activeRegion.name : "Choose State";
   influenceStat.textContent = `${state.influence}%`;
   timeStat.textContent = `${Math.ceil(state.timeLeft)}s`;
+  updateNetaPanel();
 }
 
 function finishRound(won, reason) {
   if (state.mode !== "playing") return;
   state.mode = "result";
   clearTrail(1);
-  const victory = won || state.influence >= 45;
+  const finalScore = mandateScore();
+  const victory = Boolean(won);
   const activeRegion = getActiveRegion();
   const wonRegion = victory ? markActiveRegionWon() : null;
   const regionName = (wonRegion || activeRegion)?.name || "district";
@@ -1127,9 +1364,9 @@ function finishRound(won, reason) {
     ? `${state.party.name} wins ${regionName} mandate`
     : `${state.party.name} gets a ${regionName} recount`;
   const copy = victory
-    ? `${state.influence}% influence in ${regionName}.${supporterLine}`
-    : `${reason} Final influence: ${state.influence}% in ${regionName}. New strategy meeting starts now.`;
-  state.shareText = `NETA JI: ${state.party.name} scored ${state.influence}% influence in ${regionName}. ${state.party.slogan}`;
+    ? `${state.influence}% influence, ${state.neta.support} support, mandate score ${finalScore} in ${regionName}.${supporterLine}`
+    : `${reason} Final mandate score: ${finalScore} in ${regionName}. Support ${state.neta.support}, reputation ${state.neta.reputation}. New strategy meeting starts now.`;
+  state.shareText = `NETA JI: ${state.party.name} scored ${finalScore} mandate in ${regionName}. ${state.party.slogan}`;
   resultHeadline.textContent = headline;
   resultCopy.textContent = copy;
   nextRegionBtn.hidden = !victory;
@@ -1148,6 +1385,7 @@ function update(dt) {
   if (state.mode !== "playing") return;
   applyKeyboardDirection();
   state.timeLeft -= dt;
+  state.roundElapsed += dt;
   state.eventClock -= dt;
   state.toastClock -= dt;
   if (state.toastClock <= 0) toast.classList.remove("is-visible");
@@ -1155,6 +1393,9 @@ function update(dt) {
   if (state.boostClock > 0) {
     state.boostClock -= dt;
     if (state.boostClock <= 0) state.speedMul = 1;
+  }
+  if (state.neta.decisionClock > 0) {
+    state.neta.decisionClock = Math.max(0, state.neta.decisionClock - dt);
   }
 
   updateAgent(state.player, dt);
@@ -1170,10 +1411,12 @@ function update(dt) {
   }
 
   updateStats();
-  if (state.influence >= 55) {
+  const score = mandateScore();
+  const earlyEnough = state.roundElapsed >= MIN_WIN_SECONDS;
+  if (earlyEnough && state.influence >= 52 && score >= 55) {
     finishRound(true, "District mandate reached.");
   } else if (state.timeLeft <= 0) {
-    finishRound(state.influence >= 35, "The campaign clock ended.");
+    finishRound(state.influence >= 30 && score >= 44, "The campaign clock ended.");
   }
 }
 
@@ -1198,6 +1441,116 @@ function getRegionMapPoint(region, rect = state.mapRect) {
     x: rect.x + position[0] * rect.width,
     y: rect.y + position[1] * rect.height
   };
+}
+
+function getRegionBlobSize(region) {
+  return (
+    REGION_BLOB_SIZE[region.id] ||
+    (region.type === "UT" ? REGION_BLOB_SIZE.defaultUt : REGION_BLOB_SIZE.defaultState)
+  );
+}
+
+function drawNormalizedPath(points, rect) {
+  ctx.beginPath();
+  points.forEach(([px, py], indexValue) => {
+    const x = rect.x + px * rect.width;
+    const y = rect.y + py * rect.height;
+    if (indexValue === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+}
+
+function drawCartoonIndiaBase(rect) {
+  ctx.save();
+  ctx.shadowColor = "rgba(21, 21, 21, 0.2)";
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 5;
+  ctx.shadowOffsetY = 6;
+  ctx.fillStyle = "#f6e7bf";
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = Math.max(4, rect.width * 0.014);
+  ctx.lineJoin = "round";
+  drawNormalizedPath(INDIA_OUTLINE, rect);
+  ctx.fill();
+  ctx.stroke();
+  drawNormalizedPath(NORTH_EAST_OUTLINE, rect);
+  ctx.fill();
+  ctx.stroke();
+  ctx.shadowColor = "transparent";
+  ctx.lineWidth = Math.max(3, rect.width * 0.01);
+  ctx.strokeStyle = "#151515";
+  ctx.beginPath();
+  ctx.moveTo(rect.x + rect.width * 0.64, rect.y + rect.height * 0.38);
+  ctx.quadraticCurveTo(
+    rect.x + rect.width * 0.72,
+    rect.y + rect.height * 0.33,
+    rect.x + rect.width * 0.79,
+    rect.y + rect.height * 0.37
+  );
+  ctx.stroke();
+
+  const islands = [
+    [0.24, 0.83, 3.8],
+    [0.23, 0.87, 3],
+    [0.25, 0.9, 2.8],
+    [0.78, 0.79, 3.4],
+    [0.79, 0.84, 3.2],
+    [0.8, 0.9, 3],
+    [0.81, 0.95, 2.7]
+  ];
+  ctx.fillStyle = "#f6e7bf";
+  for (const [px, py, radius] of islands) {
+    ctx.beginPath();
+    ctx.arc(rect.x + px * rect.width, rect.y + py * rect.height, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawRegionBlob(region, fill, options = {}) {
+  const rect = state.mapRect;
+  const point = getRegionMapPoint(region, rect);
+  const [rxNorm, ryNorm] = getRegionBlobSize(region);
+  const rx = rect.width * rxNorm;
+  const ry = rect.height * ryNorm;
+  const seed = hashText(region.id);
+  const sides = region.type === "UT" ? 8 : 11;
+
+  ctx.save();
+  ctx.fillStyle = fill;
+  ctx.strokeStyle = options.pending ? "#151515" : "rgba(21, 21, 21, 0.74)";
+  ctx.lineWidth = options.pending ? 3 : 1.7;
+  ctx.lineJoin = "round";
+
+  if (region.id === "andaman-nicobar" || region.id === "lakshadweep") {
+    const dots = region.id === "andaman-nicobar" ? 5 : 4;
+    for (let i = 0; i < dots; i += 1) {
+      const y = point.y - ry * 0.8 + i * (ry * 0.42);
+      const x = point.x + Math.sin(i * 1.7 + seed) * rx * 0.35;
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(3.2, rx * (0.28 - i * 0.01)), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.restore();
+    return;
+  }
+
+  ctx.beginPath();
+  for (let i = 0; i < sides; i += 1) {
+    const angle = (Math.PI * 2 * i) / sides - Math.PI / 2;
+    const wobble = 0.82 + seededNoise(seed, i) * 0.32;
+    const x = point.x + Math.cos(angle) * rx * wobble;
+    const y = point.y + Math.sin(angle) * ry * (0.82 + seededNoise(seed, i + 41) * 0.28);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
 }
 
 function drawFlag(x, y, color, scale = 1) {
@@ -1226,27 +1579,10 @@ function drawFlag(x, y, color, scale = 1) {
 }
 
 function drawWonPatch(region, rect) {
-  const point = getRegionMapPoint(region, rect);
-  const seed = hashText(region.id);
-  const radius = region.type === "UT" ? 15 : 24;
-  ctx.save();
-  ctx.globalAlpha = 0.72;
-  ctx.fillStyle = state.party.color;
-  ctx.strokeStyle = "rgba(21, 21, 21, 0.55)";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  for (let i = 0; i < 12; i += 1) {
-    const angle = (Math.PI * 2 * i) / 12;
-    const wobble = 0.75 + seededNoise(seed, i) * 0.5;
-    const x = point.x + Math.cos(angle) * radius * wobble;
-    const y = point.y + Math.sin(angle) * radius * 0.72 * wobble;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-  ctx.restore();
+  const previousRect = state.mapRect;
+  state.mapRect = rect;
+  drawRegionBlob(region, state.party.color);
+  state.mapRect = previousRect;
 }
 
 function drawMapYatra() {
@@ -1289,38 +1625,34 @@ function drawMapYatra() {
 }
 
 function drawMapHome(width, height) {
-  ctx.fillStyle = "#d8edf7";
+  ctx.fillStyle = "#bfe7ff";
   ctx.fillRect(0, 0, width, height);
-  const imgW = mapImage.naturalWidth || 235;
-  const imgH = mapImage.naturalHeight || 244;
-  const scale = Math.min((width * 0.95) / imgW, (height * 0.9) / imgH);
-  const mapW = imgW * scale;
-  const mapH = imgH * scale;
+  ctx.fillStyle = "rgba(255, 255, 255, 0.22)";
+  for (let i = -height; i < width; i += 34) {
+    ctx.fillRect(i, 0, 10, height);
+  }
+
+  const availableH = Math.max(240, height - 86);
+  const availableW = Math.max(260, width - 28);
+  const mapH = Math.min(availableH, availableW / MAP_ASPECT);
+  const mapW = mapH * MAP_ASPECT;
   const x = (width - mapW) / 2;
-  const y = Math.max(8, (height - mapH) / 2 - 4);
+  const y = Math.max(10, (height - mapH) / 2 - 18);
   state.mapRect = { x, y, width: mapW, height: mapH };
 
   ctx.save();
-  ctx.fillStyle = "#fffdf7";
-  ctx.fillRect(x - 8, y - 8, mapW + 16, mapH + 16);
-  if (mapImage.complete && mapImage.naturalWidth) {
-    ctx.filter = "contrast(1.18) saturate(1.06)";
-    ctx.drawImage(mapImage, x, y, mapW, mapH);
-    ctx.filter = "none";
-  } else {
-    ctx.fillStyle = "#f7f4ec";
-    ctx.fillRect(x, y, mapW, mapH);
-    ctx.fillStyle = "#151515";
-    ctx.font = "900 18px ui-sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("India Map", x + mapW / 2, y + mapH / 2);
-  }
-  ctx.strokeStyle = "#151515";
-  ctx.lineWidth = 4;
-  ctx.strokeRect(x - 3, y - 3, mapW + 6, mapH + 6);
+  ctx.fillStyle = "#7fcf94";
+  ctx.beginPath();
+  ctx.roundRect(x - 14, y - 14, mapW + 28, mapH + 28, 18);
+  ctx.fill();
+  drawCartoonIndiaBase(state.mapRect);
 
   for (const region of REGIONS) {
-    if (state.campaign.completed[region.id]) drawWonPatch(region, state.mapRect);
+    const won = Boolean(state.campaign.completed[region.id]);
+    const pending = state.campaign.pendingRegionId === region.id;
+    const active = state.campaign.activeRegionId === region.id;
+    const fill = won ? state.party.color : pending ? "#ffd166" : active ? "#13a99a" : "#fffdf7";
+    drawRegionBlob(region, fill, { pending });
   }
 
   drawMapYatra();
@@ -1332,18 +1664,22 @@ function drawMapHome(width, height) {
     if (pending) {
       ctx.fillStyle = "rgba(244, 197, 66, 0.5)";
       ctx.beginPath();
-      ctx.arc(point.x + 8, point.y + 3, 18, 0, Math.PI * 2);
+      ctx.arc(point.x + 8, point.y + 3, 20, 0, Math.PI * 2);
       ctx.fill();
     }
-    drawFlag(point.x, point.y, won ? "#d92d20" : "#151515", region.type === "UT" ? 0.65 : 0.82);
+    drawFlag(point.x, point.y, won ? "#d92d20" : pending ? "#ffd166" : "#151515", region.type === "UT" ? 0.5 : 0.66);
   }
 
   ctx.fillStyle = "rgba(21, 21, 21, 0.88)";
-  ctx.fillRect(14, height - 62, Math.min(width - 28, 560), 44);
+  ctx.beginPath();
+  ctx.roundRect(12, height - 66, Math.min(width - 24, 600), 48, 10);
+  ctx.fill();
   ctx.fillStyle = "#fffdf7";
-  ctx.font = "900 14px ui-sans-serif";
+  ctx.font = `900 ${width < 430 ? 12 : 14}px ui-sans-serif`;
   ctx.textAlign = "left";
-  ctx.fillText("Touch a black flag to start election. Red flags are won.", 28, height - 35);
+  const pendingRegion = REGIONS.find((region) => region.id === state.campaign.pendingRegionId);
+  const guide = pendingRegion ? `${pendingRegion.name} selected. OK dabao to arena khulega.` : "Black flag touch karo. Red flag already won hai.";
+  ctx.fillText(guide, 26, height - 38, width - 52);
   ctx.restore();
 }
 
@@ -1379,6 +1715,26 @@ function drawRegionArena() {
     ctx.textAlign = "center";
     ctx.fillText(activeRegion.name, (COLS / 2) * s, 4.4 * s);
   }
+  ctx.restore();
+}
+
+function drawNetaHud(width) {
+  if (state.mode !== "playing") return;
+  const label = `Mandate ${mandateScore()}  S ${state.neta.support}  F ${state.neta.funds}  P ${state.neta.power}  R ${state.neta.reputation}`;
+  const boxW = Math.min(width - 20, 390);
+  ctx.save();
+  ctx.fillStyle = "rgba(21, 21, 21, 0.86)";
+  ctx.strokeStyle = "rgba(255, 253, 247, 0.72)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(10, 10, boxW, 30, 8);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#fffdf7";
+  ctx.font = `900 ${width < 430 ? 11 : 12}px ui-sans-serif`;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillText(label, 22, 25, boxW - 24);
   ctx.restore();
 }
 
@@ -1769,6 +2125,18 @@ function drawCampaignProps() {
       ctx.font = `900 ${Math.max(7, s * 0.52)}px ui-sans-serif`;
       ctx.textAlign = "center";
       ctx.fillText("RALLY", px + s * 0.1, py + s * 0.25);
+      const crowdCount = state.neta.support > 70 ? 7 : state.neta.support > 52 ? 5 : 3;
+      for (let i = 0; i < crowdCount; i += 1) {
+        const row = i % 2;
+        const crowdX = px - s * 2.4 + i * s * 0.82;
+        const crowdY = py + s * (2.55 + row * 0.55);
+        drawMiniPerson(crowdX, crowdY, s * 1.06, {
+          color: i % 3 === 0 ? state.party.color : "#fffdf7",
+          accent: i % 3 === 0 ? "#fffdf7" : state.party.color,
+          phase: i * 0.7,
+          flag: i % 4 === 1
+        });
+      }
     } else if (prop.type === "booth") {
       ctx.fillStyle = "#fffdf7";
       ctx.strokeStyle = "#151515";
@@ -1781,6 +2149,14 @@ function drawCampaignProps() {
       ctx.font = `900 ${Math.max(7, s * 0.45)}px ui-sans-serif`;
       ctx.textAlign = "left";
       ctx.fillText("BOOTH", px - s * 0.42, py + s * 0.2);
+      if (state.neta.power > 24) {
+        drawMiniPerson(px + s * 1.65, py + s * 0.55, s * 0.95, {
+          color: state.party.color,
+          accent: "#fffdf7",
+          phase: prop.x,
+          flag: true
+        });
+      }
     } else {
       drawTinyPoster(px - s * 1.2, py - s * 0.6, s, state.party.color, "VOTE");
     }
@@ -1849,6 +2225,7 @@ function draw() {
   for (const opponent of state.opponents) drawAgent(opponent, false);
   drawSupporters();
   if (state.player) drawAgent(state.player, true);
+  drawNetaHud(rect.width);
 }
 
 function loop(timestamp) {
@@ -1869,14 +2246,19 @@ function canvasPointFromEvent(event) {
 
 function pickRegionFromMap(point) {
   let best = null;
-  let bestDistance = Infinity;
+  let bestScore = Infinity;
   for (const region of REGIONS) {
     const flag = getRegionMapPoint(region);
-    const distance = Math.hypot(point.x - flag.x, point.y - flag.y);
-    const threshold = region.type === "UT" ? 24 : 30;
-    if (distance < threshold && distance < bestDistance) {
+    const [rxNorm, ryNorm] = getRegionBlobSize(region);
+    const rx = Math.max(15, state.mapRect.width * rxNorm * 1.25);
+    const ry = Math.max(15, state.mapRect.height * ryNorm * 1.25);
+    const dx = (point.x - flag.x) / rx;
+    const dy = (point.y - flag.y) / ry;
+    const score = Math.hypot(dx, dy);
+    const fingerRadius = region.type === "UT" ? 1.35 : 1.05;
+    if (score < fingerRadius && score < bestScore) {
       best = region;
-      bestDistance = distance;
+      bestScore = score;
     }
   }
   return best;
@@ -1908,6 +2290,36 @@ function pointerToDirection(event) {
   } else {
     setDirection(state.player, dy > 0 ? "down" : "up");
   }
+}
+
+function useDecision(type) {
+  const decision = DECISIONS[type];
+  if (!decision || state.mode !== "playing") return;
+  if (state.neta.decisionClock > 0) {
+    showToast("Campaign team is still moving.");
+    return;
+  }
+  if (!canAfford(decision.cost)) {
+    showToast("Neta meter low for this decision.");
+    return;
+  }
+  ensureAudio();
+  const costDelta = {};
+  for (const [key, value] of Object.entries(decision.cost || {})) {
+    costDelta[key] = -value;
+  }
+  adjustNeta(combineResourceChanges(costDelta, decision.impact));
+  state.neta.decisionClock = 3.8;
+  if (decision.claimRadius && state.player) {
+    const cells = claimDisk(1, state.player.x, state.player.y, decision.claimRadius);
+    addClaimBurst(cells, state.party.color);
+    updateStats();
+  }
+  addFeed(`${decision.label}: support ${state.neta.support}, funds ${state.neta.funds}, rep ${state.neta.reputation}.`);
+  showToast(decision.toast);
+  playSound(type === "donorLunch" ? "event" : "rally");
+  saveCampaignProgress();
+  updateNetaPanel();
 }
 
 function bindEvents() {
@@ -1945,6 +2357,9 @@ function bindEvents() {
   });
   document.querySelectorAll(".dir-btn").forEach((button) => {
     button.addEventListener("click", () => setDirection(state.player, button.dataset.dir));
+  });
+  decisionButtons.forEach((button) => {
+    button.addEventListener("click", () => useDecision(button.dataset.decision));
   });
   boostBtn.addEventListener("click", useRallyBoost);
   startBtn.addEventListener("click", startGame);

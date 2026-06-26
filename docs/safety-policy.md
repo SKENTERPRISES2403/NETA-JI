@@ -44,7 +44,7 @@ Avoid:
 
 ## Moderation Notes
 
-The current prototype uses a strict local blocked-term list for party names. This is not enough for production. Before public release, add:
+The current build uses a strict local blocked-term list for party names. This is not enough for production. Before public release, add:
 
 - Server-side moderation for shared names
 - Better multilingual filtering
@@ -52,4 +52,3 @@ The current prototype uses a strict local blocked-term list for party names. Thi
 - Report button
 - Review queue for viral/shared cards
 - Store-safe disclaimer
-

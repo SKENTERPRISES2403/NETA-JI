@@ -20,27 +20,65 @@
     {
       "title": "Mega rally speaker boost",
       "effect": "speedUp",
-      "copy": "Your rally van got louder. Speed up for a bit."
+      "copy": "Your rally van got louder. Speed up for a bit.",
+      "impact": {
+        "support": 3,
+        "power": 1,
+        "funds": -2
+      }
     },
     {
       "title": "Poster printer jam",
       "effect": "speedDown",
-      "copy": "The printer needs a thappad. Speed drops for a bit."
+      "copy": "The printer needs a thappad. Speed drops for a bit.",
+      "impact": {
+        "funds": -5,
+        "reputation": -1
+      }
     },
     {
       "title": "Tea stall debate won",
       "effect": "claimBurst",
-      "copy": "Local voters liked the joke. Nearby influence grows."
+      "copy": "Local voters liked the joke. Nearby influence grows.",
+      "impact": {
+        "support": 5,
+        "reputation": 2
+      }
     },
     {
       "title": "Sticker wave",
       "effect": "claimLine",
-      "copy": "Volunteers pasted stickers across the route."
+      "copy": "Volunteers pasted stickers across the route.",
+      "impact": {
+        "funds": -4,
+        "power": 2
+      }
     },
     {
       "title": "Rain delay",
       "effect": "neutral",
-      "copy": "Everyone waited under the same tent. No damage, only drama."
+      "copy": "Everyone waited under the same tent. No damage, only drama.",
+      "impact": {
+        "reputation": 1
+      }
+    },
+    {
+      "title": "Meme slogan trending",
+      "effect": "supportSwing",
+      "copy": "The slogan became a reel caption. Public support jumps.",
+      "impact": {
+        "support": 6,
+        "reputation": 1
+      }
+    },
+    {
+      "title": "Donation box full",
+      "effect": "fundsUp",
+      "copy": "Small donors filled the campaign dabba.",
+      "impact": {
+        "funds": 12,
+        "reputation": 1
+      }
     }
   ],
   "blockedTerms": [
