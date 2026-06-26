@@ -1387,8 +1387,8 @@ function finishRound(won, reason) {
   if (victory) {
     addFeed(`${regionName} mandate won. Red flag raised on the India map.`);
     playSound("win");
-    openRegionModal();
-    showToast(`${regionName} won. Choose the next black flag.`);
+    resultModal.classList.add("is-open");
+    showToast(`${regionName} won. Red flag ready on the India map.`);
     return;
   }
   playSound("lose");
@@ -1916,6 +1916,54 @@ function drawTinyFlag(x, y, s, color) {
   ctx.restore();
 }
 
+function drawCampaignVan(cx, cy, size, color, label = "") {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.fillStyle = "rgba(21, 21, 21, 0.18)";
+  ctx.beginPath();
+  ctx.ellipse(0, size * 0.5, size * 1.05, size * 0.24, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#fffdf7";
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = Math.max(1.2, size * 0.08);
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  ctx.roundRect(-size * 1.25, -size * 0.48, size * 2.5, size * 1.02, size * 0.16);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = color;
+  ctx.fillRect(-size * 1.15, -size * 0.38, size * 0.48, size * 0.8);
+  ctx.fillRect(size * 0.18, -size * 0.38, size * 0.96, size * 0.8);
+  ctx.strokeRect(-size * 1.15, -size * 0.38, size * 0.48, size * 0.8);
+  ctx.strokeRect(size * 0.18, -size * 0.38, size * 0.96, size * 0.8);
+
+  ctx.fillStyle = "#bfe7ff";
+  ctx.fillRect(-size * 0.54, -size * 0.34, size * 0.58, size * 0.42);
+  ctx.strokeRect(-size * 0.54, -size * 0.34, size * 0.58, size * 0.42);
+
+  ctx.fillStyle = "#151515";
+  ctx.beginPath();
+  ctx.arc(-size * 0.76, size * 0.55, size * 0.22, 0, Math.PI * 2);
+  ctx.arc(size * 0.76, size * 0.55, size * 0.22, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#fffdf7";
+  ctx.beginPath();
+  ctx.arc(-size * 0.76, size * 0.55, size * 0.08, 0, Math.PI * 2);
+  ctx.arc(size * 0.76, size * 0.55, size * 0.08, 0, Math.PI * 2);
+  ctx.fill();
+
+  drawTinyFlag(size * 0.95, -size * 0.78, size * 0.45, color);
+  if (label) {
+    ctx.fillStyle = "#151515";
+    ctx.font = `900 ${Math.max(6, size * 0.28)}px ui-sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText(label.slice(0, 5).toUpperCase(), -size * 0.18, size * 0.28);
+  }
+  ctx.restore();
+}
+
 function drawMiniPerson(cx, cy, size, options = {}) {
   const color = options.color || state.party.color;
   const accent = options.accent || "#fffdf7";
@@ -2096,6 +2144,55 @@ function drawTrailPaths() {
   ctx.globalAlpha = 1;
 }
 
+function drawCampaignRoads() {
+  if (state.mode !== "playing") return;
+  ctx.save();
+  ctx.translate(state.offsetX, state.offsetY);
+  const s = state.cellSize;
+  const route = [
+    findMaskedSpawn(10, 11),
+    findMaskedSpawn(22, 16),
+    findMaskedSpawn(35, 12),
+    findMaskedSpawn(49, 21),
+    findMaskedSpawn(41, 31),
+    findMaskedSpawn(20, 29),
+    findMaskedSpawn(10, 20)
+  ];
+
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = "rgba(117, 103, 82, 0.36)";
+  ctx.lineWidth = Math.max(5, s * 1.05);
+  ctx.beginPath();
+  route.forEach((point, i) => {
+    const x = (point.x + 0.5) * s;
+    const y = (point.y + 0.5) * s;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  ctx.setLineDash([s * 0.85, s * 0.75]);
+  ctx.strokeStyle = "rgba(255, 253, 247, 0.7)";
+  ctx.lineWidth = Math.max(1.2, s * 0.12);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  if (state.roundStarted) {
+    const segmentCount = route.length - 1;
+    const travel = ((state.roundElapsed * 0.18) % 1) * segmentCount;
+    const segment = Math.min(segmentCount - 1, Math.floor(travel));
+    const t = travel - segment;
+    const from = route[segment];
+    const to = route[segment + 1];
+    const x = (from.x + (to.x - from.x) * t + 0.5) * s;
+    const y = (from.y + (to.y - from.y) * t + 0.5) * s;
+    drawCampaignVan(x, y, s * 1.22, state.party.color, state.party.name);
+  }
+
+  ctx.restore();
+}
+
 function drawSupporters() {
   if (state.supporters.length === 0) return;
   ctx.save();
@@ -2218,8 +2315,22 @@ function drawCampaignProps() {
           flag: true
         });
       }
+      const queueCount = state.neta.support > 64 ? 5 : state.neta.support > 48 ? 4 : 3;
+      for (let i = 0; i < queueCount; i += 1) {
+        drawMiniPerson(px - s * (2.15 + i * 0.68), py + s * (0.58 + (i % 2) * 0.12), s * 0.72, {
+          color: i % 2 ? "#fffdf7" : state.party.color,
+          accent: i % 2 ? state.party.color : "#fffdf7",
+          phase: i * 0.9 + prop.y
+        });
+      }
     } else {
       drawTinyPoster(px - s * 1.2, py - s * 0.6, s, state.party.color, "VOTE");
+      drawMiniPerson(px + s * 1.85, py + s * 0.85, s * 0.82, {
+        color: state.party.color,
+        accent: "#fffdf7",
+        phase: prop.x + prop.y,
+        flag: true
+      });
     }
   }
   ctx.restore();
@@ -2277,6 +2388,7 @@ function draw() {
   }
   drawGridBackground(rect.width, rect.height);
   drawRegionArena();
+  drawCampaignRoads();
   drawTerritory();
   drawCampaignProps();
   drawClaimBursts();

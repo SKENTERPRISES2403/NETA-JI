@@ -549,6 +549,10 @@ input[type="color"] {
 
 .result-card {
   text-align: center;
+  background:
+    linear-gradient(135deg, rgba(255, 209, 102, 0.24), transparent 38%),
+    linear-gradient(315deg, rgba(14, 159, 138, 0.18), transparent 42%),
+    var(--white);
 }
 
 .result-card p {
@@ -560,6 +564,7 @@ input[type="color"] {
   height: 150px;
   margin: 18px auto 8px;
   position: relative;
+  filter: drop-shadow(0 7px 0 rgba(21, 21, 21, 0.12));
 }
 
 .leader-head,
@@ -585,7 +590,7 @@ input[type="color"] {
   height: 82px;
   border: 3px solid var(--ink);
   border-radius: 8px 8px 18px 18px;
-  background: var(--white);
+  background: linear-gradient(90deg, var(--white) 0 48%, var(--orange) 48% 54%, var(--white) 54%);
 }
 
 .leader-hand {
@@ -675,6 +680,11 @@ input[type="color"] {
 
   .controls {
     display: grid;
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    background: rgba(255, 253, 247, 0.92);
+    backdrop-filter: blur(8px);
   }
 
   body[data-mode="map"] .controls,
@@ -694,6 +704,15 @@ input[type="color"] {
   .stats span {
     padding: 7px 8px;
     font-size: 0.78rem;
+  }
+
+  .dir-btn {
+    width: 64px;
+    height: 52px;
+  }
+
+  .boost-btn {
+    min-width: 104px;
   }
 }
 

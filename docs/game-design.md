@@ -67,6 +67,7 @@ Avoid these words in user-facing UI:
 - Namaste leader result card
 - Breaking poster news headline
 - Short share text
+- Campaign van and booth queues for reel-friendly movement
 - Future: 10-second replay export
 
 ## Data Plan
