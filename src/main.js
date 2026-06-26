@@ -360,6 +360,7 @@ const state = {
   lastTime: 0,
   timeLeft: ROUND_SECONDS,
   roundElapsed: 0,
+  roundStarted: false,
   eventClock: 12,
   boostClock: 0,
   speedMul: 1,
@@ -430,7 +431,8 @@ function canAfford(cost = {}) {
 function updateDecisionButtons() {
   decisionButtons.forEach((button) => {
     const decision = DECISIONS[button.dataset.decision];
-    const unavailable = !decision || state.mode !== "playing" || state.neta.decisionClock > 0 || !canAfford(decision.cost);
+    const unavailable =
+      !decision || state.mode !== "playing" || !state.roundStarted || state.neta.decisionClock > 0 || !canAfford(decision.cost);
     button.disabled = unavailable;
   });
 }
@@ -978,6 +980,7 @@ function resetGame() {
   state.keys.clear();
   state.timeLeft = ROUND_SECONDS;
   state.roundElapsed = 0;
+  state.roundStarted = false;
   state.eventClock = 8;
   state.boostClock = 0;
   state.speedMul = 1;
@@ -1001,7 +1004,8 @@ function resetGame() {
 
   addFeed(`${activeRegion ? activeRegion.name : "District"} campaign office opened.`);
   addFeed(`Neta meter: support ${state.neta.support}, funds ${state.neta.funds}, reputation ${state.neta.reputation}.`);
-  addFeed("Volunteers are ready near the booths.");
+  addFeed("Volunteers are waiting near the booths.");
+  eventStat.textContent = "Ready";
   updateStats();
   updateNetaPanel();
 }
@@ -1036,8 +1040,18 @@ function startGame() {
   }
 }
 
+function beginRound() {
+  if (state.mode !== "playing" || state.roundStarted) return;
+  state.roundStarted = true;
+  state.eventClock = 8;
+  eventStat.textContent = "Campaign";
+  showToast("Campaign yatra started.");
+  updateNetaPanel();
+}
+
 function setDirection(agent, dir) {
   if (!agent) return;
+  if (agent === state.player) beginRound();
   if (dir === "up") {
     agent.dirX = 0;
     agent.dirY = -1;
@@ -1384,6 +1398,13 @@ function finishRound(won, reason) {
 function update(dt) {
   if (state.mode !== "playing") return;
   applyKeyboardDirection();
+  if (!state.roundStarted) {
+    state.toastClock -= dt;
+    if (state.toastClock <= 0) toast.classList.remove("is-visible");
+    updateNetaPanel();
+    updateStats();
+    return;
+  }
   state.timeLeft -= dt;
   state.roundElapsed += dt;
   state.eventClock -= dt;
@@ -1720,7 +1741,8 @@ function drawRegionArena() {
 
 function drawNetaHud(width) {
   if (state.mode !== "playing") return;
-  const label = `Mandate ${mandateScore()}  S ${state.neta.support}  F ${state.neta.funds}  P ${state.neta.power}  R ${state.neta.reputation}`;
+  const status = state.roundStarted ? `Mandate ${mandateScore()}` : "Ready";
+  const label = `${status}  S ${state.neta.support}  F ${state.neta.funds}  P ${state.neta.power}  R ${state.neta.reputation}`;
   const boxW = Math.min(width - 20, 390);
   ctx.save();
   ctx.fillStyle = "rgba(21, 21, 21, 0.86)";
@@ -1735,6 +1757,45 @@ function drawNetaHud(width) {
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
   ctx.fillText(label, 22, 25, boxW - 24);
+  ctx.restore();
+}
+
+function drawReadyPulse() {
+  if (state.mode !== "playing" || state.roundStarted || !state.player) return;
+  const s = state.cellSize;
+  const cx = state.offsetX + (state.player.x + 0.5) * s;
+  const cy = state.offsetY + (state.player.y + 0.5) * s;
+  const pulse = (Math.sin((state.lastTime || 0) * 0.006) + 1) / 2;
+  const radius = s * (3.3 + pulse * 0.75);
+
+  ctx.save();
+  ctx.strokeStyle = `rgba(255, 209, 102, ${0.65 + pulse * 0.28})`;
+  ctx.lineWidth = Math.max(3, s * 0.18);
+  ctx.setLineDash([s * 0.8, s * 0.55]);
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = "rgba(21, 21, 21, 0.82)";
+  const arrows = [
+    [0, -1, 0],
+    [1, 0, Math.PI / 2],
+    [0, 1, Math.PI],
+    [-1, 0, -Math.PI / 2]
+  ];
+  for (const [dx, dy, rotation] of arrows) {
+    ctx.save();
+    ctx.translate(cx + dx * radius * 0.92, cy + dy * radius * 0.92);
+    ctx.rotate(rotation);
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.48);
+    ctx.lineTo(s * 0.38, s * 0.32);
+    ctx.lineTo(-s * 0.38, s * 0.32);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
   ctx.restore();
 }
 
@@ -2225,6 +2286,7 @@ function draw() {
   for (const opponent of state.opponents) drawAgent(opponent, false);
   drawSupporters();
   if (state.player) drawAgent(state.player, true);
+  drawReadyPulse();
   drawNetaHud(rect.width);
 }
 
@@ -2295,6 +2357,10 @@ function pointerToDirection(event) {
 function useDecision(type) {
   const decision = DECISIONS[type];
   if (!decision || state.mode !== "playing") return;
+  if (!state.roundStarted) {
+    showToast("Campaign yatra abhi ready hai.");
+    return;
+  }
   if (state.neta.decisionClock > 0) {
     showToast("Campaign team is still moving.");
     return;
@@ -2403,6 +2469,24 @@ function registerServiceWorker() {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 
+function registerDebugSnapshot() {
+  window.__NETA_JI_DEBUG__ = () => ({
+    mode: state.mode,
+    activeRegion: getActiveRegion()?.name || null,
+    pendingRegionId: state.campaign.pendingRegionId,
+    influence: state.influence,
+    mandateScore: mandateScore(),
+    roundStarted: state.roundStarted,
+    timeLeft: Math.ceil(state.timeLeft),
+    support: state.neta.support,
+    funds: state.neta.funds,
+    power: state.neta.power,
+    reputation: state.neta.reputation,
+    opponents: state.opponents.length,
+    supporters: state.supporters.length
+  });
+}
+
 async function shareResult() {
   const text = state.shareText || `NETA JI: ${state.party.name} is ready for a comedy mandate.`;
   try {
@@ -2425,6 +2509,7 @@ async function init() {
   bindEvents();
   resizeCanvas();
   resetGame();
+  registerDebugSnapshot();
   registerServiceWorker();
   requestAnimationFrame(loop);
 }
