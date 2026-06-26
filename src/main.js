@@ -320,6 +320,12 @@ function getActiveRegion() {
   return REGIONS.find((region) => region.id === state.campaign.activeRegionId) || null;
 }
 
+function getResumableActiveRegion() {
+  const activeRegion = getActiveRegion();
+  if (!activeRegion || state.campaign.completed[activeRegion.id]) return null;
+  return activeRegion;
+}
+
 function loadCampaignProgress() {
   try {
     const raw = localStorage.getItem(PROGRESS_KEY);
@@ -346,10 +352,11 @@ function saveCampaignProgress() {
 
 function renderRegionHub() {
   const activeRegion = getActiveRegion();
+  const resumableRegion = getResumableActiveRegion();
   regionStat.textContent = activeRegion ? activeRegion.name : "Choose State";
-  activeRegionCopy.textContent = activeRegion
-    ? `${activeRegion.name} is active. Won regions stay in ${state.party.name} color.`
-    : "Create a party, then choose a state or UT.";
+  activeRegionCopy.textContent = resumableRegion
+    ? `${resumableRegion.name} is active. Resume it until the mandate is won.`
+    : "Touch a black flag on the India map. Red flags are already won.";
   miniRegionGrid.innerHTML = "";
   regionGrid.innerHTML = "";
   miniRegionGrid.style.setProperty("--region-color", state.party.color);
@@ -433,6 +440,7 @@ function markActiveRegionWon() {
     party: state.party.name
   };
   state.campaign.lastWonRegionId = activeRegion.id;
+  state.campaign.activeRegionId = null;
   saveCampaignProgress();
   renderRegionHub();
   return activeRegion;
@@ -702,8 +710,18 @@ function startGame() {
   };
   setPartyPreview();
   renderRegionHub();
-  openRegionModal();
-  showToast(`${state.party.name} is ready. Choose a state or UT.`);
+  const resumableRegion = getResumableActiveRegion();
+  if (resumableRegion) {
+    selectRegion(resumableRegion.id);
+    showToast(`${state.party.name} resumes ${resumableRegion.name}.`);
+  } else {
+    if (getActiveRegion()) {
+      state.campaign.activeRegionId = null;
+      saveCampaignProgress();
+    }
+    openRegionModal();
+    showToast(`${state.party.name} is ready. Choose a state or UT.`);
+  }
 }
 
 function setDirection(agent, dir) {
