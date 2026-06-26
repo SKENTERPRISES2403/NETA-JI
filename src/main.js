@@ -218,6 +218,7 @@ const state = {
   opponents: [],
   supporters: [],
   conversionBursts: [],
+  claimBursts: [],
   supportersConverted: 0,
   campaign: {
     activeRegionId: null,
@@ -590,6 +591,15 @@ function findMaskedSpawn(preferredX, preferredY) {
   return { x: COLS / 2, y: ROWS / 2 };
 }
 
+function randomMaskedPoint() {
+  for (let i = 0; i < 80; i += 1) {
+    const x = 2 + Math.random() * (COLS - 4);
+    const y = 2 + Math.random() * (ROWS - 4);
+    if (isMaskedCell(x, y)) return { x, y };
+  }
+  return findMaskedSpawn(COLS / 2, ROWS / 2);
+}
+
 function claimRect(ownerId, cx, cy, w, h) {
   const x0 = clamp(Math.floor(cx - w / 2), 1, COLS - 2);
   const x1 = clamp(Math.floor(cx + w / 2), 1, COLS - 2);
@@ -630,6 +640,8 @@ function createAgent(ownerId, name, color, symbol, x, y) {
     dirY: 0,
     speed: 4.1,
     turnClock: 0.8 + Math.random() * 0.9,
+    targetX: x,
+    targetY: y,
     trailCells: [],
     trailPoints: []
   };
@@ -666,6 +678,27 @@ function addConversionBurst(x, y, color) {
       size: 0.22 + Math.random() * 0.28
     });
   }
+}
+
+function addClaimBurst(cells, color) {
+  if (!cells.length) return;
+  const limit = Math.min(34, cells.length);
+  const step = Math.max(1, Math.floor(cells.length / limit));
+  for (let i = 0; i < cells.length; i += step) {
+    const idx = cells[i];
+    const x = idx % COLS;
+    const y = Math.floor(idx / COLS);
+    state.claimBursts.push({
+      x: x + 0.5,
+      y: y + 0.5,
+      color,
+      life: 0.55 + Math.random() * 0.35,
+      maxLife: 0.9,
+      delay: Math.random() * 0.22,
+      size: 0.25 + Math.random() * 0.45
+    });
+  }
+  while (state.claimBursts.length > 120) state.claimBursts.shift();
 }
 
 function convertOpponent(ownerId, cutX, cutY) {
@@ -719,6 +752,7 @@ function resetGame() {
   state.opponents = [];
   state.supporters = [];
   state.conversionBursts = [];
+  state.claimBursts = [];
   state.supportersConverted = 0;
   state.keys.clear();
   state.timeLeft = ROUND_SECONDS;
@@ -742,8 +776,8 @@ function resetGame() {
     claimDisk(agent.ownerId, x, y, 3.2);
   });
 
-  addFeed(`${activeRegion ? activeRegion.name : "District"} arena opened. Close a campaign loop to win influence.`);
-  addFeed("Use WASD, arrow keys, touch, or the control pad.");
+  addFeed(`${activeRegion ? activeRegion.name : "District"} campaign office opened.`);
+  addFeed("Volunteers are ready near the booths.");
   updateStats();
 }
 
@@ -851,6 +885,7 @@ function clearTrail(ownerId) {
 }
 
 function closeLoop(agent) {
+  const claimedCells = [...agent.trailCells];
   for (const idx of agent.trailCells) {
     state.owner[idx] = agent.ownerId;
     state.trail[idx] = 0;
@@ -887,6 +922,7 @@ function closeLoop(agent) {
     if (state.regionMask[i] && !visited[i] && state.owner[i] !== agent.ownerId) {
       state.owner[i] = agent.ownerId;
       state.trail[i] = 0;
+      claimedCells.push(i);
       gained += 1;
     }
   }
@@ -894,6 +930,7 @@ function closeLoop(agent) {
   if (agent.ownerId === 1 && agent.trailCells.length + gained > 5) {
     addFeed(`${state.party.name} won ${agent.trailCells.length + gained} new booths.`);
     showToast("Campaign loop closed. Influence gained.");
+    addClaimBurst(claimedCells, state.party.color);
     playSound("loop");
   }
   agent.trailCells = [];
@@ -922,16 +959,26 @@ function updateOpponents(dt) {
     const { x, y } = cellFromAgent(agent);
     const nearWall = x <= 2 || x >= COLS - 3 || y <= 2 || y >= ROWS - 3;
     if (agent.turnClock <= 0 || nearWall || Math.random() < 0.01) {
-      const dirs = [
-        ["up", 0, -1],
-        ["down", 0, 1],
-        ["left", -1, 0],
-        ["right", 1, 0]
-      ];
-      const choice = dirs[Math.floor(Math.random() * dirs.length)];
-      agent.dirX = choice[1];
-      agent.dirY = choice[2];
-      agent.turnClock = 0.45 + Math.random() * 1.2;
+      let target = null;
+      if (state.player?.trailPoints?.length > 3 && Math.random() < 0.55) {
+        target = state.player.trailPoints[Math.floor(Math.random() * state.player.trailPoints.length)];
+      } else if (Math.random() < 0.35) {
+        target = { x: state.player.x, y: state.player.y };
+      } else {
+        target = randomMaskedPoint();
+      }
+      agent.targetX = target.x;
+      agent.targetY = target.y;
+      const dx = agent.targetX - agent.x;
+      const dy = agent.targetY - agent.y;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        agent.dirX = Math.sign(dx) || (Math.random() > 0.5 ? 1 : -1);
+        agent.dirY = 0;
+      } else {
+        agent.dirX = 0;
+        agent.dirY = Math.sign(dy) || (Math.random() > 0.5 ? 1 : -1);
+      }
+      agent.turnClock = 0.55 + Math.random() * 0.95;
     }
     updateAgent(agent, dt);
   }
@@ -1038,6 +1085,18 @@ function updateConversionBursts(dt) {
   state.conversionBursts = state.conversionBursts.filter((particle) => particle.life > 0);
 }
 
+function updateClaimBursts(dt) {
+  if (state.claimBursts.length === 0) return;
+  for (const burst of state.claimBursts) {
+    if (burst.delay > 0) {
+      burst.delay -= dt;
+      continue;
+    }
+    burst.life -= dt;
+  }
+  state.claimBursts = state.claimBursts.filter((burst) => burst.delay > 0 || burst.life > 0);
+}
+
 function updateStats() {
   let playerCells = 0;
   let playableCells = 0;
@@ -1102,6 +1161,7 @@ function update(dt) {
   updateOpponents(dt);
   updateSupporters(dt);
   updateConversionBursts(dt);
+  updateClaimBursts(dt);
   handleTrailCuts();
 
   if (state.eventClock <= 0) {
@@ -1189,6 +1249,45 @@ function drawWonPatch(region, rect) {
   ctx.restore();
 }
 
+function drawMapYatra() {
+  const lastRegion = REGIONS.find((region) => region.id === state.campaign.lastWonRegionId);
+  const pendingRegion = REGIONS.find((region) => region.id === state.campaign.pendingRegionId || region.id === state.campaign.activeRegionId);
+  if (!lastRegion && !pendingRegion) return;
+  const from = lastRegion ? getRegionMapPoint(lastRegion) : getRegionMapPoint(pendingRegion);
+  const to = pendingRegion ? getRegionMapPoint(pendingRegion) : from;
+  const t = (Math.sin((state.lastTime || 0) * 0.0016) + 1) / 2;
+  const x = from.x + (to.x - from.x) * t;
+  const y = from.y + (to.y - from.y) * t;
+
+  ctx.save();
+  ctx.setLineDash([6, 5]);
+  ctx.strokeStyle = "rgba(21, 21, 21, 0.55)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(from.x, from.y);
+  ctx.lineTo(to.x, to.y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  drawMiniPerson(x, y, 15, {
+    color: state.party.color,
+    accent: "#fffdf7",
+    foldedHands: true,
+    phase: 0.4
+  });
+  drawMiniPerson(x - 15, y + 7, 11, {
+    color: state.party.color,
+    accent: "#fffdf7",
+    flag: true,
+    phase: 1.2
+  });
+  drawMiniPerson(x + 15, y + 8, 11, {
+    color: state.party.color,
+    accent: "#fffdf7",
+    phase: 2.4
+  });
+  ctx.restore();
+}
+
 function drawMapHome(width, height) {
   ctx.fillStyle = "#d8edf7";
   ctx.fillRect(0, 0, width, height);
@@ -1223,6 +1322,8 @@ function drawMapHome(width, height) {
   for (const region of REGIONS) {
     if (state.campaign.completed[region.id]) drawWonPatch(region, state.mapRect);
   }
+
+  drawMapYatra();
 
   for (const region of REGIONS) {
     const point = getRegionMapPoint(region);
@@ -1617,6 +1718,28 @@ function drawConversionBursts() {
   ctx.globalAlpha = 1;
 }
 
+function drawClaimBursts() {
+  if (state.claimBursts.length === 0) return;
+  ctx.save();
+  ctx.translate(state.offsetX, state.offsetY);
+  const s = state.cellSize;
+  for (const burst of state.claimBursts) {
+    if (burst.delay > 0) continue;
+    const progress = 1 - burst.life / burst.maxLife;
+    const alpha = clamp(burst.life / burst.maxLife, 0, 1);
+    ctx.globalAlpha = alpha * 0.75;
+    ctx.fillStyle = burst.color;
+    ctx.strokeStyle = "rgba(21, 21, 21, 0.38)";
+    ctx.lineWidth = Math.max(1, s * 0.08);
+    ctx.beginPath();
+    ctx.arc(burst.x * s, burst.y * s, s * (burst.size + progress * 0.9), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
 function drawCampaignProps() {
   if (state.mode !== "playing") return;
   ctx.save();
@@ -1719,6 +1842,7 @@ function draw() {
   drawRegionArena();
   drawTerritory();
   drawCampaignProps();
+  drawClaimBursts();
   drawTrails();
   drawTrailPaths();
   drawConversionBursts();
