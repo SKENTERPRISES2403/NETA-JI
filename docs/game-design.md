@@ -25,6 +25,7 @@ Create a fictional party, run campaign routes, close loops, and turn the arena i
 6. Pick short campaign decisions when the team is ready.
 7. Random events change the pace and the Neta Meter.
 8. Win by crossing the mandate target before time ends.
+9. Winning every state/UT completes the fictional national mandate and shows a world-yatra teaser.
 
 ## Neta Meter
 
@@ -68,6 +69,7 @@ Avoid these words in user-facing UI:
 - Breaking poster news headline
 - Short share text
 - Campaign van and booth queues for reel-friendly movement
+- National mandate completion card
 - Future: 10-second replay export
 
 ## Data Plan

@@ -22,6 +22,7 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - Selected region opens as a large outlined gameplay arena
 - State/UT win progression with saved progress
 - Paidal-yatra style next-region flow
+- National mandate completion when all 36 regions are won, with world-yatra teaser
 - Random comedy campaign events
 - Safety filter for party names and slogans
 - Obfuscation-aware filtering for real politics, hate, abuse, and sensitive identity terms

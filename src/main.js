@@ -379,7 +379,8 @@ const state = {
     activeRegionId: null,
     pendingRegionId: null,
     completed: {},
-    lastWonRegionId: null
+    lastWonRegionId: null,
+    nationalWon: false
   },
   neta: { ...DEFAULT_NETA },
   keys: new Set(),
@@ -632,6 +633,14 @@ function getResumableActiveRegion() {
   return activeRegion;
 }
 
+function completedRegionCount() {
+  return REGIONS.filter((region) => Boolean(state.campaign.completed[region.id])).length;
+}
+
+function isIndiaComplete() {
+  return completedRegionCount() === REGIONS.length;
+}
+
 function loadCampaignProgress() {
   try {
     const raw = localStorage.getItem(PROGRESS_KEY);
@@ -640,11 +649,13 @@ function loadCampaignProgress() {
     state.campaign.activeRegionId = parsed.activeRegionId || null;
     state.campaign.completed = parsed.completed && typeof parsed.completed === "object" ? parsed.completed : {};
     state.campaign.lastWonRegionId = parsed.lastWonRegionId || null;
+    state.campaign.nationalWon = Boolean(parsed.nationalWon) || REGIONS.every((region) => parsed.completed?.[region.id]);
     state.neta = hydrateNeta(parsed.neta);
   } catch {
     state.campaign.activeRegionId = null;
     state.campaign.completed = {};
     state.campaign.lastWonRegionId = null;
+    state.campaign.nationalWon = false;
     state.neta = hydrateNeta();
   }
 }
@@ -654,6 +665,7 @@ function saveCampaignProgress() {
     activeRegionId: state.campaign.activeRegionId,
     completed: state.campaign.completed,
     lastWonRegionId: state.campaign.lastWonRegionId,
+    nationalWon: state.campaign.nationalWon,
     neta: {
       support: state.neta.support,
       funds: state.neta.funds,
@@ -668,9 +680,12 @@ function renderRegionHub() {
   const activeRegion = getActiveRegion();
   const resumableRegion = getResumableActiveRegion();
   regionStat.textContent = activeRegion ? activeRegion.name : "Choose State";
-  activeRegionCopy.textContent = resumableRegion
-    ? `${resumableRegion.name} is active. Resume it until the mandate is won.`
-    : "Touch a black flag on the India map. Red flags are already won.";
+  const wonCount = completedRegionCount();
+  activeRegionCopy.textContent = state.campaign.nationalWon
+    ? `National mandate complete: ${wonCount}/${REGIONS.length} regions. World yatra teaser unlocked.`
+    : resumableRegion
+      ? `${resumableRegion.name} is active. Resume it until the mandate is won.`
+      : `Touch a black flag on the India map. Red flags are won: ${wonCount}/${REGIONS.length}.`;
   miniRegionGrid.innerHTML = "";
   regionGrid.innerHTML = "";
   miniRegionGrid.style.setProperty("--region-color", state.party.color);
@@ -706,7 +721,7 @@ function openRegionModal() {
   state.campaign.pendingRegionId = null;
   renderRegionHub();
   state.mode = "map";
-  showToast("Touch any black flag on the India map.");
+  showToast(state.campaign.nationalWon ? "National mandate complete. World yatra coming soon." : "Touch any black flag on the India map.");
 }
 
 function showRegionPrompt(regionId) {
@@ -763,6 +778,7 @@ function markActiveRegionWon() {
   };
   state.campaign.lastWonRegionId = activeRegion.id;
   state.campaign.activeRegionId = null;
+  state.campaign.nationalWon = isIndiaComplete();
   saveCampaignProgress();
   renderRegionHub();
   return activeRegion;
@@ -1422,25 +1438,33 @@ function finishRound(won, reason) {
   const victory = Boolean(won);
   const activeRegion = getActiveRegion();
   const wonRegion = victory ? markActiveRegionWon() : null;
+  const nationalComplete = victory && state.campaign.nationalWon;
   const regionName = (wonRegion || activeRegion)?.name || "district";
   const supporterLine = state.supportersConverted
     ? ` ${state.supportersConverted} converted supporters joined the yatra.`
     : " The poster team is already posing for the reel.";
   const headline = victory
-    ? `${state.party.name} wins ${regionName} mandate`
+    ? nationalComplete
+      ? `${state.party.name} wins national mandate`
+      : `${state.party.name} wins ${regionName} mandate`
     : `${state.party.name} gets a ${regionName} recount`;
   const copy = victory
-    ? `${state.influence}% influence, ${state.neta.support} support, mandate score ${finalScore} in ${regionName}.${supporterLine}`
+    ? nationalComplete
+      ? `${REGIONS.length}/${REGIONS.length} regions won. National leader stands with folded hands, and the world yatra board is open.${supporterLine}`
+      : `${state.influence}% influence, ${state.neta.support} support, mandate score ${finalScore} in ${regionName}.${supporterLine}`
     : `${reason} Final mandate score: ${finalScore} in ${regionName}. Support ${state.neta.support}, reputation ${state.neta.reputation}. New strategy meeting starts now.`;
-  state.shareText = `NETA JI: ${state.party.name} scored ${finalScore} fictional comedy mandate in ${regionName}. ${state.party.slogan}`;
+  state.shareText = nationalComplete
+    ? `NETA JI: ${state.party.name} completed the fictional national mandate. ${state.party.slogan}`
+    : `NETA JI: ${state.party.name} scored ${finalScore} fictional comedy mandate in ${regionName}. ${state.party.slogan}`;
   resultHeadline.textContent = headline;
   resultCopy.textContent = copy;
   nextRegionBtn.hidden = !victory;
+  nextRegionBtn.textContent = nationalComplete ? "India Map" : "Next State";
   if (victory) {
-    addFeed(`${regionName} mandate won. Red flag raised on the India map.`);
+    addFeed(nationalComplete ? "National mandate complete. World yatra teaser unlocked." : `${regionName} mandate won. Red flag raised on the India map.`);
     playSound("win");
     resultModal.classList.add("is-open");
-    showToast(`${regionName} won. Red flag ready on the India map.`);
+    showToast(nationalComplete ? "National mandate complete." : `${regionName} won. Red flag ready on the India map.`);
     return;
   }
   playSound("lose");
@@ -1697,6 +1721,40 @@ function drawMapYatra() {
   ctx.restore();
 }
 
+function drawNationalCompletion(width) {
+  if (!state.campaign.nationalWon) return;
+  const rect = state.mapRect;
+  const centerX = rect.x + rect.width * 0.5;
+  const y = rect.y + rect.height * 0.5;
+
+  ctx.save();
+  ctx.fillStyle = "rgba(21, 21, 21, 0.86)";
+  ctx.strokeStyle = "#fffdf7";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(Math.max(12, centerX - 150), Math.max(12, y - 58), Math.min(width - 24, 300), 92, 12);
+  ctx.fill();
+  ctx.stroke();
+
+  drawMiniPerson(centerX - 98, y - 12, 28, {
+    color: "#fffdf7",
+    accent: state.party.color,
+    foldedHands: true,
+    symbol: state.party.symbol,
+    phase: 0.2
+  });
+  drawTinyFlag(centerX + 104, y - 18, 13, state.party.color);
+
+  ctx.fillStyle = "#fffdf7";
+  ctx.font = "900 15px ui-sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("National Mandate Complete", centerX, y - 30, 190);
+  ctx.font = "800 11px ui-sans-serif";
+  ctx.fillText("World yatra teaser unlocked", centerX, y - 9, 190);
+  ctx.fillText(`${REGIONS.length}/${REGIONS.length} regions won`, centerX, y + 12, 190);
+  ctx.restore();
+}
+
 function drawMapHome(width, height) {
   ctx.fillStyle = "#bfe7ff";
   ctx.fillRect(0, 0, width, height);
@@ -1743,6 +1801,8 @@ function drawMapHome(width, height) {
     drawFlag(point.x, point.y, won ? "#d92d20" : pending ? "#ffd166" : "#151515", region.type === "UT" ? 0.5 : 0.66);
   }
 
+  drawNationalCompletion(width);
+
   ctx.fillStyle = "rgba(21, 21, 21, 0.88)";
   ctx.beginPath();
   ctx.roundRect(12, height - 66, Math.min(width - 24, 600), 48, 10);
@@ -1751,7 +1811,11 @@ function drawMapHome(width, height) {
   ctx.font = `900 ${width < 430 ? 12 : 14}px ui-sans-serif`;
   ctx.textAlign = "left";
   const pendingRegion = REGIONS.find((region) => region.id === state.campaign.pendingRegionId);
-  const guide = pendingRegion ? `${pendingRegion.name} selected. OK dabao to arena khulega.` : "Black flag touch karo. Red flag already won hai.";
+  const guide = state.campaign.nationalWon
+    ? "National mandate complete. World yatra coming soon."
+    : pendingRegion
+      ? `${pendingRegion.name} selected. OK dabao to arena khulega.`
+      : "Black flag touch karo. Red flag already won hai.";
   ctx.fillText(guide, 26, height - 38, width - 52);
   ctx.restore();
 }
@@ -2640,6 +2704,8 @@ function registerDebugSnapshot() {
     pendingRegionId: state.campaign.pendingRegionId,
     influence: state.influence,
     mandateScore: mandateScore(),
+    completedRegions: completedRegionCount(),
+    nationalWon: state.campaign.nationalWon,
     roundStarted: state.roundStarted,
     timeLeft: Math.ceil(state.timeLeft),
     support: state.neta.support,
