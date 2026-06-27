@@ -345,6 +345,8 @@ const partyNamePreview = document.querySelector("#partyNamePreview");
 const partySloganPreview = document.querySelector("#partySloganPreview");
 const resultHeadline = document.querySelector("#resultHeadline");
 const resultCopy = document.querySelector("#resultCopy");
+const resultStamp = document.querySelector("#resultStamp");
+const resultSymbol = document.querySelector("#resultSymbol");
 const activeRegionCopy = document.querySelector("#activeRegionCopy");
 const miniRegionGrid = document.querySelector("#miniRegionGrid");
 const regionGrid = document.querySelector("#regionGrid");
@@ -561,6 +563,17 @@ function setPartyPreview() {
   partySwatch.style.background = state.party.color;
   partyNamePreview.textContent = state.party.name;
   partySloganPreview.textContent = state.party.slogan;
+}
+
+function symbolLabel(symbol) {
+  const labels = {
+    star: "STAR",
+    kite: "KITE",
+    mic: "MIC",
+    cup: "CUP",
+    wheel: "WHEEL"
+  };
+  return labels[symbol] || "NETA";
 }
 
 function addFeed(text) {
@@ -1458,6 +1471,10 @@ function finishRound(won, reason) {
     : `NETA JI: ${state.party.name} scored ${finalScore} fictional comedy mandate in ${regionName}. ${state.party.slogan}`;
   resultHeadline.textContent = headline;
   resultCopy.textContent = copy;
+  resultStamp.textContent = victory ? (nationalComplete ? "National" : "Won") : "Recount";
+  resultSymbol.textContent = symbolLabel(state.party.symbol);
+  resultModal.style.setProperty("--party-color", state.party.color);
+  resultModal.dataset.result = victory ? (nationalComplete ? "national" : "win") : "loss";
   nextRegionBtn.hidden = !victory;
   nextRegionBtn.textContent = nationalComplete ? "India Map" : "Next State";
   if (victory) {
@@ -2724,7 +2741,7 @@ async function shareResult() {
       await navigator.share({ title: "NETA JI", text });
     } else if (navigator.clipboard) {
       await navigator.clipboard.writeText(text);
-      showToast("Share text copied.");
+      showToast("Fictional share text copied.");
     }
   } catch {
     showToast("Share cancelled.");

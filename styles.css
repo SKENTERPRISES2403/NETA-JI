@@ -548,15 +548,68 @@ input[type="color"] {
 }
 
 .result-card {
+  position: relative;
+  overflow: hidden;
   text-align: center;
   background:
+    radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--party-color, var(--orange)) 32%, transparent), transparent 24%),
     linear-gradient(135deg, rgba(255, 209, 102, 0.24), transparent 38%),
     linear-gradient(315deg, rgba(14, 159, 138, 0.18), transparent 42%),
     var(--white);
 }
 
+.result-card::before,
+.result-card::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+}
+
+.result-card::before {
+  inset: 10px;
+  border: 2px dashed color-mix(in srgb, var(--party-color, var(--orange)) 70%, #151515);
+  border-radius: 8px;
+  opacity: 0.34;
+}
+
+.result-card::after {
+  right: -34px;
+  bottom: -42px;
+  width: 128px;
+  height: 128px;
+  border: 18px solid color-mix(in srgb, var(--party-color, var(--orange)) 55%, transparent);
+  border-radius: 50%;
+  opacity: 0.55;
+}
+
 .result-card p {
   line-height: 1.45;
+}
+
+.result-stamp {
+  position: absolute;
+  right: 16px;
+  top: 14px;
+  z-index: 1;
+  min-width: 78px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 5px 10px;
+  background: var(--party-color, var(--orange));
+  color: #fffdf7;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  transform: rotate(5deg);
+}
+
+#resultModal[data-result="loss"] .result-stamp,
+#resultModal[data-result="loss"] .result-symbol {
+  background: #4f4a43;
+}
+
+#resultModal[data-result="national"] .result-stamp {
+  background: #151515;
 }
 
 .leader-figure {
@@ -565,6 +618,21 @@ input[type="color"] {
   margin: 18px auto 8px;
   position: relative;
   filter: drop-shadow(0 7px 0 rgba(21, 21, 21, 0.12));
+}
+
+.result-symbol {
+  position: absolute;
+  left: 50%;
+  top: 86px;
+  z-index: 2;
+  transform: translateX(-50%);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 3px 7px;
+  background: var(--party-color, var(--orange));
+  color: #fffdf7;
+  font-size: 0.62rem;
+  font-weight: 900;
 }
 
 .leader-head,
@@ -590,7 +658,7 @@ input[type="color"] {
   height: 82px;
   border: 3px solid var(--ink);
   border-radius: 8px 8px 18px 18px;
-  background: linear-gradient(90deg, var(--white) 0 48%, var(--orange) 48% 54%, var(--white) 54%);
+  background: linear-gradient(90deg, var(--white) 0 48%, var(--party-color, var(--orange)) 48% 54%, var(--white) 54%);
 }
 
 .leader-hand {
