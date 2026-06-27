@@ -270,6 +270,13 @@ canvas {
   transform: rotate(-45deg);
 }
 
+.pause-btn {
+  min-width: 86px;
+  padding: 0 12px;
+  color: var(--ink);
+  background: var(--white);
+}
+
 .boost-btn {
   min-width: 92px;
   padding: 0 14px;
@@ -786,8 +793,9 @@ input[type="color"] {
     height: 52px;
   }
 
-  .boost-btn {
-    min-width: 104px;
+  .boost-btn,
+  .pause-btn {
+    min-width: 96px;
   }
 }
 

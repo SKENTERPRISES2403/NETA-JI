@@ -331,6 +331,7 @@ const restartBtn = document.querySelector("#restartBtn");
 const nextRegionBtn = document.querySelector("#nextRegionBtn");
 const shareBtn = document.querySelector("#shareBtn");
 const boostBtn = document.querySelector("#boostBtn");
+const pauseBtn = document.querySelector("#pauseBtn");
 const openMapBtn = document.querySelector("#openMapBtn");
 const confirmRegionBtn = document.querySelector("#confirmRegionBtn");
 const cancelRegionBtn = document.querySelector("#cancelRegionBtn");
@@ -390,6 +391,7 @@ const state = {
   timeLeft: ROUND_SECONDS,
   roundElapsed: 0,
   roundStarted: false,
+  paused: false,
   eventClock: 12,
   boostClock: 0,
   speedMul: 1,
@@ -1490,6 +1492,13 @@ function finishRound(won, reason) {
 
 function update(dt) {
   if (state.mode !== "playing") return;
+  if (state.paused) {
+    state.toastClock -= dt;
+    if (state.toastClock <= 0) toast.classList.remove("is-visible");
+    updateNetaPanel();
+    updateStats();
+    return;
+  }
   applyKeyboardDirection();
   if (!state.roundStarted) {
     state.toastClock -= dt;
@@ -1890,6 +1899,33 @@ function drawNetaHud(width) {
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
   ctx.fillText(label, 22, 25, boxW - 24);
+  ctx.restore();
+}
+
+function drawPauseOverlay(width, height) {
+  if (state.mode !== "playing" || !state.paused) return;
+  ctx.save();
+  ctx.fillStyle = "rgba(21, 21, 21, 0.54)";
+  ctx.fillRect(0, 0, width, height);
+  const boxW = Math.min(width - 32, 300);
+  const boxH = 106;
+  const x = (width - boxW) / 2;
+  const y = (height - boxH) / 2;
+  ctx.fillStyle = "#fffdf7";
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.roundRect(x, y, boxW, boxH, 10);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = state.party.color;
+  ctx.fillRect(x + 14, y + 14, 8, boxH - 28);
+  ctx.fillStyle = "#151515";
+  ctx.font = "900 24px ui-sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("Campaign Paused", width / 2, y + 42);
+  ctx.font = "800 13px ui-sans-serif";
+  ctx.fillText("Tap Pause or press P to resume", width / 2, y + 70, boxW - 28);
   ctx.restore();
 }
 
@@ -2533,6 +2569,7 @@ function draw() {
   if (state.player) drawAgent(state.player, true);
   drawReadyPulse();
   drawNetaHud(rect.width);
+  drawPauseOverlay(rect.width, rect.height);
 }
 
 function loop(timestamp) {
@@ -2641,6 +2678,7 @@ function bindEvents() {
       event.preventDefault();
     }
     if (event.key === " ") useRallyBoost();
+    if (event.key.toLowerCase() === "p") togglePause();
   });
   window.addEventListener("keyup", (event) => state.keys.delete(event.key));
   canvas.addEventListener("pointerdown", (event) => {
@@ -2673,6 +2711,7 @@ function bindEvents() {
     button.addEventListener("click", () => useDecision(button.dataset.decision));
   });
   boostBtn.addEventListener("click", useRallyBoost);
+  pauseBtn.addEventListener("click", togglePause);
   startBtn.addEventListener("click", startGame);
   restartBtn.addEventListener("click", () => {
     resultModal.classList.remove("is-open");
@@ -2700,8 +2739,21 @@ function bindEvents() {
   });
 }
 
+function togglePause() {
+  if (state.mode !== "playing" || !state.roundStarted) {
+    showToast("Campaign yatra abhi ready hai.");
+    return;
+  }
+  ensureAudio();
+  state.paused = !state.paused;
+  pauseBtn.textContent = state.paused ? "Resume" : "Pause";
+  eventStat.textContent = state.paused ? "Paused" : "Campaign";
+  showToast(state.paused ? "Campaign paused." : "Campaign resumed.");
+  playSound("tap");
+}
+
 function useRallyBoost() {
-  if (state.mode !== "playing" || state.boostClock > 0) return;
+  if (state.mode !== "playing" || state.paused || state.boostClock > 0) return;
   ensureAudio();
   state.speedMul = 1.42;
   state.boostClock = 2.2;
@@ -2724,6 +2776,7 @@ function registerDebugSnapshot() {
     completedRegions: completedRegionCount(),
     nationalWon: state.campaign.nationalWon,
     roundStarted: state.roundStarted,
+    paused: state.paused,
     timeLeft: Math.ceil(state.timeLeft),
     support: state.neta.support,
     funds: state.neta.funds,
