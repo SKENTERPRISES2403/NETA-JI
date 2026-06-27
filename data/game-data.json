@@ -20,11 +20,31 @@
     {
       "title": "Mega rally speaker boost",
       "effect": "speedUp",
-      "copy": "Your rally van got louder. Speed up for a bit.",
+      "copy": "Dhol team got louder. Speed up for a bit.",
       "impact": {
         "support": 3,
         "power": 1,
         "funds": -2
+      }
+    },
+    {
+      "title": "Comedy raid on poster stock",
+      "effect": "raid",
+      "copy": "Officials counted every sticker. Funds and reputation take a hit.",
+      "impact": {
+        "funds": -14,
+        "reputation": -3,
+        "power": -1
+      }
+    },
+    {
+      "title": "Tea break at nukkad",
+      "effect": "teaBreak",
+      "copy": "Volunteers paused for chai. Speed dips, public support smiles.",
+      "impact": {
+        "support": 4,
+        "funds": -2,
+        "reputation": 1
       }
     },
     {

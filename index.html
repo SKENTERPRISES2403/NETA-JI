@@ -104,9 +104,13 @@
         <div class="map-panel">
           <div class="panel-row">
             <p class="panel-title">India Map</p>
-            <button id="openMapBtn" class="mini-btn" type="button">Map</button>
+            <div class="map-actions">
+              <button id="openMapBtn" class="mini-btn" type="button">Map</button>
+              <button id="resetProgressBtn" class="mini-btn ghost-mini-btn" type="button">Reset</button>
+            </div>
           </div>
           <p id="activeRegionCopy" class="map-copy">Create a party, then choose a state or UT.</p>
+          <p id="mobileHintCopy" class="mobile-hint-copy">On phone: tap a flag, then swipe inside the state arena.</p>
           <div id="miniRegionGrid" class="mini-region-grid" aria-label="State progress map"></div>
         </div>
         <div class="log-panel">

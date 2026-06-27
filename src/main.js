@@ -141,6 +141,194 @@ const REGION_BLOB_SIZE = {
   defaultUt: [0.035, 0.035]
 };
 
+const REGION_SHAPE_TEMPLATES = {
+  state: [
+    [-0.2, -0.95],
+    [0.58, -0.72],
+    [0.98, -0.14],
+    [0.72, 0.68],
+    [0.08, 0.95],
+    [-0.74, 0.54],
+    [-0.98, -0.18],
+    [-0.62, -0.72]
+  ],
+  compact: [
+    [-0.12, -0.92],
+    [0.72, -0.62],
+    [0.9, 0.06],
+    [0.42, 0.82],
+    [-0.35, 0.86],
+    [-0.88, 0.22],
+    [-0.7, -0.52]
+  ],
+  wide: [
+    [-0.95, -0.48],
+    [-0.28, -0.76],
+    [0.62, -0.58],
+    [0.98, -0.08],
+    [0.72, 0.5],
+    [-0.06, 0.74],
+    [-0.86, 0.44]
+  ],
+  vertical: [
+    [-0.38, -0.92],
+    [0.42, -0.78],
+    [0.72, -0.22],
+    [0.48, 0.5],
+    [0.04, 0.98],
+    [-0.58, 0.58],
+    [-0.74, -0.14]
+  ],
+  rajasthan: [
+    [-0.95, -0.58],
+    [-0.22, -0.88],
+    [0.8, -0.62],
+    [0.98, 0.18],
+    [0.36, 0.76],
+    [-0.5, 0.72],
+    [-0.98, 0.08]
+  ],
+  gujarat: [
+    [-0.98, -0.34],
+    [-0.3, -0.76],
+    [0.58, -0.54],
+    [0.94, 0.12],
+    [0.46, 0.62],
+    [-0.2, 0.82],
+    [-0.52, 0.32],
+    [-0.92, 0.54],
+    [-0.7, 0.02]
+  ],
+  up: [
+    [-0.98, -0.34],
+    [-0.36, -0.7],
+    [0.56, -0.56],
+    [0.98, -0.06],
+    [0.74, 0.48],
+    [0.08, 0.68],
+    [-0.62, 0.42]
+  ],
+  madhya: [
+    [-0.88, -0.5],
+    [-0.12, -0.78],
+    [0.76, -0.52],
+    [0.98, 0.08],
+    [0.48, 0.7],
+    [-0.24, 0.82],
+    [-0.86, 0.38],
+    [-0.98, -0.08]
+  ],
+  coastalWest: [
+    [-0.58, -0.92],
+    [0.32, -0.78],
+    [0.76, -0.18],
+    [0.52, 0.56],
+    [0.06, 0.96],
+    [-0.34, 0.62],
+    [-0.72, -0.16]
+  ],
+  coastalEast: [
+    [-0.44, -0.9],
+    [0.54, -0.62],
+    [0.86, -0.04],
+    [0.52, 0.78],
+    [-0.2, 0.92],
+    [-0.72, 0.36],
+    [-0.82, -0.36]
+  ],
+  kerala: [
+    [-0.28, -0.96],
+    [0.24, -0.8],
+    [0.38, -0.18],
+    [0.28, 0.58],
+    [0.04, 0.98],
+    [-0.34, 0.46],
+    [-0.42, -0.34]
+  ],
+  tamil: [
+    [-0.42, -0.82],
+    [0.56, -0.66],
+    [0.82, 0.06],
+    [0.34, 0.96],
+    [-0.32, 0.72],
+    [-0.72, 0.1]
+  ],
+  bengal: [
+    [-0.44, -0.92],
+    [0.42, -0.72],
+    [0.72, -0.12],
+    [0.36, 0.26],
+    [0.28, 0.92],
+    [-0.22, 0.72],
+    [-0.36, 0.1],
+    [-0.72, -0.28]
+  ],
+  hill: [
+    [-0.86, -0.24],
+    [-0.42, -0.82],
+    [0.44, -0.78],
+    [0.9, -0.2],
+    [0.58, 0.48],
+    [-0.22, 0.76],
+    [-0.84, 0.36]
+  ],
+  river: [
+    [-0.98, -0.12],
+    [-0.42, -0.48],
+    [0.42, -0.38],
+    [0.98, 0.02],
+    [0.4, 0.44],
+    [-0.38, 0.48],
+    [-0.9, 0.18]
+  ],
+  island: [
+    [-0.24, -0.98],
+    [0.28, -0.58],
+    [0.22, 0.4],
+    [-0.06, 0.98],
+    [-0.32, 0.2]
+  ]
+};
+
+const REGION_SHAPE_PROFILES = {
+  "andhra-pradesh": { template: "coastalEast", angle: 0.08, label: "AP" },
+  "arunachal-pradesh": { template: "hill", scaleX: 1.35, scaleY: 0.8, label: "AR" },
+  assam: { template: "river", scaleX: 1.25, scaleY: 0.78, label: "AS" },
+  bihar: { template: "wide", scaleX: 1.1, scaleY: 0.72, label: "BR" },
+  chhattisgarh: { template: "vertical", scaleX: 0.9, scaleY: 1.12, label: "CG" },
+  goa: { template: "compact", scaleX: 0.82, scaleY: 0.82, label: "GA" },
+  gujarat: { template: "gujarat", scaleX: 1.18, scaleY: 1.02, label: "GJ" },
+  haryana: { template: "compact", scaleX: 0.95, scaleY: 0.9, label: "HR" },
+  "himachal-pradesh": { template: "hill", scaleX: 1.08, scaleY: 0.72, label: "HP" },
+  jharkhand: { template: "compact", label: "JH" },
+  karnataka: { template: "coastalWest", scaleX: 1, scaleY: 1.18, label: "KA" },
+  kerala: { template: "kerala", scaleX: 0.7, scaleY: 1.35, label: "KL" },
+  "madhya-pradesh": { template: "madhya", scaleX: 1.12, scaleY: 0.98, label: "MP" },
+  maharashtra: { template: "wide", scaleX: 1.2, scaleY: 0.88, label: "MH" },
+  manipur: { template: "compact", scaleX: 0.82, scaleY: 0.9, label: "MN" },
+  meghalaya: { template: "hill", scaleX: 1.08, scaleY: 0.62, label: "ML" },
+  mizoram: { template: "vertical", scaleX: 0.72, scaleY: 1.12, label: "MZ" },
+  nagaland: { template: "hill", scaleX: 0.96, scaleY: 0.7, label: "NL" },
+  odisha: { template: "coastalEast", scaleX: 0.96, scaleY: 1.04, label: "OD" },
+  punjab: { template: "compact", scaleX: 0.95, scaleY: 0.82, label: "PB" },
+  rajasthan: { template: "rajasthan", scaleX: 1.2, scaleY: 1.04, label: "RJ" },
+  sikkim: { template: "compact", scaleX: 0.72, scaleY: 0.72, label: "SK" },
+  "tamil-nadu": { template: "tamil", scaleX: 0.95, scaleY: 1.16, label: "TN" },
+  telangana: { template: "compact", scaleX: 0.98, scaleY: 0.96, label: "TS" },
+  tripura: { template: "vertical", scaleX: 0.7, scaleY: 0.9, label: "TR" },
+  "uttar-pradesh": { template: "up", scaleX: 1.25, scaleY: 0.82, label: "UP" },
+  uttarakhand: { template: "hill", scaleX: 0.94, scaleY: 0.7, label: "UK" },
+  "west-bengal": { template: "bengal", scaleX: 0.84, scaleY: 1.14, label: "WB" },
+  chandigarh: { template: "compact", scaleX: 0.62, scaleY: 0.62, label: "CH" },
+  "dadra-daman-diu": { template: "compact", scaleX: 0.74, scaleY: 0.58, label: "DD" },
+  delhi: { template: "compact", scaleX: 0.72, scaleY: 0.72, label: "DL" },
+  "jammu-kashmir": { template: "hill", scaleX: 1.15, scaleY: 0.76, label: "JK" },
+  ladakh: { template: "hill", scaleX: 1.28, scaleY: 0.74, label: "LA" },
+  puducherry: { template: "compact", scaleX: 0.62, scaleY: 0.7, label: "PY" },
+  "andaman-nicobar": { template: "island", label: "AN" },
+  lakshadweep: { template: "island", label: "LD" }
+};
+
 const fallbackData = {
   opponentParties: [
     { name: "Chai Biscuit Front", color: "#2f7de1", symbol: "cup" },
@@ -151,8 +339,20 @@ const fallbackData = {
     {
       title: "Mega rally speaker boost",
       effect: "speedUp",
-      copy: "Your rally van got louder. Speed up for a bit.",
+      copy: "Dhol team got louder. Speed up for a bit.",
       impact: { support: 3, power: 1, funds: -2 }
+    },
+    {
+      title: "Comedy raid on poster stock",
+      effect: "raid",
+      copy: "Officials counted every sticker. Funds and reputation take a hit.",
+      impact: { funds: -14, reputation: -3, power: -1 }
+    },
+    {
+      title: "Tea break at nukkad",
+      effect: "teaBreak",
+      copy: "Volunteers paused for chai. Speed dips, public support smiles.",
+      impact: { support: 4, funds: -2, reputation: 1 }
     },
     {
       title: "Poster printer jam",
@@ -333,6 +533,7 @@ const shareBtn = document.querySelector("#shareBtn");
 const boostBtn = document.querySelector("#boostBtn");
 const pauseBtn = document.querySelector("#pauseBtn");
 const openMapBtn = document.querySelector("#openMapBtn");
+const resetProgressBtn = document.querySelector("#resetProgressBtn");
 const confirmRegionBtn = document.querySelector("#confirmRegionBtn");
 const cancelRegionBtn = document.querySelector("#cancelRegionBtn");
 const influenceStat = document.querySelector("#influenceStat");
@@ -349,6 +550,7 @@ const resultCopy = document.querySelector("#resultCopy");
 const resultStamp = document.querySelector("#resultStamp");
 const resultSymbol = document.querySelector("#resultSymbol");
 const activeRegionCopy = document.querySelector("#activeRegionCopy");
+const mobileHintCopy = document.querySelector("#mobileHintCopy");
 const miniRegionGrid = document.querySelector("#miniRegionGrid");
 const regionGrid = document.querySelector("#regionGrid");
 const regionModalCopy = document.querySelector("#regionModalCopy");
@@ -404,6 +606,7 @@ const state = {
   mapRect: { x: 0, y: 0, width: 0, height: 0 },
   pointer: { x: 0, y: 0, active: false },
   touchCue: null,
+  resetProgressTimer: null,
   audioContext: null,
   audioUnlocked: false,
   shareText: ""
@@ -702,6 +905,103 @@ function saveCampaignProgress() {
   localStorage.setItem(PROGRESS_KEY, JSON.stringify(payload));
 }
 
+function updateMobileHint() {
+  if (!mobileHintCopy) return;
+  const wonCount = completedRegionCount();
+  const activeRegion = getActiveRegion();
+  if (state.mode === "playing" && activeRegion) {
+    mobileHintCopy.textContent = state.roundStarted
+      ? "Swipe/tap anywhere in the arena to turn. Rally gives a short speed burst."
+      : `${activeRegion.name}: tap or swipe inside the arena to start the yatra.`;
+    return;
+  }
+  if (state.mode === "result") {
+    mobileHintCopy.textContent = "Result card ke baad Next State se India map par wapas jao.";
+    return;
+  }
+  mobileHintCopy.textContent = wonCount > 0
+    ? `${wonCount}/${REGIONS.length} regions won. Reset clears local test progress.`
+    : "On phone: tap a flag, OK, then swipe inside the state arena.";
+}
+
+function disarmResetProgressButton() {
+  if (!resetProgressBtn) return;
+  resetProgressBtn.textContent = "Reset";
+  resetProgressBtn.classList.remove("is-armed");
+  resetProgressBtn.dataset.confirming = "false";
+  if (state.resetProgressTimer) {
+    window.clearTimeout(state.resetProgressTimer);
+    state.resetProgressTimer = null;
+  }
+}
+
+function resetCampaignProgress() {
+  try {
+    localStorage.removeItem(PROGRESS_KEY);
+  } catch {
+    // Local storage can fail in strict browser modes; reset the in-memory campaign anyway.
+  }
+  disarmResetProgressButton();
+  state.campaign.activeRegionId = null;
+  state.campaign.pendingRegionId = null;
+  state.campaign.completed = {};
+  state.campaign.lastWonRegionId = null;
+  state.campaign.nationalWon = false;
+  state.neta = { ...DEFAULT_NETA };
+  state.owner.fill(0);
+  state.trail.fill(0);
+  state.regionMask.fill(0);
+  state.activePolygon = [];
+  state.player = null;
+  state.opponents = [];
+  state.supporters = [];
+  state.ambientPeople = [];
+  state.conversionBursts = [];
+  state.claimBursts = [];
+  state.supportersConverted = 0;
+  state.keys.clear();
+  state.pointer.active = false;
+  state.touchCue = null;
+  state.timeLeft = ROUND_SECONDS;
+  state.roundElapsed = 0;
+  state.roundStarted = false;
+  state.paused = false;
+  state.eventClock = 12;
+  state.boostClock = 0;
+  state.speedMul = 1;
+  state.influence = 0;
+  state.shareText = "";
+  feedList.innerHTML = "";
+  setupModal.classList.remove("is-open");
+  resultModal.classList.remove("is-open");
+  regionModal.classList.remove("is-open");
+  confirmPanel.hidden = true;
+  pauseBtn.textContent = "Pause";
+  eventStat.textContent = "Ready";
+  state.mode = "map";
+  renderRegionHub();
+  updateStats();
+  addFeed("Progress reset. Choose any state for a fresh mandate.");
+  showToast("Progress reset. All flags are fresh again.");
+  playSound("tap");
+  triggerHaptic([8, 30, 8]);
+}
+
+function handleResetProgressClick() {
+  ensureAudio();
+  if (resetProgressBtn.dataset.confirming === "true") {
+    resetCampaignProgress();
+    return;
+  }
+  resetProgressBtn.dataset.confirming = "true";
+  resetProgressBtn.textContent = "Sure?";
+  resetProgressBtn.classList.add("is-armed");
+  showToast("Tap Sure? to clear saved local progress.");
+  triggerHaptic(8);
+  if (state.resetProgressTimer) window.clearTimeout(state.resetProgressTimer);
+  state.resetProgressTimer = window.setTimeout(disarmResetProgressButton, 4200);
+}
+
 function renderRegionHub() {
   const activeRegion = getActiveRegion();
   const resumableRegion = getResumableActiveRegion();
@@ -736,6 +1036,7 @@ function renderRegionHub() {
     button.addEventListener("click", () => showRegionPrompt(region.id));
     regionGrid.append(button);
   }
+  updateMobileHint();
   updateNetaPanel();
 }
 
@@ -747,6 +1048,7 @@ function openRegionModal() {
   state.campaign.pendingRegionId = null;
   renderRegionHub();
   state.mode = "map";
+  updateMobileHint();
   showToast(state.campaign.nationalWon ? "National mandate complete. World yatra coming soon." : "Touch any black flag on the India map.");
 }
 
@@ -777,6 +1079,7 @@ function selectRegion(regionId) {
   resultModal.classList.remove("is-open");
   setupModal.classList.remove("is-open");
   state.mode = "playing";
+  updateMobileHint();
   const yatraCopy = previous && previous.id !== region.id ? `Paidal yatra moved from ${previous.name} to ${region.name}.` : `${region.name} campaign opened.`;
   addFeed(yatraCopy);
   showToast(yatraCopy);
@@ -839,23 +1142,49 @@ function seededNoise(seed, indexValue) {
   return ((value >>> 0) % 10000) / 10000;
 }
 
-function generateRegionPolygon(region) {
+function getRegionShapeProfile(region) {
+  const profile = REGION_SHAPE_PROFILES[region?.id] || {};
+  return {
+    template: profile.template || (region?.type === "UT" ? "compact" : "state"),
+    scaleX: profile.scaleX || 1,
+    scaleY: profile.scaleY || 1,
+    angle: profile.angle || 0,
+    label: profile.label || ""
+  };
+}
+
+function getRegionShapeLocalPoints(region, jitter = 0) {
+  const profile = getRegionShapeProfile(region);
+  const template = REGION_SHAPE_TEMPLATES[profile.template] || REGION_SHAPE_TEMPLATES.state;
   const seed = hashText(region?.id || "district");
+  return template.map(([x, y], i) => {
+    const jx = jitter ? (seededNoise(seed, i * 11 + 5) - 0.5) * jitter : 0;
+    const jy = jitter ? (seededNoise(seed, i * 13 + 7) - 0.5) * jitter : 0;
+    return [x + jx, y + jy];
+  });
+}
+
+function transformRegionShapePoint(localX, localY, centerX, centerY, rx, ry, profile) {
+  const x = localX * rx * profile.scaleX;
+  const y = localY * ry * profile.scaleY;
+  const cos = Math.cos(profile.angle);
+  const sin = Math.sin(profile.angle);
+  return {
+    x: centerX + x * cos - y * sin,
+    y: centerY + x * sin + y * cos
+  };
+}
+
+function generateRegionPolygon(region) {
+  const profile = getRegionShapeProfile(region);
+  const localPoints = getRegionShapeLocalPoints(region, 0.1);
   const points = [];
-  const count = region?.type === "UT" ? 15 : 20;
   const centerX = COLS / 2;
   const centerY = ROWS / 2;
-  const radiusX = region?.type === "UT" ? 17.5 : 22.5;
-  const radiusY = region?.type === "UT" ? 14.5 : 16.8;
-  for (let i = 0; i < count; i += 1) {
-    const t = i / count;
-    const angle = Math.PI * 2 * t - Math.PI / 2;
-    const wobble = 0.76 + seededNoise(seed, i) * 0.34;
-    const skew = Math.sin(angle * 2 + seed * 0.00001) * 0.12;
-    points.push({
-      x: centerX + Math.cos(angle) * radiusX * wobble + skew * radiusX,
-      y: centerY + Math.sin(angle) * radiusY * (0.84 + seededNoise(seed, i + 33) * 0.28)
-    });
+  const radiusX = region?.type === "UT" ? 20.5 : 22.5;
+  const radiusY = region?.type === "UT" ? 15.6 : 16.8;
+  for (const [x, y] of localPoints) {
+    points.push(transformRegionShapePoint(x, y, centerX, centerY, radiusX, radiusY, profile));
   }
   return points;
 }
@@ -1205,6 +1534,7 @@ function beginRound() {
   state.roundStarted = true;
   state.eventClock = 8;
   eventStat.textContent = "Campaign";
+  updateMobileHint();
   showToast("Campaign yatra started.");
   triggerHaptic(10);
   updateNetaPanel();
@@ -1427,6 +1757,15 @@ function triggerEvent() {
   } else if (event.effect === "speedDown") {
     state.speedMul = 0.82;
     state.boostClock = 5;
+  } else if (event.effect === "raid") {
+    state.speedMul = 0.74;
+    state.boostClock = 4.2;
+    addConversionBurst(state.player.x, state.player.y, "#151515");
+  } else if (event.effect === "teaBreak") {
+    state.speedMul = 0.88;
+    state.boostClock = 3.2;
+    const cells = claimDisk(1, state.player.x, state.player.y, 2.4);
+    addClaimBurst(cells, state.party.color);
   } else if (event.effect === "claimBurst") {
     const cells = claimDisk(1, state.player.x, state.player.y, 3.8);
     addClaimBurst(cells, state.party.color);
@@ -1527,6 +1866,7 @@ function updateStats() {
 function finishRound(won, reason) {
   if (state.mode !== "playing") return;
   state.mode = "result";
+  updateMobileHint();
   clearTrail(1);
   const finalScore = mandateScore();
   const victory = Boolean(won);
@@ -1722,14 +2062,15 @@ function drawRegionBlob(region, fill, options = {}) {
   const [rxNorm, ryNorm] = getRegionBlobSize(region);
   const rx = rect.width * rxNorm;
   const ry = rect.height * ryNorm;
+  const profile = getRegionShapeProfile(region);
   const seed = hashText(region.id);
-  const sides = region.type === "UT" ? 8 : 11;
 
   ctx.save();
   ctx.fillStyle = fill;
-  ctx.strokeStyle = options.pending ? "#151515" : "rgba(21, 21, 21, 0.74)";
-  ctx.lineWidth = options.pending ? 3 : 1.7;
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = options.pending ? Math.max(2.6, rect.width * 0.006) : Math.max(1.4, rect.width * 0.0038);
   ctx.lineJoin = "round";
+  ctx.lineCap = "round";
 
   if (region.id === "andaman-nicobar" || region.id === "lakshadweep") {
     const dots = region.id === "andaman-nicobar" ? 5 : 4;
@@ -1745,18 +2086,26 @@ function drawRegionBlob(region, fill, options = {}) {
     return;
   }
 
+  const localPoints = getRegionShapeLocalPoints(region, 0.04);
   ctx.beginPath();
-  for (let i = 0; i < sides; i += 1) {
-    const angle = (Math.PI * 2 * i) / sides - Math.PI / 2;
-    const wobble = 0.82 + seededNoise(seed, i) * 0.32;
-    const x = point.x + Math.cos(angle) * rx * wobble;
-    const y = point.y + Math.sin(angle) * ry * (0.82 + seededNoise(seed, i + 41) * 0.28);
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
+  localPoints.forEach(([localX, localY], i) => {
+    const p = transformRegionShapePoint(localX, localY, point.x, point.y, rx, ry, profile);
+    if (i === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  });
   ctx.closePath();
   ctx.fill();
   ctx.stroke();
+
+  const canLabel = rect.width > 270 && (region.type !== "UT" || options.pending || state.campaign.completed[region.id]);
+  if (profile.label && canLabel) {
+    const isDarkFill = fill !== "#fffdf7" && fill !== "#ffd166";
+    ctx.fillStyle = isDarkFill ? "#fffdf7" : "rgba(21, 21, 21, 0.78)";
+    ctx.font = `900 ${Math.max(6.5, rect.width * (region.type === "UT" ? 0.014 : 0.017))}px ui-sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(profile.label, point.x, point.y, rx * 1.7);
+  }
   ctx.restore();
 }
 
@@ -2169,54 +2518,6 @@ function drawTinyFlag(x, y, s, color) {
   ctx.restore();
 }
 
-function drawCampaignVan(cx, cy, size, color, label = "") {
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.fillStyle = "rgba(21, 21, 21, 0.18)";
-  ctx.beginPath();
-  ctx.ellipse(0, size * 0.5, size * 1.05, size * 0.24, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "#fffdf7";
-  ctx.strokeStyle = "#151515";
-  ctx.lineWidth = Math.max(1.2, size * 0.08);
-  ctx.lineJoin = "round";
-  ctx.beginPath();
-  ctx.roundRect(-size * 1.25, -size * 0.48, size * 2.5, size * 1.02, size * 0.16);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = color;
-  ctx.fillRect(-size * 1.15, -size * 0.38, size * 0.48, size * 0.8);
-  ctx.fillRect(size * 0.18, -size * 0.38, size * 0.96, size * 0.8);
-  ctx.strokeRect(-size * 1.15, -size * 0.38, size * 0.48, size * 0.8);
-  ctx.strokeRect(size * 0.18, -size * 0.38, size * 0.96, size * 0.8);
-
-  ctx.fillStyle = "#bfe7ff";
-  ctx.fillRect(-size * 0.54, -size * 0.34, size * 0.58, size * 0.42);
-  ctx.strokeRect(-size * 0.54, -size * 0.34, size * 0.58, size * 0.42);
-
-  ctx.fillStyle = "#151515";
-  ctx.beginPath();
-  ctx.arc(-size * 0.76, size * 0.55, size * 0.22, 0, Math.PI * 2);
-  ctx.arc(size * 0.76, size * 0.55, size * 0.22, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#fffdf7";
-  ctx.beginPath();
-  ctx.arc(-size * 0.76, size * 0.55, size * 0.08, 0, Math.PI * 2);
-  ctx.arc(size * 0.76, size * 0.55, size * 0.08, 0, Math.PI * 2);
-  ctx.fill();
-
-  drawTinyFlag(size * 0.95, -size * 0.78, size * 0.45, color);
-  if (label) {
-    ctx.fillStyle = "#151515";
-    ctx.font = `900 ${Math.max(6, size * 0.28)}px ui-sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText(label.slice(0, 5).toUpperCase(), -size * 0.18, size * 0.28);
-  }
-  ctx.restore();
-}
-
 function drawMiniPerson(cx, cy, size, options = {}) {
   const color = options.color || state.party.color;
   const accent = options.accent || "#fffdf7";
@@ -2440,16 +2741,30 @@ function drawCampaignRoads() {
   ctx.stroke();
   ctx.setLineDash([]);
 
+  for (const checkpoint of [route[1], route[3], route[5]]) {
+    drawTinyFlag((checkpoint.x + 0.5) * s, (checkpoint.y + 0.45) * s, s * 0.55, state.party.color);
+  }
+
   if (state.roundStarted) {
-    const segmentCount = route.length - 1;
-    const travel = ((state.roundElapsed * 0.18) % 1) * segmentCount;
-    const segment = Math.min(segmentCount - 1, Math.floor(travel));
-    const t = travel - segment;
-    const from = route[segment];
-    const to = route[segment + 1];
-    const x = (from.x + (to.x - from.x) * t + 0.5) * s;
-    const y = (from.y + (to.y - from.y) * t + 0.5) * s;
-    drawCampaignVan(x, y, s * 1.22, state.party.color, state.party.name);
+    const stepCount = 9;
+    for (let i = 0; i < stepCount; i += 1) {
+      const routeIndex = (i + state.roundElapsed * 1.8) % (route.length - 1);
+      const segment = Math.floor(routeIndex);
+      const t = routeIndex - segment;
+      const from = route[segment];
+      const to = route[segment + 1];
+      const x = (from.x + (to.x - from.x) * t + 0.5) * s;
+      const y = (from.y + (to.y - from.y) * t + 0.5) * s;
+      const sideX = Math.sign(to.y - from.y) * s * 0.12;
+      const sideY = -Math.sign(to.x - from.x) * s * 0.12;
+      ctx.fillStyle = i % 2 ? state.party.color : "#151515";
+      ctx.globalAlpha = 0.78;
+      ctx.beginPath();
+      ctx.ellipse(x - sideX, y - sideY, Math.max(2, s * 0.16), Math.max(1.5, s * 0.09), 0, 0, Math.PI * 2);
+      ctx.ellipse(x + sideX, y + sideY, Math.max(2, s * 0.16), Math.max(1.5, s * 0.09), 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
   }
 
   ctx.restore();
@@ -2781,8 +3096,9 @@ function pickRegionFromMap(point) {
   for (const region of REGIONS) {
     const flag = getRegionMapPoint(region);
     const [rxNorm, ryNorm] = getRegionBlobSize(region);
-    const rx = Math.max(15, state.mapRect.width * rxNorm * 1.25);
-    const ry = Math.max(15, state.mapRect.height * ryNorm * 1.25);
+    const profile = getRegionShapeProfile(region);
+    const rx = Math.max(15, state.mapRect.width * rxNorm * profile.scaleX * 1.32);
+    const ry = Math.max(15, state.mapRect.height * ryNorm * profile.scaleY * 1.32);
     const dx = (point.x - flag.x) / rx;
     const dy = (point.y - flag.y) / ry;
     const score = Math.hypot(dx, dy);
@@ -2920,11 +3236,13 @@ function bindEvents() {
   });
   nextRegionBtn.addEventListener("click", openRegionModal);
   openMapBtn.addEventListener("click", openRegionModal);
+  resetProgressBtn.addEventListener("click", handleResetProgressClick);
   confirmRegionBtn.addEventListener("click", confirmPendingRegion);
   cancelRegionBtn.addEventListener("click", () => {
     state.campaign.pendingRegionId = null;
     confirmPanel.hidden = true;
     state.mode = "map";
+    updateMobileHint();
   });
   shareBtn.addEventListener("click", shareResult);
   partyNameInput.addEventListener("input", () => {
