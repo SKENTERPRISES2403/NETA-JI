@@ -375,6 +375,7 @@ const state = {
   player: null,
   opponents: [],
   supporters: [],
+  ambientPeople: [],
   conversionBursts: [],
   claimBursts: [],
   supportersConverted: 0,
@@ -402,6 +403,7 @@ const state = {
   offsetY: 0,
   mapRect: { x: 0, y: 0, width: 0, height: 0 },
   pointer: { x: 0, y: 0, active: false },
+  touchCue: null,
   audioContext: null,
   audioUnlocked: false,
   shareText: ""
@@ -593,6 +595,15 @@ function showToast(message) {
   state.toastClock = 2.4;
 }
 
+function triggerHaptic(pattern = 10) {
+  if (!("vibrate" in navigator)) return;
+  try {
+    navigator.vibrate(pattern);
+  } catch {
+    // Haptics are a mobile polish layer only; unsupported devices can ignore them.
+  }
+}
+
 function ensureAudio() {
   if (state.audioUnlocked) return;
   const AudioCtor = window.AudioContext || window.webkitAudioContext;
@@ -744,6 +755,7 @@ function showRegionPrompt(regionId) {
   if (!region) return;
   ensureAudio();
   playSound("tap");
+  triggerHaptic(8);
   state.campaign.pendingRegionId = region.id;
   confirmTitle.textContent = `${region.name} election?`;
   confirmCopy.textContent = state.campaign.completed[region.id]
@@ -968,6 +980,67 @@ function createSupporter(source, color) {
   };
 }
 
+function createAmbientPeople(region) {
+  const seed = hashText(region?.id || "campaign");
+  const count = region?.type === "UT" ? 18 : 28;
+  const roles = ["voter", "volunteer", "poster", "flag"];
+  const palette = ["#fffdf7", "#ffd166", "#bfe7ff", "#f7c68f", "#b9dfb5"];
+  const people = [];
+
+  for (let i = 0; i < count; i += 1) {
+    const baseX = 4 + seededNoise(seed, i * 7 + 3) * (COLS - 8);
+    const baseY = 4 + seededNoise(seed, i * 9 + 11) * (ROWS - 8);
+    const spot = findMaskedSpawn(baseX, baseY);
+    const role = roles[Math.floor(seededNoise(seed, i * 13 + 19) * roles.length)] || "voter";
+    const color = palette[Math.floor(seededNoise(seed, i * 17 + 29) * palette.length)] || "#fffdf7";
+    people.push({
+      x: spot.x,
+      y: spot.y,
+      homeX: spot.x,
+      homeY: spot.y,
+      targetX: spot.x,
+      targetY: spot.y,
+      role,
+      color,
+      phase: seededNoise(seed, i * 23 + 31) * Math.PI * 2,
+      wanderClock: 0.6 + seededNoise(seed, i * 31 + 37) * 2.4,
+      speed: 0.45 + seededNoise(seed, i * 41 + 43) * 0.75,
+      size: 0.58 + seededNoise(seed, i * 47 + 53) * 0.26
+    });
+  }
+
+  return people;
+}
+
+function updateAmbientPeople(dt) {
+  for (const person of state.ambientPeople) {
+    person.phase += dt * (0.9 + person.size);
+    person.wanderClock -= dt;
+    if (person.wanderClock <= 0) {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = person.role === "voter" ? 1.8 + Math.random() * 2.8 : 0.8 + Math.random() * 1.8;
+      const targetX = person.homeX + Math.cos(angle) * distance;
+      const targetY = person.homeY + Math.sin(angle) * distance;
+      if (isMaskedCell(targetX, targetY)) {
+        person.targetX = targetX;
+        person.targetY = targetY;
+      }
+      person.wanderClock = 1.3 + Math.random() * 2.6;
+    }
+
+    const dx = person.targetX - person.x;
+    const dy = person.targetY - person.y;
+    const distance = Math.hypot(dx, dy) || 1;
+    const step = Math.min(distance, person.speed * dt);
+    const nextX = person.x + (dx / distance) * step;
+    const nextY = person.y + (dy / distance) * step;
+    if (isMaskedCell(nextX, nextY)) {
+      person.x = nextX;
+      person.y = nextY;
+    }
+  }
+}
+
 function addConversionBurst(x, y, color) {
   for (let i = 0; i < 18; i += 1) {
     const angle = Math.random() * Math.PI * 2;
@@ -1038,6 +1111,7 @@ function convertOpponent(ownerId, cutX, cutY) {
   addFeed(`${opponent.name} joined your rally. +${joined} supporters.`);
   showToast(`${opponent.name} converted. Supporters joined.`);
   playSound("convert");
+  triggerHaptic([10, 25, 14]);
   if (state.opponents.length === 0) {
     addFeed("All local rivals joined your rally. Keep winning booths.");
   }
@@ -1057,10 +1131,13 @@ function resetGame() {
   state.player.dirY = 0;
   state.opponents = [];
   state.supporters = [];
+  state.ambientPeople = createAmbientPeople(activeRegion);
   state.conversionBursts = [];
   state.claimBursts = [];
   state.supportersConverted = 0;
   state.keys.clear();
+  state.pointer.active = false;
+  state.touchCue = null;
   state.timeLeft = ROUND_SECONDS;
   state.roundElapsed = 0;
   state.roundStarted = false;
@@ -1129,6 +1206,7 @@ function beginRound() {
   state.eventClock = 8;
   eventStat.textContent = "Campaign";
   showToast("Campaign yatra started.");
+  triggerHaptic(10);
   updateNetaPanel();
 }
 
@@ -1259,6 +1337,7 @@ function closeLoop(agent) {
     showToast("Campaign loop closed. Influence gained.");
     addClaimBurst(claimedCells, state.party.color);
     playSound("loop");
+    triggerHaptic([8, 24, 16]);
     saveCampaignProgress();
   }
   agent.trailCells = [];
@@ -1482,16 +1561,19 @@ function finishRound(won, reason) {
   if (victory) {
     addFeed(nationalComplete ? "National mandate complete. World yatra teaser unlocked." : `${regionName} mandate won. Red flag raised on the India map.`);
     playSound("win");
+    triggerHaptic(nationalComplete ? [20, 40, 20, 40, 36] : [14, 30, 22]);
     resultModal.classList.add("is-open");
     showToast(nationalComplete ? "National mandate complete." : `${regionName} won. Red flag ready on the India map.`);
     return;
   }
   playSound("lose");
+  triggerHaptic([24, 60, 16]);
   resultModal.classList.add("is-open");
 }
 
 function update(dt) {
   if (state.mode !== "playing") return;
+  updateTouchCue(dt);
   if (state.paused) {
     state.toastClock -= dt;
     if (state.toastClock <= 0) toast.classList.remove("is-visible");
@@ -1501,6 +1583,7 @@ function update(dt) {
   }
   applyKeyboardDirection();
   if (!state.roundStarted) {
+    updateAmbientPeople(dt * 0.35);
     state.toastClock -= dt;
     if (state.toastClock <= 0) toast.classList.remove("is-visible");
     updateNetaPanel();
@@ -1521,6 +1604,7 @@ function update(dt) {
     state.neta.decisionClock = Math.max(0, state.neta.decisionClock - dt);
   }
 
+  updateAmbientPeople(dt);
   updateAgent(state.player, dt);
   updateOpponents(dt);
   updateSupporters(dt);
@@ -2209,6 +2293,15 @@ function drawMiniPerson(cx, cy, size, options = {}) {
   ctx.beginPath();
   ctx.arc(0, -size * 0.52, size * 0.28, Math.PI, Math.PI * 2);
   ctx.fill();
+  ctx.beginPath();
+  ctx.arc(-size * 0.1, -size * 0.43, size * 0.035, 0, Math.PI * 2);
+  ctx.arc(size * 0.1, -size * 0.43, size * 0.035, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = Math.max(1, size * 0.035);
+  ctx.beginPath();
+  ctx.arc(0, -size * 0.33, size * 0.11, 0.15 * Math.PI, 0.85 * Math.PI);
+  ctx.stroke();
 
   if (options.symbol) {
     drawSymbol(options.symbol, 0, size * 0.2, size * 0.36, accent);
@@ -2505,6 +2598,44 @@ function drawCampaignProps() {
   ctx.restore();
 }
 
+function drawAmbientPeople() {
+  if (state.ambientPeople.length === 0) return;
+  ctx.save();
+  ctx.translate(state.offsetX, state.offsetY);
+  const s = state.cellSize;
+  const visibleCount = clamp(Math.round(12 + state.neta.support * 0.16 + state.influence * 0.1), 12, state.ambientPeople.length);
+
+  for (let i = 0; i < visibleCount; i += 1) {
+    const person = state.ambientPeople[i];
+    const cellX = clamp(Math.floor(person.x), 0, COLS - 1);
+    const cellY = clamp(Math.floor(person.y), 0, ROWS - 1);
+    const ownerId = state.owner[index(cellX, cellY)];
+    const isPartyArea = ownerId === 1;
+    const isOpponentArea = ownerId > 1;
+    if (isOpponentArea && person.role !== "voter" && i % 2 === 0) continue;
+
+    const cx = (person.x + 0.5) * s;
+    const cy = (person.y + 0.5) * s;
+    const clothing = isPartyArea || person.role === "volunteer" || person.role === "flag" ? state.party.color : person.color;
+    const accent = clothing === state.party.color ? "#fffdf7" : state.party.color;
+
+    if (person.role === "poster" && isPartyArea) {
+      drawTinyPoster(cx - s * 1.2, cy - s * 1.4, s * 0.62, state.party.color, "VOTE");
+    }
+
+    drawMiniPerson(cx, cy, s * person.size, {
+      color: clothing,
+      accent,
+      phase: person.phase + i * 0.23,
+      flag: person.role === "flag" || (isPartyArea && i % 9 === 0),
+      foldedHands: person.role === "voter" && state.influence > 42 && i % 10 === 0
+    });
+  }
+
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
 function drawAgent(agent, isPlayer) {
   const s = state.cellSize;
   const cx = state.offsetX + (agent.x + 0.5) * s;
@@ -2525,6 +2656,44 @@ function drawAgent(agent, isPlayer) {
     ctx.fillText("JI", cx, cy + s * 3);
   }
   ctx.restore();
+}
+
+function drawTouchCue() {
+  if (state.mode !== "playing" || !state.touchCue) return;
+  const cue = state.touchCue;
+  const alpha = clamp(cue.life / cue.maxLife, 0, 1);
+  const vectors = {
+    up: [0, -1],
+    down: [0, 1],
+    left: [-1, 0],
+    right: [1, 0]
+  };
+  const [vx, vy] = vectors[cue.dir] || [0, -1];
+  const radius = 18 + (1 - alpha) * 18;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(cue.x, cue.y);
+  ctx.strokeStyle = "rgba(21, 21, 21, 0.72)";
+  ctx.fillStyle = "rgba(255, 253, 247, 0.78)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = state.party.color;
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(vx * 20, vy * 20);
+  ctx.lineTo(vx * -8 + vy * 8, vy * -8 - vx * 8);
+  ctx.lineTo(vx * -8 - vy * 8, vy * -8 + vx * 8);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+  ctx.globalAlpha = 1;
 }
 
 function drawLeaderStatue() {
@@ -2560,6 +2729,7 @@ function draw() {
   drawCampaignRoads();
   drawTerritory();
   drawCampaignProps();
+  drawAmbientPeople();
   drawClaimBursts();
   drawTrails();
   drawTrailPaths();
@@ -2568,6 +2738,7 @@ function draw() {
   drawSupporters();
   if (state.player) drawAgent(state.player, true);
   drawReadyPulse();
+  drawTouchCue();
   drawNetaHud(rect.width);
   drawPauseOverlay(rect.width, rect.height);
 }
@@ -2586,6 +2757,22 @@ function canvasPointFromEvent(event) {
     x: event.clientX - rect.left,
     y: event.clientY - rect.top
   };
+}
+
+function setTouchCue(point, dir) {
+  state.touchCue = {
+    x: point.x,
+    y: point.y,
+    dir,
+    life: 0.34,
+    maxLife: 0.34
+  };
+}
+
+function updateTouchCue(dt) {
+  if (!state.touchCue) return;
+  state.touchCue.life -= dt;
+  if (state.touchCue.life <= 0) state.touchCue = null;
 }
 
 function pickRegionFromMap(point) {
@@ -2629,11 +2816,14 @@ function pointerToDirection(event) {
   const py = (point.y - state.offsetY) / state.cellSize;
   const dx = px - state.player.x;
   const dy = py - state.player.y;
+  let dir;
   if (Math.abs(dx) > Math.abs(dy)) {
-    setDirection(state.player, dx > 0 ? "right" : "left");
+    dir = dx > 0 ? "right" : "left";
   } else {
-    setDirection(state.player, dy > 0 ? "down" : "up");
+    dir = dy > 0 ? "down" : "up";
   }
+  setDirection(state.player, dir);
+  setTouchCue(point, dir);
 }
 
 function useDecision(type) {
@@ -2687,6 +2877,7 @@ function bindEvents() {
   window.addEventListener("keyup", (event) => state.keys.delete(event.key));
   canvas.addEventListener("pointerdown", (event) => {
     ensureAudio();
+    if (state.mode === "playing") triggerHaptic(5);
     const point = canvasPointFromEvent(event);
     state.pointer = { x: point.x, y: point.y, active: true };
     pointerToDirection(event);
@@ -2697,8 +2888,9 @@ function bindEvents() {
     const dx = point.x - state.pointer.x;
     const dy = point.y - state.pointer.y;
     if (Math.hypot(dx, dy) > 12) {
-      if (Math.abs(dx) > Math.abs(dy)) setDirection(state.player, dx > 0 ? "right" : "left");
-      else setDirection(state.player, dy > 0 ? "down" : "up");
+      const dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : dy > 0 ? "down" : "up";
+      setDirection(state.player, dir);
+      setTouchCue(point, dir);
       state.pointer = { x: point.x, y: point.y, active: true };
     }
   });
@@ -2777,6 +2969,7 @@ function useRallyBoost() {
   state.boostClock = 2.2;
   showToast("Rally sprint activated.");
   playSound("rally");
+  triggerHaptic([8, 22, 8]);
 }
 
 function registerServiceWorker() {
