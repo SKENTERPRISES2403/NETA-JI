@@ -578,6 +578,7 @@ const state = {
   opponents: [],
   supporters: [],
   ambientPeople: [],
+  eventScenes: [],
   conversionBursts: [],
   claimBursts: [],
   supportersConverted: 0,
@@ -956,6 +957,7 @@ function resetCampaignProgress() {
   state.opponents = [];
   state.supporters = [];
   state.ambientPeople = [];
+  state.eventScenes = [];
   state.conversionBursts = [];
   state.claimBursts = [];
   state.supportersConverted = 0;
@@ -1408,6 +1410,20 @@ function addClaimBurst(cells, color) {
   while (state.claimBursts.length > 120) state.claimBursts.shift();
 }
 
+function addEventScene(type, x, y, color) {
+  const spot = findMaskedSpawn(x, y);
+  state.eventScenes.push({
+    type,
+    x: spot.x,
+    y: spot.y,
+    color,
+    life: type === "raid" ? 4.8 : 4.2,
+    maxLife: type === "raid" ? 4.8 : 4.2,
+    phase: Math.random() * Math.PI * 2
+  });
+  while (state.eventScenes.length > 4) state.eventScenes.shift();
+}
+
 function convertOpponent(ownerId, cutX, cutY) {
   const opponentIndex = state.opponents.findIndex((agent) => agent.ownerId === ownerId);
   if (opponentIndex === -1) return false;
@@ -1461,6 +1477,7 @@ function resetGame() {
   state.opponents = [];
   state.supporters = [];
   state.ambientPeople = createAmbientPeople(activeRegion);
+  state.eventScenes = [];
   state.conversionBursts = [];
   state.claimBursts = [];
   state.supportersConverted = 0;
@@ -1760,10 +1777,12 @@ function triggerEvent() {
   } else if (event.effect === "raid") {
     state.speedMul = 0.74;
     state.boostClock = 4.2;
+    addEventScene("raid", state.player.x, state.player.y, "#151515");
     addConversionBurst(state.player.x, state.player.y, "#151515");
   } else if (event.effect === "teaBreak") {
     state.speedMul = 0.88;
     state.boostClock = 3.2;
+    addEventScene("teaBreak", state.player.x, state.player.y, state.party.color);
     const cells = claimDisk(1, state.player.x, state.player.y, 2.4);
     addClaimBurst(cells, state.party.color);
   } else if (event.effect === "claimBurst") {
@@ -1845,6 +1864,15 @@ function updateClaimBursts(dt) {
     burst.life -= dt;
   }
   state.claimBursts = state.claimBursts.filter((burst) => burst.delay > 0 || burst.life > 0);
+}
+
+function updateEventScenes(dt) {
+  if (state.eventScenes.length === 0) return;
+  for (const scene of state.eventScenes) {
+    scene.life -= dt;
+    scene.phase += dt * 3.2;
+  }
+  state.eventScenes = state.eventScenes.filter((scene) => scene.life > 0);
 }
 
 function updateStats() {
@@ -1950,6 +1978,7 @@ function update(dt) {
   updateSupporters(dt);
   updateConversionBursts(dt);
   updateClaimBursts(dt);
+  updateEventScenes(dt);
   handleTrailCuts();
 
   if (state.eventClock <= 0) {
@@ -2831,6 +2860,133 @@ function drawClaimBursts() {
   ctx.globalAlpha = 1;
 }
 
+function drawRaidScene(scene, s) {
+  const x = (scene.x + 0.5) * s;
+  const y = (scene.y + 0.5) * s;
+  const pulse = Math.sin(scene.phase) * s * 0.18;
+
+  ctx.save();
+  ctx.globalAlpha = clamp(scene.life / scene.maxLife, 0, 1);
+  ctx.fillStyle = "rgba(21, 21, 21, 0.18)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + s * 1.15, s * 3.1, s * 1.1, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#fffdf7";
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = Math.max(1, s * 0.09);
+  ctx.beginPath();
+  ctx.roundRect(x - s * 1.2, y - s * 1.05, s * 2.4, s * 1.55, s * 0.14);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#ffcfbf";
+  ctx.fillRect(x - s * 1.05, y - s * 0.88, s * 0.48, s * 1.2);
+  ctx.strokeRect(x - s * 1.05, y - s * 0.88, s * 0.48, s * 1.2);
+  ctx.fillStyle = "#151515";
+  ctx.font = `900 ${Math.max(7, s * 0.52)}px ui-sans-serif`;
+  ctx.textAlign = "center";
+  ctx.fillText("CHECK", x + s * 0.35, y - s * 0.22, s * 1.45);
+
+  for (let i = 0; i < 4; i += 1) {
+    const px = x - s * 1.05 + i * s * 0.62;
+    const py = y + s * 0.78 + Math.sin(scene.phase + i) * s * 0.08;
+    ctx.fillStyle = "#fffdf7";
+    ctx.strokeStyle = "#151515";
+    ctx.fillRect(px, py, s * 0.42, s * 0.54);
+    ctx.strokeRect(px, py, s * 0.42, s * 0.54);
+    ctx.beginPath();
+    ctx.moveTo(px + s * 0.08, py + s * 0.18);
+    ctx.lineTo(px + s * 0.34, py + s * 0.18);
+    ctx.moveTo(px + s * 0.08, py + s * 0.34);
+    ctx.lineTo(px + s * 0.3, py + s * 0.34);
+    ctx.stroke();
+  }
+
+  drawMiniPerson(x - s * 2.05, y + s * 0.7 + pulse, s * 1.05, {
+    color: "#2b2823",
+    accent: "#ffd166",
+    phase: scene.phase,
+    foldedHands: false
+  });
+  drawMiniPerson(x + s * 2.05, y + s * 0.7 - pulse, s * 1.05, {
+    color: "#625a4e",
+    accent: "#fffdf7",
+    phase: scene.phase + 1.2
+  });
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+function drawTeaBreakScene(scene, s) {
+  const x = (scene.x + 0.5) * s;
+  const y = (scene.y + 0.5) * s;
+  const steam = Math.sin(scene.phase) * s * 0.12;
+
+  ctx.save();
+  ctx.globalAlpha = clamp(scene.life / scene.maxLife, 0, 1);
+  ctx.fillStyle = "rgba(21, 21, 21, 0.16)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + s * 1.25, s * 3.4, s * 1.08, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#fffdf7";
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = Math.max(1, s * 0.09);
+  ctx.fillRect(x - s * 1.25, y - s * 0.22, s * 2.5, s * 1.2);
+  ctx.strokeRect(x - s * 1.25, y - s * 0.22, s * 2.5, s * 1.2);
+  ctx.fillStyle = scene.color;
+  ctx.beginPath();
+  ctx.moveTo(x - s * 1.55, y - s * 0.28);
+  ctx.lineTo(x, y - s * 1.25);
+  ctx.lineTo(x + s * 1.55, y - s * 0.28);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#151515";
+  ctx.font = `900 ${Math.max(7, s * 0.5)}px ui-sans-serif`;
+  ctx.textAlign = "center";
+  ctx.fillText("CHAI", x, y + s * 0.5, s * 1.7);
+
+  for (let i = 0; i < 3; i += 1) {
+    const cupX = x - s * 0.62 + i * s * 0.62;
+    ctx.fillStyle = "#f7c68f";
+    ctx.fillRect(cupX, y + s * 0.88, s * 0.28, s * 0.32);
+    ctx.strokeRect(cupX, y + s * 0.88, s * 0.28, s * 0.32);
+    ctx.strokeStyle = "rgba(21, 21, 21, 0.42)";
+    ctx.beginPath();
+    ctx.moveTo(cupX + s * 0.08, y + s * 0.78 + steam);
+    ctx.quadraticCurveTo(cupX + s * 0.22, y + s * 0.6, cupX + s * 0.12, y + s * 0.44 + steam);
+    ctx.stroke();
+  }
+
+  drawMiniPerson(x - s * 2.1, y + s * 0.8, s * 0.92, {
+    color: state.party.color,
+    accent: "#fffdf7",
+    phase: scene.phase,
+    flag: true
+  });
+  drawMiniPerson(x + s * 2.1, y + s * 0.85, s * 0.92, {
+    color: "#fffdf7",
+    accent: state.party.color,
+    phase: scene.phase + 1
+  });
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+function drawEventScenes() {
+  if (state.eventScenes.length === 0) return;
+  ctx.save();
+  ctx.translate(state.offsetX, state.offsetY);
+  const s = state.cellSize;
+  for (const scene of state.eventScenes) {
+    if (scene.type === "raid") drawRaidScene(scene, s);
+    if (scene.type === "teaBreak") drawTeaBreakScene(scene, s);
+  }
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
 function drawCampaignProps() {
   if (state.mode !== "playing") return;
   ctx.save();
@@ -3044,6 +3200,7 @@ function draw() {
   drawCampaignRoads();
   drawTerritory();
   drawCampaignProps();
+  drawEventScenes();
   drawAmbientPeople();
   drawClaimBursts();
   drawTrails();
@@ -3312,7 +3469,8 @@ function registerDebugSnapshot() {
     power: state.neta.power,
     reputation: state.neta.reputation,
     opponents: state.opponents.length,
-    supporters: state.supporters.length
+    supporters: state.supporters.length,
+    eventScenes: state.eventScenes.length
   });
 }
 
