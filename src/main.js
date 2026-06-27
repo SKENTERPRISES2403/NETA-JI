@@ -2672,6 +2672,10 @@ function useDecision(type) {
 
 function bindEvents() {
   window.addEventListener("resize", resizeCanvas);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) autoPauseCampaign();
+  });
+  window.addEventListener("pagehide", autoPauseCampaign);
   window.addEventListener("keydown", (event) => {
     state.keys.add(event.key);
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(event.key)) {
@@ -2739,17 +2743,31 @@ function bindEvents() {
   });
 }
 
+function setPaused(paused, message = "") {
+  if (state.mode !== "playing" || !state.roundStarted) return false;
+  state.paused = paused;
+  pauseBtn.textContent = state.paused ? "Resume" : "Pause";
+  eventStat.textContent = state.paused ? "Paused" : "Campaign";
+  if (message) showToast(message);
+  updateNetaPanel();
+  return true;
+}
+
 function togglePause() {
   if (state.mode !== "playing" || !state.roundStarted) {
     showToast("Campaign yatra abhi ready hai.");
     return;
   }
   ensureAudio();
-  state.paused = !state.paused;
-  pauseBtn.textContent = state.paused ? "Resume" : "Pause";
-  eventStat.textContent = state.paused ? "Paused" : "Campaign";
-  showToast(state.paused ? "Campaign paused." : "Campaign resumed.");
+  const paused = !state.paused;
+  setPaused(paused, paused ? "Campaign paused." : "Campaign resumed.");
   playSound("tap");
+}
+
+function autoPauseCampaign() {
+  if (!state.paused && setPaused(true, "Campaign auto-paused.")) {
+    addFeed("Campaign auto-paused while the app was away.");
+  }
 }
 
 function useRallyBoost() {

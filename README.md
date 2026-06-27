@@ -32,6 +32,7 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - PWA manifest and service worker for mobile install/offline prep
 - Safe-area mobile layout support for notch/gesture-bar phones
 - Pause/resume support on mobile button and P key
+- Auto-pause when the app/tab is hidden
 
 ## Run Locally
 
