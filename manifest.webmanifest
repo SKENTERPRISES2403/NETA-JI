@@ -1,18 +1,26 @@
 {
-  "name": "NETA JI",
-  "short_name": "NETA JI",
-  "description": "A fictional mobile-first election capture arcade game.",
-  "start_url": ".",
-  "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#f7f4ec",
-  "theme_color": "#f05d23",
-  "icons": [
-    {
-      "src": "assets/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ]
+    "name":  "NETA JI",
+    "short_name":  "NETA JI",
+    "description":  "A fictional mobile-first election capture arcade game.",
+    "start_url":  ".",
+    "display":  "standalone",
+    "orientation":  "portrait",
+    "background_color":  "#fff3d6",
+    "theme_color":  "#ff6b2d",
+    "icons":  [
+                  {
+                      "src":  "assets/icon.svg",
+                      "sizes":  "any",
+                      "type":  "image/svg+xml",
+                      "purpose":  "any maskable"
+                  }
+              ],
+    "id":  ".",
+    "scope":  ".",
+    "lang":  "en-IN",
+    "categories":  [
+                       "games",
+                       "entertainment"
+                   ],
+    "prefer_related_applications":  false
 }

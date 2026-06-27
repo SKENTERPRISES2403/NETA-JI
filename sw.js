@@ -1,4 +1,4 @@
-const CACHE_NAME = "neta-ji-v4";
+const CACHE_NAME = "neta-ji-v5";
 const CORE_ASSETS = [
   "./",
   "./index.html",

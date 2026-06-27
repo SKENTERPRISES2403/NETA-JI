@@ -29,7 +29,7 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - Meme-style result card with share text
 - Party-colored result card with mandate stamp and symbol badge
 - Lightweight generated sound effects
-- PWA manifest and service worker for mobile install/offline prep
+- PWA manifest and service worker for mobile install/offline prep`n- Safe-area mobile layout support for notch/gesture-bar phones
 
 ## Run Locally
 
