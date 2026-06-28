@@ -607,6 +607,8 @@ const state = {
   mapRect: { x: 0, y: 0, width: 0, height: 0 },
   pointer: { x: 0, y: 0, active: false },
   touchCue: null,
+  dangerCue: null,
+  dangerHapticClock: 0,
   resetProgressTimer: null,
   audioContext: null,
   audioUnlocked: false,
@@ -964,6 +966,8 @@ function resetCampaignProgress() {
   state.keys.clear();
   state.pointer.active = false;
   state.touchCue = null;
+  state.dangerCue = null;
+  state.dangerHapticClock = 0;
   state.timeLeft = ROUND_SECONDS;
   state.roundElapsed = 0;
   state.roundStarted = false;
@@ -1277,6 +1281,15 @@ function claimDisk(ownerId, cx, cy, radius) {
 }
 
 function createAgent(ownerId, name, color, symbol, x, y) {
+  const squad = ownerId === 1
+    ? []
+    : Array.from({ length: 3 }, (_, i) => ({
+        back: 1.15 + i * 0.42 + Math.random() * 0.32,
+        side: (i - 1) * 0.62 + (Math.random() - 0.5) * 0.28,
+        phase: Math.random() * Math.PI * 2,
+        size: 0.62 + Math.random() * 0.22,
+        flag: i === 1
+      }));
   return {
     ownerId,
     name,
@@ -1290,6 +1303,7 @@ function createAgent(ownerId, name, color, symbol, x, y) {
     turnClock: 0.8 + Math.random() * 0.9,
     targetX: x,
     targetY: y,
+    squad,
     trailCells: [],
     trailPoints: []
   };
@@ -1484,6 +1498,8 @@ function resetGame() {
   state.keys.clear();
   state.pointer.active = false;
   state.touchCue = null;
+  state.dangerCue = null;
+  state.dangerHapticClock = 0;
   state.timeLeft = ROUND_SECONDS;
   state.roundElapsed = 0;
   state.roundStarted = false;
@@ -1761,6 +1777,47 @@ function handleTrailCuts() {
   }
 }
 
+function updateRouteDanger(dt) {
+  state.dangerHapticClock = Math.max(0, state.dangerHapticClock - dt);
+  if (!state.player || state.player.trailPoints.length < 4 || state.opponents.length === 0) {
+    if (state.dangerCue) {
+      state.dangerCue.life -= dt;
+      if (state.dangerCue.life <= 0) state.dangerCue = null;
+    }
+    return;
+  }
+
+  let best = null;
+  const trail = state.player.trailPoints.slice(-72);
+  for (const opponent of state.opponents) {
+    for (let i = trail.length - 1; i >= 0; i -= 3) {
+      const point = trail[i];
+      const distance = Math.hypot(opponent.x - point.x, opponent.y - point.y);
+      if (!best || distance < best.distance) {
+        best = { distance, x: point.x, y: point.y, color: opponent.color, name: opponent.name };
+      }
+    }
+  }
+
+  if (best && best.distance < 4.25) {
+    state.dangerCue = {
+      x: best.x,
+      y: best.y,
+      color: best.color,
+      level: clamp(1 - best.distance / 4.25, 0.18, 1),
+      life: 0.34,
+      maxLife: 0.34
+    };
+    if (best.distance < 2.65 && state.dangerHapticClock <= 0) {
+      triggerHaptic([6, 18, 10]);
+      state.dangerHapticClock = 1.4;
+    }
+  } else if (state.dangerCue) {
+    state.dangerCue.life -= dt;
+    if (state.dangerCue.life <= 0) state.dangerCue = null;
+  }
+}
+
 function triggerEvent() {
   const event = state.data.randomEvents[Math.floor(Math.random() * state.data.randomEvents.length)];
   eventStat.textContent = event.title;
@@ -1979,6 +2036,7 @@ function update(dt) {
   updateConversionBursts(dt);
   updateClaimBursts(dt);
   updateEventScenes(dt);
+  updateRouteDanger(dt);
   handleTrailCuts();
 
   if (state.eventClock <= 0) {
@@ -3107,11 +3165,72 @@ function drawAmbientPeople() {
   ctx.globalAlpha = 1;
 }
 
+function drawOpponentSquad(agent, cx, cy, s) {
+  if (!agent.squad || agent.squad.length === 0) return;
+  const dirX = agent.dirX || (agent.ownerId % 2 === 0 ? 1 : -1);
+  const dirY = agent.dirY || 0;
+  const sideX = -dirY || 0;
+  const sideY = dirX || 1;
+  const backX = -dirX;
+  const backY = -dirY;
+
+  agent.squad.forEach((member, i) => {
+    const wobble = Math.sin((state.lastTime || 0) * 0.004 + member.phase) * s * 0.12;
+    const mx = cx + backX * member.back * s + sideX * member.side * s + wobble;
+    const my = cy + backY * member.back * s + sideY * member.side * s - wobble * 0.35;
+    drawMiniPerson(mx, my, s * member.size, {
+      color: i % 2 === 0 ? agent.color : "#fffdf7",
+      accent: i % 2 === 0 ? "#fffdf7" : agent.color,
+      phase: member.phase,
+      flag: member.flag
+    });
+  });
+}
+
+function drawDangerCue() {
+  if (state.mode !== "playing" || !state.dangerCue) return;
+  const cue = state.dangerCue;
+  const alpha = clamp(cue.life / cue.maxLife, 0, 1);
+  const s = state.cellSize;
+  const x = state.offsetX + (cue.x + 0.5) * s;
+  const y = state.offsetY + (cue.y + 0.5) * s;
+  const pulse = 1 + Math.sin((state.lastTime || 0) * 0.018) * 0.12;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = "#d92d20";
+  ctx.fillStyle = "rgba(217, 45, 32, 0.18)";
+  ctx.lineWidth = Math.max(2, s * 0.16);
+  ctx.beginPath();
+  ctx.arc(x, y, s * (1.25 + cue.level * 1.3) * pulse, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = "#ffd166";
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = Math.max(1.2, s * 0.08);
+  ctx.beginPath();
+  ctx.moveTo(x, y - s * 1.42);
+  ctx.lineTo(x + s * 1.18, y + s * 0.72);
+  ctx.lineTo(x - s * 1.18, y + s * 0.72);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#151515";
+  ctx.font = `900 ${Math.max(12, s * 1.1)}px ui-sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("!", x, y + s * 0.02);
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
 function drawAgent(agent, isPlayer) {
   const s = state.cellSize;
   const cx = state.offsetX + (agent.x + 0.5) * s;
   const cy = state.offsetY + (agent.y + 0.5) * s;
   ctx.save();
+  if (!isPlayer) drawOpponentSquad(agent, cx, cy, s);
   drawMiniPerson(cx, cy, s * (isPlayer ? 2.55 : 2.12), {
     color: agent.color,
     accent: "#fffdf7",
@@ -3210,6 +3329,7 @@ function draw() {
   drawSupporters();
   if (state.player) drawAgent(state.player, true);
   drawReadyPulse();
+  drawDangerCue();
   drawTouchCue();
   drawNetaHud(rect.width);
   drawPauseOverlay(rect.width, rect.height);
@@ -3470,7 +3590,8 @@ function registerDebugSnapshot() {
     reputation: state.neta.reputation,
     opponents: state.opponents.length,
     supporters: state.supporters.length,
-    eventScenes: state.eventScenes.length
+    eventScenes: state.eventScenes.length,
+    dangerCue: Boolean(state.dangerCue)
   });
 }
 
