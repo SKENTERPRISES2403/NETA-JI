@@ -1001,6 +1001,10 @@ function resetCampaignProgress() {
 
 function handleResetProgressClick() {
   ensureAudio();
+  if (!resetProgressBtn) {
+    resetCampaignProgress();
+    return;
+  }
   if (resetProgressBtn.dataset.confirming === "true") {
     resetCampaignProgress();
     return;
@@ -1024,10 +1028,14 @@ function renderRegionHub() {
     : resumableRegion
       ? `${resumableRegion.name} is active. Resume it until the mandate is won.`
       : `Touch a black flag on the India map. Red flags are won: ${wonCount}/${REGIONS.length}.`;
-  miniRegionGrid.innerHTML = "";
-  regionGrid.innerHTML = "";
-  miniRegionGrid.style.setProperty("--region-color", state.party.color);
-  regionGrid.style.setProperty("--region-color", state.party.color);
+  if (miniRegionGrid) {
+    miniRegionGrid.innerHTML = "";
+    miniRegionGrid.style.setProperty("--region-color", state.party.color);
+  }
+  if (regionGrid) {
+    regionGrid.innerHTML = "";
+    regionGrid.style.setProperty("--region-color", state.party.color);
+  }
 
   for (const region of REGIONS) {
     const won = Boolean(state.campaign.completed[region.id]);
@@ -1039,14 +1047,14 @@ function renderRegionHub() {
     mini.title = `${region.name}${won ? " won" : ""}`;
     mini.setAttribute("aria-label", mini.title);
     mini.addEventListener("click", () => showRegionPrompt(region.id));
-    miniRegionGrid.append(mini);
+    miniRegionGrid?.append(mini);
 
     const button = document.createElement("button");
     button.type = "button";
     button.className = `region-btn${won ? " is-won" : ""}${active ? " is-active" : ""}`;
     button.innerHTML = `${region.name}<small>${won ? "Won mandate" : active ? "Active campaign" : region.type}</small>`;
     button.addEventListener("click", () => showRegionPrompt(region.id));
-    regionGrid.append(button);
+    regionGrid?.append(button);
   }
   updateMobileHint();
   updateNetaPanel();
@@ -3522,10 +3530,10 @@ function bindEvents() {
   decisionButtons.forEach((button) => {
     button.addEventListener("click", () => useDecision(button.dataset.decision));
   });
-  boostBtn.addEventListener("click", useRallyBoost);
-  pauseBtn.addEventListener("click", togglePause);
-  startBtn.addEventListener("click", startGame);
-  restartBtn.addEventListener("click", () => {
+  boostBtn?.addEventListener("click", useRallyBoost);
+  pauseBtn?.addEventListener("click", togglePause);
+  startBtn?.addEventListener("click", startGame);
+  restartBtn?.addEventListener("click", () => {
     resultModal.classList.remove("is-open");
     if (getActiveRegion()) {
       selectRegion(state.campaign.activeRegionId);
@@ -3534,23 +3542,23 @@ function bindEvents() {
       state.mode = "setup";
     }
   });
-  nextRegionBtn.addEventListener("click", openRegionModal);
-  openMapBtn.addEventListener("click", openRegionModal);
+  nextRegionBtn?.addEventListener("click", openRegionModal);
+  openMapBtn?.addEventListener("click", openRegionModal);
   installBtn?.addEventListener("click", handleInstallClick);
-  resetProgressBtn.addEventListener("click", handleResetProgressClick);
-  confirmRegionBtn.addEventListener("click", confirmPendingRegion);
-  cancelRegionBtn.addEventListener("click", () => {
+  resetProgressBtn?.addEventListener("click", handleResetProgressClick);
+  confirmRegionBtn?.addEventListener("click", confirmPendingRegion);
+  cancelRegionBtn?.addEventListener("click", () => {
     state.campaign.pendingRegionId = null;
     confirmPanel.hidden = true;
     state.mode = "map";
     updateMobileHint();
   });
-  shareBtn.addEventListener("click", shareResult);
+  shareBtn?.addEventListener("click", shareResult);
   posterBtn?.addEventListener("click", saveResultPoster);
-  partyNameInput.addEventListener("input", () => {
+  partyNameInput?.addEventListener("input", () => {
     nameError.textContent = validatePartyName(partyNameInput.value.trim()) || validateSlogan(sloganInput.value.trim());
   });
-  sloganInput.addEventListener("input", () => {
+  sloganInput?.addEventListener("input", () => {
     nameError.textContent = validatePartyName(partyNameInput.value.trim()) || validateSlogan(sloganInput.value.trim());
   });
 }
@@ -3786,8 +3794,10 @@ async function saveResultPoster() {
 
   try {
     ensureAudio();
-    posterBtn.disabled = true;
-    posterBtn.textContent = "Making...";
+    if (posterBtn) {
+      posterBtn.disabled = true;
+      posterBtn.textContent = "Making...";
+    }
     const posterCanvas = document.createElement("canvas");
     posterCanvas.width = 1080;
     posterCanvas.height = 1350;
@@ -3916,8 +3926,10 @@ async function saveResultPoster() {
   } catch {
     showToast("Poster save cancelled.");
   } finally {
-    posterBtn.disabled = false;
-    posterBtn.textContent = "Save Poster";
+    if (posterBtn) {
+      posterBtn.disabled = false;
+      posterBtn.textContent = "Save Poster";
+    }
   }
 }
 
