@@ -530,6 +530,7 @@ const startBtn = document.querySelector("#startBtn");
 const restartBtn = document.querySelector("#restartBtn");
 const nextRegionBtn = document.querySelector("#nextRegionBtn");
 const shareBtn = document.querySelector("#shareBtn");
+const posterBtn = document.querySelector("#posterBtn");
 const boostBtn = document.querySelector("#boostBtn");
 const pauseBtn = document.querySelector("#pauseBtn");
 const openMapBtn = document.querySelector("#openMapBtn");
@@ -612,7 +613,8 @@ const state = {
   resetProgressTimer: null,
   audioContext: null,
   audioUnlocked: false,
-  shareText: ""
+  shareText: "",
+  resultSummary: null
 };
 
 async function loadGameData() {
@@ -977,6 +979,7 @@ function resetCampaignProgress() {
   state.speedMul = 1;
   state.influence = 0;
   state.shareText = "";
+  state.resultSummary = null;
   feedList.innerHTML = "";
   setupModal.classList.remove("is-open");
   resultModal.classList.remove("is-open");
@@ -1975,6 +1978,23 @@ function finishRound(won, reason) {
   state.shareText = nationalComplete
     ? `NETA JI: ${state.party.name} completed the fictional national mandate. ${state.party.slogan}`
     : `NETA JI: ${state.party.name} scored ${finalScore} fictional comedy mandate in ${regionName}. ${state.party.slogan}`;
+  state.resultSummary = {
+    headline,
+    copy,
+    stamp: victory ? (nationalComplete ? "National" : "Won") : "Recount",
+    victory,
+    nationalComplete,
+    regionName,
+    score: finalScore,
+    influence: state.influence,
+    support: state.neta.support,
+    reputation: state.neta.reputation,
+    completedRegions: completedRegionCount(),
+    partyName: state.party.name,
+    slogan: state.party.slogan,
+    color: state.party.color,
+    symbol: symbolLabel(state.party.symbol)
+  };
   resultHeadline.textContent = headline;
   resultCopy.textContent = copy;
   resultStamp.textContent = victory ? (nationalComplete ? "National" : "Won") : "Recount";
@@ -3522,6 +3542,7 @@ function bindEvents() {
     updateMobileHint();
   });
   shareBtn.addEventListener("click", shareResult);
+  posterBtn.addEventListener("click", saveResultPoster);
   partyNameInput.addEventListener("input", () => {
     nameError.textContent = validatePartyName(partyNameInput.value.trim()) || validateSlogan(sloganInput.value.trim());
   });
@@ -3593,6 +3614,243 @@ function registerDebugSnapshot() {
     eventScenes: state.eventScenes.length,
     dangerCue: Boolean(state.dangerCue)
   });
+}
+
+function wrapPosterText(posterCtx, text, x, y, maxWidth, lineHeight, maxLines = 4) {
+  const words = String(text || "").split(/\s+/).filter(Boolean);
+  const lines = [];
+  let line = "";
+  for (const word of words) {
+    const testLine = line ? `${line} ${word}` : word;
+    if (posterCtx.measureText(testLine).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+      if (lines.length === maxLines) break;
+    } else {
+      line = testLine;
+    }
+  }
+  if (line && lines.length < maxLines) lines.push(line);
+  lines.forEach((item, i) => posterCtx.fillText(item, x, y + i * lineHeight, maxWidth));
+  return y + lines.length * lineHeight;
+}
+
+function drawPosterLeader(posterCtx, x, y, size, color, symbol) {
+  posterCtx.save();
+  posterCtx.translate(x, y);
+  posterCtx.fillStyle = "rgba(21, 21, 21, 0.18)";
+  posterCtx.beginPath();
+  posterCtx.ellipse(0, size * 1.18, size * 0.95, size * 0.24, 0, 0, Math.PI * 2);
+  posterCtx.fill();
+
+  posterCtx.strokeStyle = "#151515";
+  posterCtx.lineWidth = Math.max(5, size * 0.08);
+  posterCtx.lineJoin = "round";
+  posterCtx.lineCap = "round";
+  posterCtx.fillStyle = "#f0b37e";
+  posterCtx.beginPath();
+  posterCtx.arc(0, -size * 0.35, size * 0.34, 0, Math.PI * 2);
+  posterCtx.fill();
+  posterCtx.stroke();
+  posterCtx.fillStyle = "#151515";
+  posterCtx.beginPath();
+  posterCtx.arc(0, -size * 0.46, size * 0.3, Math.PI, Math.PI * 2);
+  posterCtx.fill();
+
+  posterCtx.fillStyle = "#fffdf7";
+  posterCtx.beginPath();
+  posterCtx.roundRect(-size * 0.5, -size * 0.02, size, size * 0.98, size * 0.12);
+  posterCtx.fill();
+  posterCtx.stroke();
+  posterCtx.fillStyle = color;
+  posterCtx.fillRect(-size * 0.06, -size * 0.02, size * 0.12, size * 0.98);
+
+  posterCtx.strokeStyle = "#151515";
+  posterCtx.beginPath();
+  posterCtx.moveTo(-size * 0.48, size * 0.18);
+  posterCtx.lineTo(-size * 0.08, size * 0.46);
+  posterCtx.moveTo(size * 0.48, size * 0.18);
+  posterCtx.lineTo(size * 0.08, size * 0.46);
+  posterCtx.stroke();
+  posterCtx.fillStyle = "#f0b37e";
+  posterCtx.beginPath();
+  posterCtx.ellipse(-size * 0.05, size * 0.48, size * 0.12, size * 0.18, -0.4, 0, Math.PI * 2);
+  posterCtx.ellipse(size * 0.05, size * 0.48, size * 0.12, size * 0.18, 0.4, 0, Math.PI * 2);
+  posterCtx.fill();
+  posterCtx.stroke();
+
+  posterCtx.fillStyle = color;
+  posterCtx.strokeStyle = "#151515";
+  posterCtx.beginPath();
+  posterCtx.roundRect(-size * 0.32, size * 0.62, size * 0.64, size * 0.28, size * 0.14);
+  posterCtx.fill();
+  posterCtx.stroke();
+  posterCtx.fillStyle = "#fffdf7";
+  posterCtx.font = `900 ${Math.max(18, size * 0.16)}px ui-sans-serif`;
+  posterCtx.textAlign = "center";
+  posterCtx.textBaseline = "middle";
+  posterCtx.fillText(symbol || "NETA", 0, size * 0.76, size * 0.52);
+  posterCtx.restore();
+}
+
+function canvasToBlob(canvas) {
+  return new Promise((resolve) => canvas.toBlob(resolve, "image/png", 0.94));
+}
+
+async function saveResultPoster() {
+  const summary = state.resultSummary || {
+    headline: resultHeadline.textContent,
+    copy: resultCopy.textContent,
+    stamp: resultStamp.textContent,
+    victory: resultModal.dataset.result !== "loss",
+    nationalComplete: resultModal.dataset.result === "national",
+    regionName: getActiveRegion()?.name || "NETA JI",
+    score: mandateScore(),
+    influence: state.influence,
+    support: state.neta.support,
+    reputation: state.neta.reputation,
+    completedRegions: completedRegionCount(),
+    partyName: state.party.name,
+    slogan: state.party.slogan,
+    color: state.party.color,
+    symbol: symbolLabel(state.party.symbol)
+  };
+
+  try {
+    ensureAudio();
+    posterBtn.disabled = true;
+    posterBtn.textContent = "Making...";
+    const posterCanvas = document.createElement("canvas");
+    posterCanvas.width = 1080;
+    posterCanvas.height = 1350;
+    const posterCtx = posterCanvas.getContext("2d");
+    const partyColor = summary.color || state.party.color;
+
+    const bg = posterCtx.createLinearGradient(0, 0, 1080, 1350);
+    bg.addColorStop(0, "#fff3d6");
+    bg.addColorStop(0.48, "#fffdf7");
+    bg.addColorStop(1, "#bfe7ff");
+    posterCtx.fillStyle = bg;
+    posterCtx.fillRect(0, 0, 1080, 1350);
+
+    posterCtx.fillStyle = partyColor;
+    posterCtx.globalAlpha = 0.18;
+    for (let x = -80; x < 1160; x += 110) {
+      posterCtx.fillRect(x, 0, 34, 1350);
+    }
+    posterCtx.globalAlpha = 1;
+
+    posterCtx.strokeStyle = "#151515";
+    posterCtx.lineWidth = 10;
+    posterCtx.strokeRect(48, 48, 984, 1254);
+    posterCtx.setLineDash([24, 18]);
+    posterCtx.lineWidth = 5;
+    posterCtx.strokeStyle = partyColor;
+    posterCtx.strokeRect(76, 76, 928, 1198);
+    posterCtx.setLineDash([]);
+
+    posterCtx.fillStyle = partyColor;
+    posterCtx.strokeStyle = "#151515";
+    posterCtx.lineWidth = 7;
+    posterCtx.beginPath();
+    posterCtx.roundRect(720, 92, 230, 76, 38);
+    posterCtx.fill();
+    posterCtx.stroke();
+    posterCtx.fillStyle = "#fffdf7";
+    posterCtx.font = "900 38px ui-sans-serif";
+    posterCtx.textAlign = "center";
+    posterCtx.textBaseline = "middle";
+    posterCtx.fillText(String(summary.stamp || "Mandate").toUpperCase(), 835, 130, 190);
+
+    posterCtx.fillStyle = "#151515";
+    posterCtx.font = "900 44px ui-sans-serif";
+    posterCtx.textAlign = "left";
+    posterCtx.fillText("BREAKING POSTER NEWS", 100, 146);
+    posterCtx.font = "900 78px ui-sans-serif";
+    const headlineBottom = wrapPosterText(posterCtx, summary.headline, 100, 260, 880, 86, 3);
+
+    drawPosterLeader(posterCtx, 540, Math.max(520, headlineBottom + 150), 220, partyColor, summary.symbol);
+
+    posterCtx.fillStyle = "#151515";
+    posterCtx.font = "900 42px ui-sans-serif";
+    posterCtx.textAlign = "center";
+    posterCtx.fillText(summary.partyName, 540, 830, 860);
+    posterCtx.fillStyle = "#625a4e";
+    posterCtx.font = "800 30px ui-sans-serif";
+    posterCtx.fillText(summary.slogan, 540, 878, 820);
+
+    posterCtx.fillStyle = "#fffdf7";
+    posterCtx.strokeStyle = "#151515";
+    posterCtx.lineWidth = 6;
+    posterCtx.beginPath();
+    posterCtx.roundRect(100, 930, 880, 170, 22);
+    posterCtx.fill();
+    posterCtx.stroke();
+    posterCtx.fillStyle = "#151515";
+    posterCtx.font = "900 34px ui-sans-serif";
+    posterCtx.textAlign = "left";
+    wrapPosterText(posterCtx, summary.copy, 132, 985, 816, 42, 3);
+
+    const stats = [
+      ["MANDATE", String(summary.score)],
+      ["INFLUENCE", `${summary.influence}%`],
+      ["SUPPORT", String(summary.support)],
+      ["REP", String(summary.reputation)]
+    ];
+    stats.forEach(([label, value], i) => {
+      const x = 100 + i * 225;
+      posterCtx.fillStyle = i % 2 ? "#fffdf7" : partyColor;
+      posterCtx.strokeStyle = "#151515";
+      posterCtx.lineWidth = 5;
+      posterCtx.beginPath();
+      posterCtx.roundRect(x, 1140, 190, 96, 16);
+      posterCtx.fill();
+      posterCtx.stroke();
+      posterCtx.fillStyle = i % 2 ? "#151515" : "#fffdf7";
+      posterCtx.font = "900 34px ui-sans-serif";
+      posterCtx.textAlign = "center";
+      posterCtx.fillText(value, x + 95, 1176, 150);
+      posterCtx.font = "900 18px ui-sans-serif";
+      posterCtx.fillText(label, x + 95, 1210, 150);
+    });
+
+    posterCtx.fillStyle = "#151515";
+    posterCtx.font = "900 26px ui-sans-serif";
+    posterCtx.textAlign = "center";
+    posterCtx.fillText("NETA JI - fictional comedy election arcade", 540, 1280, 840);
+
+    const blob = await canvasToBlob(posterCanvas);
+    if (!blob) throw new Error("Poster export failed");
+    const filename = `neta-ji-${String(summary.regionName || "result").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "result"}.png`;
+
+    if (typeof File !== "undefined") {
+      const file = new File([blob], filename, { type: "image/png" });
+      if (navigator.canShare?.({ files: [file] }) && navigator.share) {
+        await navigator.share({ title: "NETA JI", text: state.shareText, files: [file] });
+        showToast("Poster shared.");
+        playSound("tap");
+        triggerHaptic(10);
+        return;
+      }
+    }
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1200);
+    showToast("Poster PNG saved.");
+    playSound("tap");
+    triggerHaptic(10);
+  } catch {
+    showToast("Poster save cancelled.");
+  } finally {
+    posterBtn.disabled = false;
+    posterBtn.textContent = "Save Poster";
+  }
 }
 
 async function shareResult() {
