@@ -534,6 +534,7 @@ const posterBtn = document.querySelector("#posterBtn");
 const boostBtn = document.querySelector("#boostBtn");
 const pauseBtn = document.querySelector("#pauseBtn");
 const openMapBtn = document.querySelector("#openMapBtn");
+const installBtn = document.querySelector("#installBtn");
 const resetProgressBtn = document.querySelector("#resetProgressBtn");
 const confirmRegionBtn = document.querySelector("#confirmRegionBtn");
 const cancelRegionBtn = document.querySelector("#cancelRegionBtn");
@@ -611,6 +612,8 @@ const state = {
   dangerCue: null,
   dangerHapticClock: 0,
   resetProgressTimer: null,
+  installPromptEvent: null,
+  appInstalled: false,
   audioContext: null,
   audioUnlocked: false,
   shareText: "",
@@ -3533,6 +3536,7 @@ function bindEvents() {
   });
   nextRegionBtn.addEventListener("click", openRegionModal);
   openMapBtn.addEventListener("click", openRegionModal);
+  installBtn?.addEventListener("click", handleInstallClick);
   resetProgressBtn.addEventListener("click", handleResetProgressClick);
   confirmRegionBtn.addEventListener("click", confirmPendingRegion);
   cancelRegionBtn.addEventListener("click", () => {
@@ -3542,7 +3546,7 @@ function bindEvents() {
     updateMobileHint();
   });
   shareBtn.addEventListener("click", shareResult);
-  posterBtn.addEventListener("click", saveResultPoster);
+  posterBtn?.addEventListener("click", saveResultPoster);
   partyNameInput.addEventListener("input", () => {
     nameError.textContent = validatePartyName(partyNameInput.value.trim()) || validateSlogan(sloganInput.value.trim());
   });
@@ -3588,6 +3592,68 @@ function useRallyBoost() {
   triggerHaptic([8, 22, 8]);
 }
 
+function isStandaloneDisplay() {
+  return window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator.standalone === true;
+}
+
+function updateInstallButton() {
+  if (!installBtn) return;
+  const installed = state.appInstalled || isStandaloneDisplay();
+  installBtn.hidden = installed;
+  installBtn.textContent = state.installPromptEvent ? "Install" : "Install";
+  installBtn.title = state.installPromptEvent ? "Install NETA JI" : "Use browser menu if install prompt is unavailable";
+}
+
+async function handleInstallClick() {
+  ensureAudio();
+  if (state.appInstalled || isStandaloneDisplay()) {
+    showToast("NETA JI is already running like an app.");
+    updateInstallButton();
+    return;
+  }
+  if (!state.installPromptEvent) {
+    showToast("Phone browser menu se Add to Home Screen choose karo.");
+    addFeed("Install tip: browser menu me Add to Home Screen / Install App use karo.");
+    triggerHaptic(8);
+    return;
+  }
+
+  const promptEvent = state.installPromptEvent;
+  state.installPromptEvent = null;
+  updateInstallButton();
+  try {
+    promptEvent.prompt();
+    const choice = await promptEvent.userChoice;
+    if (choice?.outcome === "accepted") {
+      showToast("NETA JI install started.");
+      addFeed("NETA JI install prompt accepted.");
+    } else {
+      showToast("Install cancelled. You can try again later.");
+    }
+  } catch {
+    showToast("Install prompt unavailable. Use browser menu.");
+  } finally {
+    updateInstallButton();
+  }
+}
+
+function bindInstallEvents() {
+  updateInstallButton();
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    state.installPromptEvent = event;
+    updateInstallButton();
+    addFeed("Install button ready for mobile app mode.");
+  });
+  window.addEventListener("appinstalled", () => {
+    state.appInstalled = true;
+    state.installPromptEvent = null;
+    updateInstallButton();
+    showToast("NETA JI installed.");
+  });
+  window.matchMedia?.("(display-mode: standalone)")?.addEventListener?.("change", updateInstallButton);
+}
+
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
   navigator.serviceWorker.register("sw.js").catch(() => {});
@@ -3612,7 +3678,9 @@ function registerDebugSnapshot() {
     opponents: state.opponents.length,
     supporters: state.supporters.length,
     eventScenes: state.eventScenes.length,
-    dangerCue: Boolean(state.dangerCue)
+    dangerCue: Boolean(state.dangerCue),
+    installReady: Boolean(state.installPromptEvent),
+    standalone: isStandaloneDisplay()
   });
 }
 
@@ -3876,6 +3944,7 @@ async function init() {
   resizeCanvas();
   resetGame();
   registerDebugSnapshot();
+  bindInstallEvents();
   registerServiceWorker();
   requestAnimationFrame(loop);
 }

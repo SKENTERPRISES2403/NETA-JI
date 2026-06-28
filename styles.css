@@ -411,6 +411,15 @@ canvas {
   font-weight: 900;
 }
 
+.install-mini-btn {
+  background: var(--teal);
+  color: var(--white);
+}
+
+.install-mini-btn[hidden] {
+  display: none;
+}
+
 .ghost-mini-btn {
   background: var(--white);
 }
