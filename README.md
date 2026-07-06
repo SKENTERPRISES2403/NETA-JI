@@ -35,6 +35,8 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - Safe-area mobile layout support for notch/gesture-bar phones
 - Pause/resume support on mobile button and P key
 - Auto-pause when the app/tab is hidden
+- Quick Demo and `?demo=1` pitch flow for company/mobile demos
+- In-app pitch card and reviewer notes in [docs/pitch.md](docs/pitch.md)
 
 ## Run Locally
 
@@ -71,3 +73,13 @@ Build order:
 ## Safety Direction
 
 NETA JI should feel like a funny fictional election game, not a real politics simulator. See [docs/safety-policy.md](docs/safety-policy.md).
+
+## Pitch Demo
+
+For a company-style demo, use the `Quick Demo` button or open the PWA with:
+
+```text
+?demo=1
+```
+
+See [docs/pitch.md](docs/pitch.md) for the pitch script, reviewer checklist, and monetization options.

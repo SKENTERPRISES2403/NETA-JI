@@ -3,7 +3,30 @@ const ROWS = 42;
 const ROUND_SECONDS = 90;
 const MIN_WIN_SECONDS = 10;
 const PROGRESS_KEY = "netaJiCampaignProgressV1";
+const ONBOARDING_KEY = "netaJiOnboardingSeenV1";
 const MAP_ASPECT = 0.82;
+const DEMO_REGION_ID = "uttar-pradesh";
+const DEMO_PARTY = {
+  name: "Momo Lovers Party",
+  slogan: "Vote for extra chutney",
+  color: "#f05d23",
+  symbol: "star"
+};
+const DEMO_FROM_QUERY = new URLSearchParams(window.location.search).get("demo") === "1";
+const ONBOARDING_STEPS = [
+  {
+    title: "Choose a state",
+    copy: "Tap a black flag on the India map, then OK to open a big state arena."
+  },
+  {
+    title: "Run the yatra",
+    copy: "Swipe anywhere inside the arena. Your route leaves a dark campaign trail."
+  },
+  {
+    title: "Close loops",
+    copy: "Return to your color to win booths, trigger meme events, and export a result poster."
+  }
+];
 
 const REGIONS = [
   { id: "andhra-pradesh", name: "Andhra Pradesh", type: "State" },
@@ -389,6 +412,24 @@ const fallbackData = {
       effect: "fundsUp",
       copy: "Small donors filled the campaign dabba.",
       impact: { funds: 12, reputation: 1 }
+    },
+    {
+      title: "Meme wave",
+      effect: "memeWave",
+      copy: "Your slogan became a family group sticker. Support jumps.",
+      impact: { support: 7, reputation: 2 }
+    },
+    {
+      title: "Dhol boost",
+      effect: "dholBoost",
+      copy: "The dhol team found perfect rhythm. Yatra speed rises.",
+      impact: { support: 3, power: 1, funds: -2 }
+    },
+    {
+      title: "Poster rain",
+      effect: "posterRain",
+      copy: "Volunteers showered the booth lane with posters. Influence spreads.",
+      impact: { power: 3, funds: -5 }
     }
   ],
   blockedTerms: [
@@ -527,6 +568,11 @@ const colorInput = document.querySelector("#colorInput");
 const symbolInput = document.querySelector("#symbolInput");
 const nameError = document.querySelector("#nameError");
 const startBtn = document.querySelector("#startBtn");
+const quickDemoBtn = document.querySelector("#quickDemoBtn");
+const pitchBtn = document.querySelector("#pitchBtn");
+const pitchBtnSetup = document.querySelector("#pitchBtnSetup");
+const pitchModal = document.querySelector("#pitchModal");
+const closePitchBtn = document.querySelector("#closePitchBtn");
 const restartBtn = document.querySelector("#restartBtn");
 const nextRegionBtn = document.querySelector("#nextRegionBtn");
 const shareBtn = document.querySelector("#shareBtn");
@@ -553,6 +599,12 @@ const resultStamp = document.querySelector("#resultStamp");
 const resultSymbol = document.querySelector("#resultSymbol");
 const activeRegionCopy = document.querySelector("#activeRegionCopy");
 const mobileHintCopy = document.querySelector("#mobileHintCopy");
+const onboardingOverlay = document.querySelector("#onboardingOverlay");
+const onboardingBadge = document.querySelector("#onboardingBadge");
+const onboardingTitle = document.querySelector("#onboardingTitle");
+const onboardingCopy = document.querySelector("#onboardingCopy");
+const onboardingNextBtn = document.querySelector("#onboardingNextBtn");
+const onboardingSkipBtn = document.querySelector("#onboardingSkipBtn");
 const miniRegionGrid = document.querySelector("#miniRegionGrid");
 const regionGrid = document.querySelector("#regionGrid");
 const regionModalCopy = document.querySelector("#regionModalCopy");
@@ -569,6 +621,10 @@ const state = {
   trail: new Uint8Array(COLS * ROWS),
   regionMask: new Uint8Array(COLS * ROWS),
   activePolygon: [],
+  demoMode: DEMO_FROM_QUERY,
+  onboardingStep: 0,
+  screenShake: 0,
+  screenShakePower: 0,
   mode: "setup",
   party: {
     name: "Momo Lovers Party",
@@ -783,6 +839,85 @@ function setPartyPreview() {
   partySloganPreview.textContent = state.party.slogan;
 }
 
+function applyPartyPreset(preset = DEMO_PARTY) {
+  partyNameInput.value = preset.name;
+  sloganInput.value = preset.slogan;
+  colorInput.value = preset.color;
+  symbolInput.value = preset.symbol;
+  state.party = { ...preset };
+  setPartyPreview();
+  if (nameError) nameError.textContent = "";
+}
+
+function updateOnboarding() {
+  if (!onboardingOverlay) return;
+  const step = ONBOARDING_STEPS[state.onboardingStep] || ONBOARDING_STEPS[0];
+  onboardingBadge.textContent = `${state.onboardingStep + 1}/${ONBOARDING_STEPS.length}`;
+  onboardingTitle.textContent = step.title;
+  onboardingCopy.textContent = step.copy;
+  onboardingNextBtn.textContent = state.onboardingStep === ONBOARDING_STEPS.length - 1 ? "Done" : "Next";
+  onboardingOverlay.querySelectorAll(".onboarding-steps span").forEach((dot, indexValue) => {
+    dot.classList.toggle("is-active", indexValue <= state.onboardingStep);
+  });
+}
+
+function showOnboarding(force = false) {
+  if (!onboardingOverlay) return;
+  if (!force) {
+    try {
+      if (localStorage.getItem(ONBOARDING_KEY) === "yes") return;
+    } catch {
+      // Onboarding is optional if storage is unavailable.
+    }
+  }
+  state.onboardingStep = 0;
+  updateOnboarding();
+  onboardingOverlay.hidden = false;
+}
+
+function hideOnboarding(markSeen = true) {
+  if (!onboardingOverlay) return;
+  onboardingOverlay.hidden = true;
+  if (!markSeen) return;
+  try {
+    localStorage.setItem(ONBOARDING_KEY, "yes");
+  } catch {
+    // Storage can fail in strict browser modes; the overlay can still close.
+  }
+}
+
+function nextOnboardingStep() {
+  if (state.onboardingStep >= ONBOARDING_STEPS.length - 1) {
+    hideOnboarding();
+    return;
+  }
+  state.onboardingStep += 1;
+  updateOnboarding();
+}
+
+function openPitchCard() {
+  pitchModal?.classList.add("is-open");
+}
+
+function closePitchCard() {
+  pitchModal?.classList.remove("is-open");
+}
+
+function activateQuickDemo({ fromUrl = false } = {}) {
+  state.demoMode = true;
+  applyPartyPreset(DEMO_PARTY);
+  state.neta = { support: 58, funds: 96, power: 24, reputation: 62, decisionClock: 0 };
+  updateNetaPanel();
+  setupModal.classList.remove("is-open");
+  regionModal.classList.remove("is-open");
+  resultModal.classList.remove("is-open");
+  showRegionPrompt(DEMO_REGION_ID, { silent: fromUrl });
+  renderRegionHub();
+  showOnboarding(true);
+  addFeed("Quick Demo ready: preset party, UP arena, installable PWA, safe fictional content.");
+  showToast("Quick Demo ready. Press OK to open the pitch arena.");
+}
+
 function symbolLabel(symbol) {
   const labels = {
     star: "STAR",
@@ -816,6 +951,24 @@ function triggerHaptic(pattern = 10) {
   } catch {
     // Haptics are a mobile polish layer only; unsupported devices can ignore them.
   }
+}
+
+function triggerScreenShake(power = 4, duration = 0.2) {
+  state.screenShake = Math.max(state.screenShake, duration);
+  state.screenShakePower = Math.max(state.screenShakePower, power);
+}
+
+function updateScreenShake(dt) {
+  if (state.screenShake <= 0) {
+    if (canvas.style.transform) canvas.style.transform = "";
+    state.screenShakePower = 0;
+    return;
+  }
+  state.screenShake = Math.max(0, state.screenShake - dt);
+  const power = state.screenShakePower * (state.screenShake / Math.max(0.001, state.screenShake + dt));
+  const x = Math.sin((state.lastTime || 0) * 0.08) * power;
+  const y = Math.cos((state.lastTime || 0) * 0.07) * power * 0.65;
+  canvas.style.transform = `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px)`;
 }
 
 function ensureAudio() {
@@ -1075,12 +1228,14 @@ function openRegionModal() {
   showToast(state.campaign.nationalWon ? "National mandate complete. World yatra coming soon." : "Touch any black flag on the India map.");
 }
 
-function showRegionPrompt(regionId) {
+function showRegionPrompt(regionId, options = {}) {
   const region = REGIONS.find((item) => item.id === regionId);
   if (!region) return;
-  ensureAudio();
-  playSound("tap");
-  triggerHaptic(8);
+  if (!options.silent) {
+    ensureAudio();
+    playSound("tap");
+    triggerHaptic(8);
+  }
   state.campaign.pendingRegionId = region.id;
   confirmTitle.textContent = `${region.name} election?`;
   confirmCopy.textContent = state.campaign.completed[region.id]
@@ -1354,8 +1509,8 @@ function createSupporter(source, color) {
 
 function createAmbientPeople(region) {
   const seed = hashText(region?.id || "campaign");
-  const count = region?.type === "UT" ? 18 : 28;
-  const roles = ["voter", "volunteer", "poster", "flag"];
+  const count = region?.type === "UT" ? 22 : 34;
+  const roles = ["voter", "volunteer", "poster", "flag", "dhol", "camera"];
   const palette = ["#fffdf7", "#ffd166", "#bfe7ff", "#f7c68f", "#b9dfb5"];
   const people = [];
 
@@ -1498,6 +1653,7 @@ function convertOpponent(ownerId, cutX, cutY) {
   showToast(`${opponent.name} converted. Supporters joined.`);
   playSound("convert");
   triggerHaptic([10, 25, 14]);
+  triggerScreenShake(3.5, 0.18);
   if (state.opponents.length === 0) {
     addFeed("All local rivals joined your rally. Keep winning booths.");
   }
@@ -1512,7 +1668,7 @@ function resetGame() {
   state.trail.fill(0);
   const playerSpawn = findMaskedSpawn(31, 21);
   state.player = createAgent(1, state.party.name, state.party.color, state.party.symbol, playerSpawn.x, playerSpawn.y);
-  state.player.speed = 6.4;
+  state.player.speed = state.demoMode ? 7.15 : 6.4;
   state.player.dirX = 0;
   state.player.dirY = 0;
   state.opponents = [];
@@ -1527,17 +1683,17 @@ function resetGame() {
   state.touchCue = null;
   state.dangerCue = null;
   state.dangerHapticClock = 0;
-  state.timeLeft = ROUND_SECONDS;
+  state.timeLeft = state.demoMode ? 80 : ROUND_SECONDS;
   state.roundElapsed = 0;
   state.roundStarted = false;
-  state.eventClock = 8;
+  state.eventClock = state.demoMode ? 5 : 8;
   state.boostClock = 0;
   state.speedMul = 1;
   state.influence = 0;
   state.neta.decisionClock = 0;
   feedList.innerHTML = "";
 
-  claimDisk(1, state.player.x, state.player.y, 3.8);
+  claimDisk(1, state.player.x, state.player.y, state.demoMode ? 4.8 : 3.8);
   const spots = [
     [11, 10],
     [52, 11],
@@ -1587,6 +1743,7 @@ function startGame() {
     openRegionModal();
     showToast(`${state.party.name} is ready. Choose a state or UT.`);
   }
+  showOnboarding(false);
 }
 
 function beginRound() {
@@ -1653,6 +1810,7 @@ function recordTrail(agent, x, y) {
     }
     clearTrail(cutOwner);
     if (cutOwner === 1) {
+      triggerScreenShake(6, 0.26);
       finishRound(false, "Opposition cut your campaign route.");
     }
     return;
@@ -1719,15 +1877,16 @@ function closeLoop(agent) {
 
   if (agent.ownerId === 1 && agent.trailCells.length + gained > 5) {
     const boothGain = agent.trailCells.length + gained;
-    const supportGain = clamp(Math.floor(boothGain / 18), 1, 8);
-    const fundsGain = clamp(Math.floor(boothGain / 24), 0, 7);
-    const powerGain = boothGain > 34 ? 2 : 1;
+    const supportGain = clamp(Math.floor(boothGain / (state.demoMode ? 13 : 18)) + (state.demoMode ? 1 : 0), 1, state.demoMode ? 10 : 8);
+    const fundsGain = clamp(Math.floor(boothGain / (state.demoMode ? 18 : 24)), 0, state.demoMode ? 9 : 7);
+    const powerGain = boothGain > (state.demoMode ? 26 : 34) ? 2 : 1;
     adjustNeta({ support: supportGain, funds: fundsGain, power: powerGain }, false);
     addFeed(`${state.party.name} won ${boothGain} new booths. Support +${supportGain}.`);
     showToast("Campaign loop closed. Influence gained.");
     addClaimBurst(claimedCells, state.party.color);
     playSound("loop");
     triggerHaptic([8, 24, 16]);
+    triggerScreenShake(2, 0.14);
     saveCampaignProgress();
   }
   agent.trailCells = [];
@@ -1798,6 +1957,7 @@ function handleTrailCuts() {
     const cell = cellFromAgent(agent);
     const idx = index(cell.x, cell.y);
     if (state.trail[idx] === 1) {
+      triggerScreenShake(6, 0.26);
       finishRound(false, `${agent.name} cut your rally route.`);
       return;
     }
@@ -1872,6 +2032,20 @@ function triggerEvent() {
   } else if (event.effect === "claimBurst") {
     const cells = claimDisk(1, state.player.x, state.player.y, 3.8);
     addClaimBurst(cells, state.party.color);
+  } else if (event.effect === "memeWave") {
+    const cells = claimDisk(1, state.player.x, state.player.y, 3.2);
+    addClaimBurst(cells, state.party.color);
+    addConversionBurst(state.player.x, state.player.y, state.party.color);
+    triggerScreenShake(3, 0.18);
+  } else if (event.effect === "dholBoost") {
+    state.speedMul = 1.35;
+    state.boostClock = 5.4;
+    addConversionBurst(state.player.x, state.player.y, "#ffd166");
+  } else if (event.effect === "posterRain") {
+    const cells = claimDisk(1, state.player.x, state.player.y, 4.6);
+    addClaimBurst(cells, state.party.color);
+    addEventScene("posterRain", state.player.x, state.player.y, state.party.color);
+    triggerScreenShake(2, 0.14);
   } else if (event.effect === "claimLine") {
     for (const idx of state.player.trailCells.slice(-16)) {
       state.owner[idx] = 1;
@@ -2025,6 +2199,7 @@ function finishRound(won, reason) {
   resultSymbol.textContent = symbolLabel(state.party.symbol);
   resultModal.style.setProperty("--party-color", state.party.color);
   resultModal.dataset.result = victory ? (nationalComplete ? "national" : "win") : "loss";
+  eventStat.textContent = victory ? "Mandate Won" : "Recount";
   nextRegionBtn.hidden = !victory;
   nextRegionBtn.textContent = nationalComplete ? "India Map" : "Next State";
   if (victory) {
@@ -2090,8 +2265,10 @@ function update(dt) {
 
   updateStats();
   const score = mandateScore();
-  const earlyEnough = state.roundElapsed >= MIN_WIN_SECONDS;
-  if (earlyEnough && state.influence >= 52 && score >= 55) {
+  const earlyEnough = state.roundElapsed >= (state.demoMode ? 7 : MIN_WIN_SECONDS);
+  const influenceTarget = state.demoMode ? 44 : 52;
+  const scoreTarget = state.demoMode ? 50 : 55;
+  if (earlyEnough && state.influence >= influenceTarget && score >= scoreTarget) {
     finishRound(true, "District mandate reached.");
   } else if (state.timeLeft <= 0) {
     finishRound(state.influence >= 30 && score >= 44, "The campaign clock ended.");
@@ -2378,15 +2555,43 @@ function drawMapHome(width, height) {
 
   drawMapYatra();
 
+  const mapPulse = 1 + Math.sin((state.lastTime || 0) * 0.006) * 0.1;
   for (const region of REGIONS) {
     const point = getRegionMapPoint(region);
     const won = Boolean(state.campaign.completed[region.id]);
     const pending = state.campaign.pendingRegionId === region.id;
+    const active = state.campaign.activeRegionId === region.id;
     if (pending) {
       ctx.fillStyle = "rgba(244, 197, 66, 0.5)";
       ctx.beginPath();
-      ctx.arc(point.x + 8, point.y + 3, 20, 0, Math.PI * 2);
+      ctx.arc(point.x + 8, point.y + 3, 20 * mapPulse, 0, Math.PI * 2);
       ctx.fill();
+      ctx.strokeStyle = "#151515";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+    if (won || active) {
+      ctx.globalAlpha = won ? 0.46 : 0.28;
+      ctx.strokeStyle = won ? "#fffdf7" : "#151515";
+      ctx.lineWidth = won ? 3 : 2;
+      ctx.beginPath();
+      ctx.arc(point.x + 7, point.y + 3, (won ? 18 : 15) * mapPulse, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    if (pending || (won && region.id === state.campaign.lastWonRegionId)) {
+      drawMiniPerson(point.x - 18, point.y + 23, Math.max(12, state.mapRect.width * 0.032), {
+        color: state.party.color,
+        accent: "#fffdf7",
+        flag: true,
+        phase: point.x
+      });
+      drawMiniPerson(point.x + 22, point.y + 24, Math.max(10, state.mapRect.width * 0.028), {
+        color: "#ffd166",
+        accent: state.party.color,
+        cheer: true,
+        phase: point.y
+      });
     }
     drawFlag(point.x, point.y, won ? "#d92d20" : pending ? "#ffd166" : "#151515", region.type === "UT" ? 0.5 : 0.66);
   }
@@ -2485,11 +2690,12 @@ function drawRegionArena() {
 
 function drawNetaHud(width) {
   if (state.mode !== "playing") return;
-  const status = state.roundStarted ? `Mandate ${mandateScore()}` : "Ready";
+  const score = mandateScore();
+  const status = state.dangerCue ? "Danger" : state.roundStarted ? `Yatra ${score}` : "Ready";
   const label = `${status}  S ${state.neta.support}  F ${state.neta.funds}  P ${state.neta.power}  R ${state.neta.reputation}`;
   const boxW = Math.min(width - 20, 390);
   ctx.save();
-  ctx.fillStyle = "rgba(21, 21, 21, 0.86)";
+  ctx.fillStyle = state.dangerCue ? "rgba(217, 45, 32, 0.9)" : state.roundStarted ? "rgba(21, 21, 21, 0.88)" : "rgba(14, 159, 138, 0.9)";
   ctx.strokeStyle = "rgba(255, 253, 247, 0.72)";
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -3210,6 +3416,45 @@ function drawTeaBreakScene(scene, s) {
   ctx.globalAlpha = 1;
 }
 
+function drawPosterRainScene(scene, s) {
+  const x = (scene.x + 0.5) * s;
+  const y = (scene.y + 0.5) * s;
+  const alpha = clamp(scene.life / scene.maxLife, 0, 1);
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = "rgba(21, 21, 21, 0.14)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + s * 1.1, s * 3.6, s * 1.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  for (let i = 0; i < 9; i += 1) {
+    const fall = ((scene.maxLife - scene.life) * (1.8 + i * 0.12) + i * 0.17) % 1;
+    const px = x - s * 2.7 + i * s * 0.68 + Math.sin(scene.phase + i) * s * 0.16;
+    const py = y - s * 1.8 + fall * s * 3.1;
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.rotate(Math.sin(scene.phase + i) * 0.28);
+    drawTinyPoster(-s * 0.32, -s * 0.18, s * 0.34, scene.color, i % 2 ? "JI" : "VOTE");
+    ctx.restore();
+  }
+
+  drawMiniPerson(x - s * 1.6, y + s * 0.92, s * 0.96, {
+    color: state.party.color,
+    accent: "#fffdf7",
+    cheer: true,
+    phase: scene.phase
+  });
+  drawMiniPerson(x + s * 1.7, y + s * 0.92, s * 0.96, {
+    color: "#ffd166",
+    accent: state.party.color,
+    poster: true,
+    phase: scene.phase + 1.3
+  });
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
 function drawEventScenes() {
   if (state.eventScenes.length === 0) return;
   ctx.save();
@@ -3218,6 +3463,7 @@ function drawEventScenes() {
   for (const scene of state.eventScenes) {
     if (scene.type === "raid") drawRaidScene(scene, s);
     if (scene.type === "teaBreak") drawTeaBreakScene(scene, s);
+    if (scene.type === "posterRain") drawPosterRainScene(scene, s);
   }
   ctx.restore();
   ctx.globalAlpha = 1;
@@ -3329,12 +3575,29 @@ function drawAmbientPeople() {
     if (person.role === "poster" && isPartyArea) {
       drawTinyPoster(cx - s * 1.2, cy - s * 1.4, s * 0.62, state.party.color, "VOTE");
     }
+    if (person.role === "camera") {
+      ctx.fillStyle = "#151515";
+      ctx.fillRect(cx + s * 0.34, cy - s * 0.92, s * 0.42, s * 0.3);
+      ctx.fillStyle = "#bfe7ff";
+      ctx.fillRect(cx + s * 0.42, cy - s * 0.85, s * 0.18, s * 0.13);
+    }
+    if (person.role === "dhol") {
+      ctx.fillStyle = "#ffd166";
+      ctx.strokeStyle = "#151515";
+      ctx.lineWidth = Math.max(1, s * 0.08);
+      ctx.beginPath();
+      ctx.ellipse(cx + s * 0.42, cy + s * 0.12, s * 0.28, s * 0.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
 
     drawMiniPerson(cx, cy, s * person.size, {
       color: clothing,
       accent,
       phase: person.phase + i * 0.23,
       flag: person.role === "flag" || (isPartyArea && i % 9 === 0),
+      poster: person.role === "poster" && !isPartyArea,
+      cheer: person.role === "dhol" || (isPartyArea && i % 7 === 0),
       foldedHands: person.role === "voter" && state.influence > 42 && i % 10 === 0
     });
   }
@@ -3433,6 +3696,23 @@ function drawAgent(agent, isPlayer) {
     flag: !isPlayer,
     leaderMark: isPlayer
   });
+  if (!isPlayer) {
+    ctx.fillStyle = "rgba(21, 21, 21, 0.84)";
+    ctx.strokeStyle = "#fffdf7";
+    ctx.lineWidth = Math.max(1, s * 0.08);
+    const tagW = Math.min(s * 7.2, Math.max(s * 4.4, agent.name.length * s * 0.34));
+    const tagX = cx - tagW / 2;
+    const tagY = cy - s * 3.25;
+    ctx.beginPath();
+    ctx.roundRect(tagX, tagY, tagW, s * 1.15, s * 0.32);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#fffdf7";
+    ctx.font = `900 ${Math.max(7, s * 0.5)}px ui-sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(agent.name, cx, tagY + s * 0.58, tagW - s * 0.4);
+  }
   if (isPlayer) {
     ctx.fillStyle = "#151515";
     ctx.font = `900 ${Math.max(10, s * 0.9)}px ui-sans-serif`;
@@ -3533,6 +3813,7 @@ function draw() {
 function loop(timestamp) {
   const dt = Math.min(0.05, (timestamp - state.lastTime) / 1000 || 0);
   state.lastTime = timestamp;
+  updateScreenShake(dt);
   update(dt);
   draw();
   requestAnimationFrame(loop);
@@ -3705,6 +3986,12 @@ function bindEvents() {
   boostBtn?.addEventListener("click", useRallyBoost);
   pauseBtn?.addEventListener("click", togglePause);
   startBtn?.addEventListener("click", startGame);
+  quickDemoBtn?.addEventListener("click", () => activateQuickDemo());
+  pitchBtn?.addEventListener("click", openPitchCard);
+  pitchBtnSetup?.addEventListener("click", openPitchCard);
+  closePitchBtn?.addEventListener("click", closePitchCard);
+  onboardingNextBtn?.addEventListener("click", nextOnboardingStep);
+  onboardingSkipBtn?.addEventListener("click", () => hideOnboarding());
   restartBtn?.addEventListener("click", () => {
     resultModal.classList.remove("is-open");
     if (getActiveRegion()) {
@@ -3844,6 +4131,7 @@ function registerDebugSnapshot() {
     mode: state.mode,
     activeRegion: getActiveRegion()?.name || null,
     pendingRegionId: state.campaign.pendingRegionId,
+    demoMode: state.demoMode,
     influence: state.influence,
     mandateScore: mandateScore(),
     completedRegions: completedRegionCount(),
@@ -4132,6 +4420,9 @@ async function init() {
   registerDebugSnapshot();
   bindInstallEvents();
   registerServiceWorker();
+  if (DEMO_FROM_QUERY) {
+    activateQuickDemo({ fromUrl: true });
+  }
   requestAnimationFrame(loop);
 }
 

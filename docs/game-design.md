@@ -73,6 +73,7 @@ Avoid these words in user-facing UI:
 - National mandate completion card
 - Party-colored result card with symbol badge
 - Future: 10-second replay export
+- Current pitch flow: Quick Demo, `?demo=1`, onboarding overlay, pitch card, and victory ceremony
 
 ## Data Plan
 

@@ -99,6 +99,34 @@
         "funds": 12,
         "reputation": 1
       }
+    },
+    {
+      "title": "Meme wave",
+      "effect": "memeWave",
+      "copy": "Your slogan became a family group sticker. Support jumps.",
+      "impact": {
+        "support": 7,
+        "reputation": 2
+      }
+    },
+    {
+      "title": "Dhol boost",
+      "effect": "dholBoost",
+      "copy": "The dhol team found perfect rhythm. Yatra speed rises.",
+      "impact": {
+        "support": 3,
+        "power": 1,
+        "funds": -2
+      }
+    },
+    {
+      "title": "Poster rain",
+      "effect": "posterRain",
+      "copy": "Volunteers showered the booth lane with posters. Influence spreads.",
+      "impact": {
+        "power": 3,
+        "funds": -5
+      }
     }
   ],
   "blockedTerms": [

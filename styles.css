@@ -208,6 +208,76 @@ canvas {
   flex: 0 0 auto;
 }
 
+.onboarding-overlay {
+  position: absolute;
+  inset: 12px;
+  z-index: 6;
+  display: grid;
+  align-items: start;
+  justify-items: center;
+  pointer-events: none;
+}
+
+.onboarding-overlay[hidden] {
+  display: none;
+}
+
+.onboarding-card {
+  width: min(390px, 100%);
+  margin-top: 10px;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 253, 247, 0.96);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  pointer-events: auto;
+}
+
+.onboarding-card h2 {
+  font-size: 1.35rem;
+}
+
+.onboarding-card p:not(.eyebrow) {
+  margin: 8px 0 12px;
+  color: var(--muted);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.onboarding-badge {
+  float: right;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--gold);
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.onboarding-steps {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+
+.onboarding-steps span {
+  width: 32px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(21, 21, 21, 0.18);
+}
+
+.onboarding-steps span.is-active {
+  background: var(--teal);
+}
+
+.onboarding-actions,
+.setup-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
 .compact-btn {
   width: auto;
   min-width: 74px;
@@ -420,6 +490,11 @@ canvas {
   color: var(--white);
 }
 
+.pitch-mini-btn {
+  background: var(--blue);
+  color: var(--white);
+}
+
 .install-mini-btn[hidden] {
   display: none;
 }
@@ -588,6 +663,17 @@ input[type="color"] {
   color: var(--ink);
 }
 
+.text-btn {
+  width: 100%;
+  margin-top: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--line);
+  font-weight: 900;
+  text-decoration: underline;
+  box-shadow: none;
+}
+
 .fine-print {
   margin: 12px 0 0;
   color: var(--muted);
@@ -727,6 +813,152 @@ input[type="color"] {
   border-radius: 14px 14px 14px 6px;
 }
 
+.victory-ceremony {
+  position: relative;
+  width: min(280px, 100%);
+  height: 76px;
+  margin: 0 auto 10px;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 10px;
+}
+
+#resultModal[data-result="loss"] .victory-ceremony {
+  display: none;
+}
+
+.ceremony-flag {
+  width: 10px;
+  height: 58px;
+  border-left: 4px solid var(--ink);
+  position: relative;
+  animation: flagRaise 900ms ease both;
+}
+
+.ceremony-flag::after {
+  position: absolute;
+  content: "";
+  left: 0;
+  top: 0;
+  width: 46px;
+  height: 26px;
+  border: 2px solid var(--ink);
+  background: #d92d20;
+  border-radius: 3px;
+}
+
+.ceremony-leader {
+  width: 44px;
+  height: 58px;
+  border: 2px solid var(--ink);
+  border-radius: 20px 20px 8px 8px;
+  background: linear-gradient(#f0b37e 0 38%, var(--party-color, var(--orange)) 38% 100%);
+  box-shadow: 0 7px 0 rgba(21, 21, 21, 0.14);
+}
+
+.ceremony-crowd {
+  width: 96px;
+  height: 40px;
+  background:
+    radial-gradient(circle at 12px 16px, #f0b37e 0 8px, transparent 9px),
+    radial-gradient(circle at 32px 10px, #f0b37e 0 7px, transparent 8px),
+    radial-gradient(circle at 54px 18px, #f0b37e 0 8px, transparent 9px),
+    radial-gradient(circle at 76px 12px, #f0b37e 0 7px, transparent 8px),
+    linear-gradient(90deg, var(--party-color, var(--orange)), var(--gold));
+  border: 2px solid var(--ink);
+  border-radius: 18px 18px 8px 8px;
+}
+
+.confetti {
+  position: absolute;
+  top: 4px;
+  width: 9px;
+  height: 16px;
+  border: 1px solid var(--ink);
+  background: var(--gold);
+  animation: confettiDrop 1.5s ease-in-out infinite;
+}
+
+.confetti.one {
+  left: 30px;
+  background: var(--teal);
+}
+
+.confetti.two {
+  left: 128px;
+  animation-delay: 160ms;
+}
+
+.confetti.three {
+  right: 34px;
+  background: var(--party-color, var(--orange));
+  animation-delay: 320ms;
+}
+
+.pitch-card {
+  width: min(620px, 100%);
+}
+
+.pitch-line {
+  margin: 10px 0 16px;
+  color: var(--muted);
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.pitch-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.pitch-grid div {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f7f1e4;
+  padding: 10px;
+}
+
+.pitch-grid strong,
+.pitch-grid span {
+  display: block;
+}
+
+.pitch-grid span {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+@keyframes flagRaise {
+  from {
+    transform: translateY(22px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes confettiDrop {
+  0% {
+    transform: translateY(-8px) rotate(0deg);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(44px) rotate(140deg);
+    opacity: 0;
+  }
+}
+
 .result-actions {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -849,7 +1081,9 @@ input[type="color"] {
   }
 
   .form-row,
-  .result-actions {
+  .result-actions,
+  .setup-actions,
+  .pitch-grid {
     grid-template-columns: 1fr;
   }
 
