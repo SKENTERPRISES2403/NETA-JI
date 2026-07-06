@@ -606,8 +606,11 @@ const state = {
   cellSize: 12,
   offsetX: 0,
   offsetY: 0,
+  canvasWidth: 960,
+  canvasHeight: 630,
+  dpr: 1,
   mapRect: { x: 0, y: 0, width: 0, height: 0 },
-  pointer: { x: 0, y: 0, active: false },
+  pointer: { x: 0, y: 0, active: false, lastDir: null },
   touchCue: null,
   dangerCue: null,
   dangerHapticClock: 0,
@@ -1136,13 +1139,23 @@ function markActiveRegionWon() {
 
 function resizeCanvas() {
   const rect = canvas.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = Math.max(1, Math.floor(rect.width * dpr));
-  canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+  const cssWidth = Math.max(1, Math.floor(rect.width));
+  const cssHeight = Math.max(1, Math.floor(rect.height));
+  const isMobile = Math.min(window.innerWidth || cssWidth, cssWidth) < 720;
+  const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.75 : 2);
+  const nextWidth = Math.max(1, Math.floor(cssWidth * dpr));
+  const nextHeight = Math.max(1, Math.floor(cssHeight * dpr));
+  if (canvas.width !== nextWidth) canvas.width = nextWidth;
+  if (canvas.height !== nextHeight) canvas.height = nextHeight;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  state.cellSize = Math.min(rect.width / COLS, rect.height / ROWS);
-  state.offsetX = (rect.width - state.cellSize * COLS) / 2;
-  state.offsetY = (rect.height - state.cellSize * ROWS) / 2;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  state.canvasWidth = cssWidth;
+  state.canvasHeight = cssHeight;
+  state.dpr = dpr;
+  state.cellSize = Math.min(cssWidth / COLS, cssHeight / ROWS);
+  state.offsetX = (cssWidth - state.cellSize * COLS) / 2;
+  state.offsetY = (cssHeight - state.cellSize * ROWS) / 2;
 }
 
 function hashText(value) {
@@ -2401,6 +2414,33 @@ function drawRegionArena() {
   ctx.save();
   ctx.translate(state.offsetX, state.offsetY);
   const s = state.cellSize;
+  if (state.activePolygon.length > 2) {
+    ctx.save();
+    ctx.beginPath();
+    state.activePolygon.forEach((point, i) => {
+      const x = point.x * s;
+      const y = point.y * s;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    ctx.clip();
+    const arenaGlow = ctx.createLinearGradient(0, 0, COLS * s, ROWS * s);
+    arenaGlow.addColorStop(0, "rgba(255, 253, 247, 0.28)");
+    arenaGlow.addColorStop(0.55, "rgba(255, 209, 102, 0.12)");
+    arenaGlow.addColorStop(1, "rgba(14, 159, 138, 0.16)");
+    ctx.fillStyle = arenaGlow;
+    ctx.fillRect(0, 0, COLS * s, ROWS * s);
+    ctx.strokeStyle = "rgba(255, 253, 247, 0.34)";
+    ctx.lineWidth = Math.max(1, s * 0.12);
+    for (let stripe = -ROWS; stripe < COLS; stripe += 6) {
+      ctx.beginPath();
+      ctx.moveTo(stripe * s, ROWS * s);
+      ctx.lineTo((stripe + ROWS) * s, 0);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
   ctx.fillStyle = "rgba(21, 21, 21, 0.12)";
   for (let y = 0; y < ROWS; y += 1) {
     for (let x = 0; x < COLS; x += 1) {
@@ -2409,9 +2449,20 @@ function drawRegionArena() {
       }
     }
   }
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = "rgba(255, 253, 247, 0.82)";
+  ctx.lineWidth = Math.max(5, s * 0.42);
+  ctx.beginPath();
+  state.activePolygon.forEach((point, i) => {
+    const x = point.x * s;
+    const y = point.y * s;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+  ctx.stroke();
   ctx.strokeStyle = "#151515";
   ctx.lineWidth = Math.max(3, s * 0.32);
-  ctx.lineJoin = "round";
   ctx.beginPath();
   state.activePolygon.forEach((point, i) => {
     const x = point.x * s;
@@ -2520,23 +2571,41 @@ function drawReadyPulse() {
 }
 
 function drawGridBackground(width, height) {
-  ctx.fillStyle = "#ebe4d4";
+  const bg = ctx.createLinearGradient(0, 0, 0, height);
+  bg.addColorStop(0, "#f7e8bd");
+  bg.addColorStop(0.55, "#ebe0bf");
+  bg.addColorStop(1, "#d8e8c4");
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, width, height);
 
   ctx.save();
   ctx.translate(state.offsetX, state.offsetY);
-  ctx.strokeStyle = "rgba(21, 21, 21, 0.06)";
+  const s = state.cellSize;
+  ctx.fillStyle = "rgba(255, 253, 247, 0.3)";
+  for (let y = 1; y < ROWS; y += 7) {
+    ctx.fillRect(0, y * s, COLS * s, Math.max(1, s * 0.16));
+  }
+  ctx.fillStyle = "rgba(14, 159, 138, 0.12)";
+  for (let i = 0; i < 90; i += 1) {
+    const x = ((i * 17) % COLS + 0.3 + (i % 3) * 0.18) * s;
+    const y = ((i * 29) % ROWS + 0.4) * s;
+    if (!state.regionMask[index(clamp(Math.floor(x / s), 0, COLS - 1), clamp(Math.floor(y / s), 0, ROWS - 1))]) continue;
+    ctx.beginPath();
+    ctx.arc(x, y, Math.max(0.8, s * (0.045 + (i % 4) * 0.01)), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.strokeStyle = "rgba(21, 21, 21, 0.045)";
   ctx.lineWidth = 1;
   for (let x = 0; x <= COLS; x += 4) {
     ctx.beginPath();
-    ctx.moveTo(x * state.cellSize, 0);
-    ctx.lineTo(x * state.cellSize, ROWS * state.cellSize);
+    ctx.moveTo(x * s, 0);
+    ctx.lineTo(x * s, ROWS * s);
     ctx.stroke();
   }
   for (let y = 0; y <= ROWS; y += 4) {
     ctx.beginPath();
-    ctx.moveTo(0, y * state.cellSize);
-    ctx.lineTo(COLS * state.cellSize, y * state.cellSize);
+    ctx.moveTo(0, y * s);
+    ctx.lineTo(COLS * s, y * s);
     ctx.stroke();
   }
   ctx.restore();
@@ -2787,9 +2856,20 @@ function drawTerritory() {
       if (!state.regionMask[idx]) continue;
       const ownerId = state.owner[idx];
       if (!ownerId) continue;
-      ctx.fillStyle = ownerColor(ownerId);
+      const baseColor = ownerColor(ownerId);
+      ctx.fillStyle = baseColor;
       ctx.globalAlpha = ownerId === 1 ? 0.82 : 0.62;
       ctx.fillRect(x * s, y * s, s + 0.5, s + 0.5);
+      ctx.globalAlpha = ownerId === 1 ? 0.16 : 0.1;
+      ctx.fillStyle = ownerId === 1 ? "#fffdf7" : shadeHex(baseColor, 34);
+      ctx.fillRect(x * s + s * 0.62, y * s + s * 0.1, Math.max(1, s * 0.11), s * 0.8);
+      if (ownerId === 1 && (x + y) % 13 === 0) {
+        ctx.globalAlpha = 0.18;
+        ctx.fillStyle = "#151515";
+        ctx.beginPath();
+        ctx.arc(x * s + s * 0.32, y * s + s * 0.38, Math.max(1, s * 0.08), 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       if (ownerId === 1 && x % 8 === 2 && y % 6 === 2) {
         ctx.globalAlpha = 1;
@@ -2818,11 +2898,22 @@ function drawTrails() {
       const isPlayerTrail = ownerId === 1;
       ctx.fillStyle = isPlayerTrail ? shadeHex(baseColor, -55) : baseColor;
       ctx.globalAlpha = isPlayerTrail ? 1 : 0.8;
-      ctx.fillRect(x * s + s * 0.05, y * s + s * 0.05, s * 0.9, s * 0.9);
+      ctx.shadowColor = isPlayerTrail ? "rgba(21, 21, 21, 0.24)" : "transparent";
+      ctx.shadowBlur = isPlayerTrail ? Math.max(2, s * 0.18) : 0;
+      ctx.beginPath();
+      ctx.roundRect(x * s + s * 0.07, y * s + s * 0.07, s * 0.86, s * 0.86, Math.max(2, s * 0.18));
+      ctx.fill();
+      ctx.shadowBlur = 0;
       if (isPlayerTrail) {
         ctx.strokeStyle = "rgba(21, 21, 21, 0.72)";
         ctx.lineWidth = Math.max(1, s * 0.12);
-        ctx.strokeRect(x * s + s * 0.05, y * s + s * 0.05, s * 0.9, s * 0.9);
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(255, 253, 247, 0.42)";
+        ctx.lineWidth = Math.max(1, s * 0.06);
+        ctx.beginPath();
+        ctx.moveTo(x * s + s * 0.24, y * s + s * 0.28);
+        ctx.lineTo(x * s + s * 0.74, y * s + s * 0.72);
+        ctx.stroke();
       }
     }
   }
@@ -2844,6 +2935,8 @@ function drawTrailPaths() {
     ctx.globalAlpha = isPlayerTrail ? 0.96 : 0.72;
     ctx.strokeStyle = color;
     ctx.lineWidth = isPlayerTrail ? s * 0.86 : s * 0.64;
+    ctx.shadowColor = isPlayerTrail ? "rgba(21, 21, 21, 0.22)" : "transparent";
+    ctx.shadowBlur = isPlayerTrail ? Math.max(2, s * 0.22) : 0;
     ctx.beginPath();
     agent.trailPoints.forEach((point, i) => {
       const x = (point.x + 0.5) * s;
@@ -2852,11 +2945,18 @@ function drawTrailPaths() {
       else ctx.lineTo(x, y);
     });
     ctx.stroke();
+    ctx.shadowBlur = 0;
     if (isPlayerTrail) {
-      ctx.globalAlpha = 0.9;
+      ctx.globalAlpha = 0.72;
       ctx.strokeStyle = "rgba(21, 21, 21, 0.62)";
       ctx.lineWidth = Math.max(1, s * 0.12);
       ctx.stroke();
+      ctx.globalAlpha = 0.52;
+      ctx.strokeStyle = "rgba(255, 253, 247, 0.72)";
+      ctx.lineWidth = Math.max(1, s * 0.08);
+      ctx.setLineDash([s * 0.42, s * 0.56]);
+      ctx.stroke();
+      ctx.setLineDash([]);
     }
   }
   ctx.restore();
@@ -3309,6 +3409,21 @@ function drawAgent(agent, isPlayer) {
   const cy = state.offsetY + (agent.y + 0.5) * s;
   ctx.save();
   if (!isPlayer) drawOpponentSquad(agent, cx, cy, s);
+  if (isPlayer && state.roundStarted) {
+    const speedPulse = state.speedMul > 1 ? 1.35 : 1;
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = "#151515";
+    for (let i = 0; i < 4; i += 1) {
+      const back = (i + 1) * s * 0.42 * speedPulse;
+      const side = (i % 2 ? -1 : 1) * s * 0.18;
+      const dustX = cx - agent.dirX * back - agent.dirY * side;
+      const dustY = cy - agent.dirY * back + agent.dirX * side;
+      ctx.beginPath();
+      ctx.ellipse(dustX, dustY + s * 1.12, Math.max(1.5, s * (0.16 - i * 0.018)), Math.max(1, s * 0.07), 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
   drawMiniPerson(cx, cy, s * (isPlayer ? 2.55 : 2.12), {
     color: agent.color,
     accent: "#fffdf7",
@@ -3385,15 +3500,16 @@ function drawLeaderStatue() {
 }
 
 function draw() {
-  const rect = canvas.getBoundingClientRect();
+  const width = state.canvasWidth || canvas.clientWidth || 1;
+  const height = state.canvasHeight || canvas.clientHeight || 1;
   if (document.body.dataset.mode !== state.mode) {
     document.body.dataset.mode = state.mode;
   }
   if (state.mode === "map" || state.mode === "confirm") {
-    drawMapHome(rect.width, rect.height);
+    drawMapHome(width, height);
     return;
   }
-  drawGridBackground(rect.width, rect.height);
+  drawGridBackground(width, height);
   drawRegionArena();
   drawCampaignRoads();
   drawTerritory();
@@ -3410,8 +3526,8 @@ function draw() {
   drawReadyPulse();
   drawDangerCue();
   drawTouchCue();
-  drawNetaHud(rect.width);
-  drawPauseOverlay(rect.width, rect.height);
+  drawNetaHud(width);
+  drawPauseOverlay(width, height);
 }
 
 function loop(timestamp) {
@@ -3548,28 +3664,36 @@ function bindEvents() {
   });
   window.addEventListener("keyup", (event) => state.keys.delete(event.key));
   canvas.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    canvas.setPointerCapture?.(event.pointerId);
     ensureAudio();
     if (state.mode === "playing") triggerHaptic(5);
     const point = canvasPointFromEvent(event);
-    state.pointer = { x: point.x, y: point.y, active: true };
+    state.pointer = { x: point.x, y: point.y, active: true, lastDir: null };
     pointerToDirection(event);
   });
   canvas.addEventListener("pointermove", (event) => {
+    event.preventDefault();
     if (!state.pointer.active || state.mode !== "playing") return;
     const point = canvasPointFromEvent(event);
     const dx = point.x - state.pointer.x;
     const dy = point.y - state.pointer.y;
-    if (Math.hypot(dx, dy) > 12) {
+    const swipeThreshold = clamp(state.cellSize * 0.82, 10, 22);
+    if (Math.hypot(dx, dy) > swipeThreshold) {
       const dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : dy > 0 ? "down" : "up";
-      setDirection(state.player, dir);
-      setTouchCue(point, dir);
-      state.pointer = { x: point.x, y: point.y, active: true };
+      if (dir !== state.pointer.lastDir) {
+        setDirection(state.player, dir);
+        setTouchCue(point, dir);
+      }
+      state.pointer = { x: point.x, y: point.y, active: true, lastDir: dir };
     }
   });
-  canvas.addEventListener("pointerup", () => {
+  canvas.addEventListener("pointerup", (event) => {
+    canvas.releasePointerCapture?.(event.pointerId);
     state.pointer.active = false;
   });
-  canvas.addEventListener("pointercancel", () => {
+  canvas.addEventListener("pointercancel", (event) => {
+    canvas.releasePointerCapture?.(event.pointerId);
     state.pointer.active = false;
   });
   document.querySelectorAll(".dir-btn").forEach((button) => {
@@ -3736,7 +3860,9 @@ function registerDebugSnapshot() {
     eventScenes: state.eventScenes.length,
     dangerCue: Boolean(state.dangerCue),
     installReady: Boolean(state.installPromptEvent),
-    standalone: isStandaloneDisplay()
+    standalone: isStandaloneDisplay(),
+    dpr: state.dpr,
+    canvas: `${state.canvasWidth}x${state.canvasHeight}`
   });
 }
 

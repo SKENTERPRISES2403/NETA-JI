@@ -34,6 +34,7 @@ body {
     linear-gradient(180deg, #bfe7ff 0%, #fff3d6 54%, #b9dfb5 100%);
   color: var(--ink);
   overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button,
@@ -130,6 +131,7 @@ h2 {
 .canvas-wrap {
   position: relative;
   min-height: 0;
+  contain: layout paint;
   background:
     linear-gradient(135deg, rgba(45, 156, 219, 0.18), transparent 34%),
     linear-gradient(315deg, rgba(255, 209, 102, 0.26), transparent 38%),
@@ -141,6 +143,8 @@ canvas {
   height: 100%;
   display: block;
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .toast {

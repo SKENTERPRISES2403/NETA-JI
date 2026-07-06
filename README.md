@@ -14,6 +14,8 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - Opponent conversion into supporters
 - Miniature leader, opponent candidate, and supporter worker visuals
 - Rally booths, poster crews, booth queues, walking yatra routes, flags, and stage props inside arenas
+- Mobile-smoothed canvas rendering with capped DPR, cached sizing, and tuned swipe controls
+- Textured arena ground, shaded territory, rounded campaign trails, and player motion dust
 - Neta Meter with public support, funds, local power, and reputation
 - Campaign decisions: Tea Rally, Poster Wave, and Donor Lunch tradeoffs
 - Rough India state/UT campaign hub
