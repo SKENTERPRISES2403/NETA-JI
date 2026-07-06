@@ -68,7 +68,7 @@ Avoid these words in user-facing UI:
 - Namaste leader result card
 - Breaking poster news headline
 - Short share text
-- Campaign van and booth queues for reel-friendly movement
+- Walking yatra routes and booth queues for reel-friendly movement
 - National mandate completion card
 - Party-colored result card with symbol badge
 - Future: 10-second replay export

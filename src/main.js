@@ -2640,6 +2640,8 @@ function drawMiniPerson(cx, cy, size, options = {}) {
   const color = options.color || state.party.color;
   const accent = options.accent || "#fffdf7";
   const skin = options.skin || "#f0b37e";
+  const hair = options.hair || "#151515";
+  const trouser = options.trouser || shadeHex(color, -58);
   const phase = options.phase || 0;
   const bob = Math.sin((state.lastTime || 0) * 0.012 + phase) * size * 0.05;
   const walk = Math.sin((state.lastTime || 0) * 0.018 + phase);
@@ -2648,9 +2650,9 @@ function drawMiniPerson(cx, cy, size, options = {}) {
 
   ctx.save();
   ctx.translate(cx, cy + bob);
-  ctx.fillStyle = "rgba(21, 21, 21, 0.18)";
+  ctx.fillStyle = "rgba(21, 21, 21, 0.2)";
   ctx.beginPath();
-  ctx.ellipse(0, size * 0.72, size * 0.46, size * 0.16, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, size * 0.74, size * 0.5, size * 0.16, 0, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.strokeStyle = "#151515";
@@ -2658,19 +2660,25 @@ function drawMiniPerson(cx, cy, size, options = {}) {
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
-  ctx.strokeStyle = "#151515";
   ctx.beginPath();
-  ctx.moveTo(-bodyW * 0.18, size * 0.34);
-  ctx.lineTo(-bodyW * 0.28 + walk * size * 0.06, size * 0.78);
-  ctx.moveTo(bodyW * 0.18, size * 0.34);
-  ctx.lineTo(bodyW * 0.28 - walk * size * 0.06, size * 0.78);
+  ctx.moveTo(-bodyW * 0.2, size * 0.42);
+  ctx.lineTo(-bodyW * 0.36 + walk * size * 0.08, size * 0.82);
+  ctx.moveTo(bodyW * 0.2, size * 0.42);
+  ctx.lineTo(bodyW * 0.36 - walk * size * 0.08, size * 0.82);
   ctx.stroke();
+  ctx.fillStyle = trouser;
+  ctx.beginPath();
+  ctx.ellipse(-bodyW * 0.38 + walk * size * 0.08, size * 0.86, size * 0.15, size * 0.055, 0, 0, Math.PI * 2);
+  ctx.ellipse(bodyW * 0.38 - walk * size * 0.08, size * 0.86, size * 0.15, size * 0.055, 0, 0, Math.PI * 2);
+  ctx.fill();
 
   ctx.fillStyle = color;
   ctx.beginPath();
   ctx.roundRect(-bodyW / 2, -size * 0.08, bodyW, bodyH, size * 0.12);
   ctx.fill();
   ctx.stroke();
+  ctx.fillStyle = shadeHex(color, -24);
+  ctx.fillRect(-bodyW / 2, size * 0.42, bodyW, size * 0.08);
 
   ctx.fillStyle = accent;
   ctx.beginPath();
@@ -2695,12 +2703,23 @@ function drawMiniPerson(cx, cy, size, options = {}) {
     ctx.fill();
     ctx.stroke();
   } else {
+    const leftHandY = size * (options.cheer ? -0.18 : 0.36) + walk * size * 0.08;
+    const rightHandY = size * (options.cheer ? -0.26 : 0.36) - walk * size * 0.08;
     ctx.beginPath();
-    ctx.moveTo(-bodyW * 0.5, size * 0.04);
-    ctx.lineTo(-bodyW * 0.7, size * 0.38 + walk * size * 0.08);
+    ctx.moveTo(-bodyW * 0.48, size * 0.02);
+    ctx.lineTo(-bodyW * 0.76, leftHandY);
     ctx.moveTo(bodyW * 0.5, size * 0.04);
-    ctx.lineTo(bodyW * 0.7, size * 0.38 - walk * size * 0.08);
+    ctx.lineTo(bodyW * 0.76, rightHandY);
     ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(-bodyW * 0.76, leftHandY, size * 0.085, 0, Math.PI * 2);
+    ctx.arc(bodyW * 0.76, rightHandY, size * 0.085, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  if (options.poster) {
+    drawTinyPoster(-size * 0.92, -size * 0.5, size * 0.34, color, options.poster === true ? "VOTE" : options.poster);
   }
 
   ctx.fillStyle = skin;
@@ -2708,10 +2727,22 @@ function drawMiniPerson(cx, cy, size, options = {}) {
   ctx.arc(0, -size * 0.42, size * 0.32, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
-  ctx.fillStyle = "#151515";
+  ctx.beginPath();
+  ctx.arc(-size * 0.32, -size * 0.43, size * 0.06, 0, Math.PI * 2);
+  ctx.arc(size * 0.32, -size * 0.43, size * 0.06, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = hair;
   ctx.beginPath();
   ctx.arc(0, -size * 0.52, size * 0.28, Math.PI, Math.PI * 2);
   ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-size * 0.28, -size * 0.5);
+  ctx.quadraticCurveTo(-size * 0.08, -size * 0.74, size * 0.22, -size * 0.53);
+  ctx.stroke();
+
+  ctx.fillStyle = "#151515";
   ctx.beginPath();
   ctx.arc(-size * 0.1, -size * 0.43, size * 0.035, 0, Math.PI * 2);
   ctx.arc(size * 0.1, -size * 0.43, size * 0.035, 0, Math.PI * 2);
@@ -2721,6 +2752,13 @@ function drawMiniPerson(cx, cy, size, options = {}) {
   ctx.beginPath();
   ctx.arc(0, -size * 0.33, size * 0.11, 0.15 * Math.PI, 0.85 * Math.PI);
   ctx.stroke();
+
+  if (options.leaderMark) {
+    ctx.fillStyle = accent;
+    ctx.beginPath();
+    ctx.roundRect(-size * 0.035, -size * 0.5, size * 0.07, size * 0.13, size * 0.03);
+    ctx.fill();
+  }
 
   if (options.symbol) {
     drawSymbol(options.symbol, 0, size * 0.2, size * 0.36, accent);
@@ -2875,12 +2913,19 @@ function drawCampaignRoads() {
       const y = (from.y + (to.y - from.y) * t + 0.5) * s;
       const sideX = Math.sign(to.y - from.y) * s * 0.12;
       const sideY = -Math.sign(to.x - from.x) * s * 0.12;
-      ctx.fillStyle = i % 2 ? state.party.color : "#151515";
-      ctx.globalAlpha = 0.78;
-      ctx.beginPath();
-      ctx.ellipse(x - sideX, y - sideY, Math.max(2, s * 0.16), Math.max(1.5, s * 0.09), 0, 0, Math.PI * 2);
-      ctx.ellipse(x + sideX, y + sideY, Math.max(2, s * 0.16), Math.max(1.5, s * 0.09), 0, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.globalAlpha = 0.84;
+      drawMiniPerson(x - sideX, y - sideY, s * 0.58, {
+        color: i % 2 ? state.party.color : "#fffdf7",
+        accent: i % 2 ? "#fffdf7" : state.party.color,
+        phase: i * 0.7 + state.roundElapsed,
+        cheer: i % 3 === 0
+      });
+      drawMiniPerson(x + sideX, y + sideY, s * 0.48, {
+        color: i % 2 ? "#ffd166" : state.party.color,
+        accent: "#fffdf7",
+        phase: i * 0.9 + state.roundElapsed,
+        flag: i % 4 === 0
+      });
     }
     ctx.globalAlpha = 1;
   }
@@ -2900,7 +2945,9 @@ function drawSupporters() {
       color: supporter.color,
       accent: "#fffdf7",
       phase: supporter.phase + i * 0.8,
-      flag: i % 4 === 0
+      flag: i % 4 === 0,
+      poster: i % 7 === 3,
+      cheer: i % 5 === 1
     });
   });
   ctx.restore();
@@ -3268,7 +3315,8 @@ function drawAgent(agent, isPlayer) {
     symbol: agent.symbol,
     phase: agent.ownerId * 1.7,
     foldedHands: isPlayer,
-    flag: !isPlayer
+    flag: !isPlayer,
+    leaderMark: isPlayer
   });
   if (isPlayer) {
     ctx.fillStyle = "#151515";
