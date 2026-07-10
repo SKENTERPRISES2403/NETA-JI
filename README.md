@@ -58,6 +58,16 @@ Then open:
 http://localhost:5173
 ```
 
+## Public Demo
+
+Current pitch demo:
+
+```text
+https://neta-ji-demo.sd-skenterprises.chatgpt.site/?demo=1
+```
+
+This is the preferred company/mobile review link. It avoids localhost issues and opens the safe Quick Demo flow.
+
 ## Product Direction
 
 Build order:

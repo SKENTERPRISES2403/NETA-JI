@@ -534,6 +534,12 @@ canvas {
   box-shadow: inset 0 0 0 2px rgba(21, 21, 21, 0.18);
 }
 
+.mini-region-cell.is-pending {
+  background: var(--gold);
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px rgba(255, 209, 102, 0.55);
+}
+
 .mini-region-cell.is-won {
   background: var(--region-color, var(--orange));
 }
@@ -1001,6 +1007,12 @@ input[type="color"] {
 .region-btn.is-active {
   border-color: var(--ink);
   box-shadow: inset 0 0 0 2px rgba(21, 21, 21, 0.12);
+}
+
+.region-btn.is-pending {
+  background: #fff1b8;
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 2px rgba(255, 209, 102, 0.52);
 }
 
 .region-btn.is-won {

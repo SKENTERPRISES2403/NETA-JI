@@ -1182,11 +1182,14 @@ function handleResetProgressClick() {
 function renderRegionHub() {
   const activeRegion = getActiveRegion();
   const resumableRegion = getResumableActiveRegion();
+  const pendingRegion = REGIONS.find((region) => region.id === state.campaign.pendingRegionId);
   regionStat.textContent = activeRegion ? activeRegion.name : "Choose State";
   const wonCount = completedRegionCount();
   activeRegionCopy.textContent = state.campaign.nationalWon
     ? `National mandate complete: ${wonCount}/${REGIONS.length} regions. World yatra teaser unlocked.`
-    : resumableRegion
+    : pendingRegion
+      ? `${pendingRegion.name} selected. OK dabao to open the big state arena.`
+      : resumableRegion
       ? `${resumableRegion.name} is active. Resume it until the mandate is won.`
       : `Touch a black flag on the India map. Red flags are won: ${wonCount}/${REGIONS.length}.`;
   if (miniRegionGrid) {
@@ -1201,19 +1204,20 @@ function renderRegionHub() {
   for (const region of REGIONS) {
     const won = Boolean(state.campaign.completed[region.id]);
     const active = state.campaign.activeRegionId === region.id;
+    const pending = state.campaign.pendingRegionId === region.id;
 
     const mini = document.createElement("button");
     mini.type = "button";
-    mini.className = `mini-region-cell${won ? " is-won" : ""}${active ? " is-active" : ""}`;
-    mini.title = `${region.name}${won ? " won" : ""}`;
+    mini.className = `mini-region-cell${won ? " is-won" : ""}${active ? " is-active" : ""}${pending ? " is-pending" : ""}`;
+    mini.title = `${region.name}${pending ? " selected" : won ? " won" : active ? " active" : ""}`;
     mini.setAttribute("aria-label", mini.title);
     mini.addEventListener("click", () => showRegionPrompt(region.id));
     miniRegionGrid?.append(mini);
 
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `region-btn${won ? " is-won" : ""}${active ? " is-active" : ""}`;
-    button.innerHTML = `${region.name}<small>${won ? "Won mandate" : active ? "Active campaign" : region.type}</small>`;
+    button.className = `region-btn${won ? " is-won" : ""}${active ? " is-active" : ""}${pending ? " is-pending" : ""}`;
+    button.innerHTML = `${region.name}<small>${pending ? "Selected - press OK" : won ? "Won mandate" : active ? "Active campaign" : region.type}</small>`;
     button.addEventListener("click", () => showRegionPrompt(region.id));
     regionGrid?.append(button);
   }
@@ -1242,12 +1246,13 @@ function showRegionPrompt(regionId, options = {}) {
     triggerHaptic(8);
   }
   state.campaign.pendingRegionId = region.id;
+  state.mode = "confirm";
+  renderRegionHub();
   confirmTitle.textContent = `${region.name} election?`;
   confirmCopy.textContent = state.campaign.completed[region.id]
     ? "This mandate is already won. OK to replay this region."
     : "OK dabao, phir sirf is region ka bada outline arena khulega.";
   confirmPanel.hidden = false;
-  state.mode = "confirm";
 }
 
 function selectRegion(regionId) {
@@ -2411,7 +2416,7 @@ function drawRegionBlob(region, fill, options = {}) {
   ctx.stroke();
 
   const canLabel = rect.width > 270 && (region.type !== "UT" || options.pending || state.campaign.completed[region.id]);
-  if (profile.label && canLabel) {
+  if (profile.label && canLabel && !options.noLabel) {
     const isDarkFill = fill !== "#fffdf7" && fill !== "#ffd166";
     ctx.fillStyle = isDarkFill ? "#fffdf7" : "rgba(21, 21, 21, 0.78)";
     ctx.font = `900 ${Math.max(6.5, rect.width * (region.type === "UT" ? 0.014 : 0.017))}px ui-sans-serif`;
@@ -2443,6 +2448,82 @@ function drawFlag(x, y, color, scale = 1) {
   ctx.beginPath();
   ctx.arc(x, y + 16 * scale, 4.5 * scale, 0, Math.PI * 2);
   ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawMapLegend(width, height) {
+  const legendW = Math.min(width - 24, 244);
+  const legendX = 12;
+  const legendY = 12;
+  const items = [
+    ["#151515", "New"],
+    ["#ffd166", "Selected"],
+    ["#d92d20", "Won"]
+  ];
+
+  ctx.save();
+  ctx.fillStyle = "rgba(255, 253, 247, 0.92)";
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.roundRect(legendX, legendY, legendW, width < 430 ? 30 : 34, 8);
+  ctx.fill();
+  ctx.stroke();
+  ctx.font = `900 ${width < 430 ? 9 : 10}px ui-sans-serif`;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  items.forEach(([color, label], i) => {
+    const x = legendX + 12 + i * (legendW / 3);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.roundRect(x, legendY + (width < 430 ? 9 : 10), 14, 10, 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#151515";
+    ctx.fillText(label, x + 19, legendY + (width < 430 ? 15 : 17), legendW / 3 - 24);
+  });
+  ctx.restore();
+}
+
+function drawSelectedRegionCard(region, width, height) {
+  if (!region) return;
+  const point = getRegionMapPoint(region);
+  const isWon = Boolean(state.campaign.completed[region.id]);
+  const cardW = Math.min(width - 28, width < 430 ? 210 : 250);
+  const cardH = width < 430 ? 54 : 60;
+  const cardX = clamp(point.x - cardW / 2, 14, width - cardW - 14);
+  const cardY = clamp(point.y - cardH - 34, state.mapRect.y + 8, height - cardH - 78);
+
+  ctx.save();
+  ctx.fillStyle = "rgba(255, 253, 247, 0.96)";
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(cardX, cardY, cardW, cardH, 10);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = isWon ? "#d92d20" : "#ffd166";
+  ctx.beginPath();
+  ctx.roundRect(cardX + 10, cardY + 13, 26, 26, 5);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = "#151515";
+  ctx.font = `900 ${width < 430 ? 12 : 14}px ui-sans-serif`;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillText(region.name, cardX + 44, cardY + 21, cardW - 54);
+  ctx.font = `800 ${width < 430 ? 9 : 10}px ui-sans-serif`;
+  ctx.fillStyle = "#625a4e";
+  ctx.fillText(isWon ? "Won - replay available" : "Selected - press OK", cardX + 44, cardY + 39, cardW - 54);
+
+  ctx.strokeStyle = "#151515";
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath();
+  ctx.moveTo(cardX + cardW / 2, cardY + cardH);
+  ctx.lineTo(point.x + 7, point.y - 7);
   ctx.stroke();
   ctx.restore();
 }
@@ -2549,6 +2630,16 @@ function drawMapHome(width, height) {
   ctx.roundRect(x - 14, y - 14, mapW + 28, mapH + 28, 18);
   ctx.fill();
   drawCartoonIndiaBase(state.mapRect);
+  const selectedRegion = REGIONS.find((region) => region.id === state.campaign.pendingRegionId);
+  if (selectedRegion) {
+    const pulse = 1 + Math.sin((state.lastTime || 0) * 0.006) * 0.08;
+    ctx.save();
+    ctx.globalAlpha = 0.76;
+    ctx.shadowColor = "rgba(255, 209, 102, 0.72)";
+    ctx.shadowBlur = 22 * pulse;
+    drawRegionBlob(selectedRegion, "rgba(255, 209, 102, 0.58)", { pending: true, noLabel: true });
+    ctx.restore();
+  }
 
   for (const region of REGIONS) {
     const won = Boolean(state.campaign.completed[region.id]);
@@ -2601,7 +2692,9 @@ function drawMapHome(width, height) {
     drawFlag(point.x, point.y, won ? "#d92d20" : pending ? "#ffd166" : "#151515", region.type === "UT" ? 0.5 : 0.66);
   }
 
+  drawSelectedRegionCard(selectedRegion, width, height);
   drawNationalCompletion(width);
+  drawMapLegend(width, height);
 
   ctx.fillStyle = "rgba(21, 21, 21, 0.88)";
   ctx.beginPath();
