@@ -70,6 +70,7 @@ npm.cmd run icons
 npm.cmd run build
 npm.cmd run map:qa
 npm.cmd run smoke:mobile
+npm.cmd run smoke:map
 ```
 
 ## Public Demo

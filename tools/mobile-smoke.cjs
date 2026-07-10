@@ -6,9 +6,11 @@ const path = require("path");
 const { spawn, spawnSync } = require("child_process");
 
 const root = path.resolve(__dirname, "..");
-const publicUrl = process.argv[2] || "";
+const targetArg = process.argv[2] || "";
+const isPublicTarget = /^https?:\/\//.test(targetArg);
 const port = Number(process.env.PORT || 5177);
-const baseUrl = publicUrl || `http://127.0.0.1:${port}/?demo=1&smoke=local`;
+const localPath = targetArg && !isPublicTarget ? targetArg : "/?demo=1&smoke=local";
+const baseUrl = isPublicTarget ? targetArg : `http://127.0.0.1:${port}${localPath}`;
 const outDir = path.join(root, "dist", "smoke");
 
 function findChrome() {
@@ -75,7 +77,7 @@ function assertContains(name, text, expected) {
 async function main() {
   fs.mkdirSync(outDir, { recursive: true });
   let server;
-  if (!publicUrl) {
+  if (!isPublicTarget) {
     server = spawn(process.execPath, ["dev-server.cjs", String(port), "127.0.0.1"], {
       cwd: root,
       stdio: "ignore",

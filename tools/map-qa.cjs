@@ -124,8 +124,8 @@ const report = {
   perRegion
 };
 
-fs.mkdirSync(path.join(root, "dist"), { recursive: true });
-fs.writeFileSync(path.join(root, "dist", "map-qa-report.json"), JSON.stringify(report, null, 2));
+fs.mkdirSync(path.join(root, "reports"), { recursive: true });
+fs.writeFileSync(path.join(root, "reports", "map-qa-report.json"), JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));
 
 if (missing.length || extra.length || outOfRange.length || badPolygons.length || centroidMismatches.length) {

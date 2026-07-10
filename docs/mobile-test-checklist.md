@@ -9,12 +9,14 @@ npm.cmd run icons
 npm.cmd run build
 npm.cmd run map:qa
 npm.cmd run smoke:mobile
+npm.cmd run smoke:map
 ```
 
 After public deploy:
 
 ```powershell
 npm.cmd run smoke:public
+npm.cmd run smoke:public:map
 ```
 
 The smoke script checks the page, manifest, service worker, main game code, and captures mobile plus desktop screenshots under `dist/smoke/`.

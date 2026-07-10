@@ -3159,6 +3159,31 @@ function drawNationalCompletion(width) {
   ctx.restore();
 }
 
+function drawMapQaBadge(width) {
+  if (!MAP_QA_FROM_QUERY) return;
+  const rect = state.mapRect;
+  const badgeW = Math.min(width - 24, 250);
+  const badgeX = Math.max(12, rect.x + rect.width - badgeW - 8);
+  const badgeY = rect.y + 8;
+
+  ctx.save();
+  ctx.fillStyle = "rgba(21, 21, 21, 0.86)";
+  ctx.strokeStyle = "#fffdf7";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.roundRect(badgeX, badgeY, badgeW, 46, 9);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#fffdf7";
+  ctx.font = `900 ${width < 430 ? 10 : 12}px ui-sans-serif`;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillText("MAP QA VIEW", badgeX + 12, badgeY + 17, badgeW - 24);
+  ctx.font = `800 ${width < 430 ? 9 : 10}px ui-sans-serif`;
+  ctx.fillText("36 regions, polygon tap targets", badgeX + 12, badgeY + 33, badgeW - 24);
+  ctx.restore();
+}
+
 function drawMapHome(width, height) {
   ctx.fillStyle = "#bfe7ff";
   ctx.fillRect(0, 0, width, height);
@@ -3226,7 +3251,7 @@ function drawMapHome(width, height) {
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
-    if (pending || (won && region.id === state.campaign.lastWonRegionId)) {
+    if (!MAP_QA_FROM_QUERY && (pending || (won && region.id === state.campaign.lastWonRegionId))) {
       drawMiniPerson(point.x - 18, point.y + 23, Math.max(12, state.mapRect.width * 0.032), {
         color: state.party.color,
         accent: "#fffdf7",
@@ -3240,12 +3265,15 @@ function drawMapHome(width, height) {
         phase: point.y
       });
     }
-    drawFlag(point.x, point.y, won ? "#d92d20" : pending ? "#ffd166" : "#151515", region.type === "UT" ? 0.5 : 0.66);
+    if (!MAP_QA_FROM_QUERY) {
+      drawFlag(point.x, point.y, won ? "#d92d20" : pending ? "#ffd166" : "#151515", region.type === "UT" ? 0.5 : 0.66);
+    }
   }
 
   drawSelectedRegionCard(selectedRegion, width, height);
   drawNationalCompletion(width);
   drawMapLegend(width, height);
+  drawMapQaBadge(width);
 
   ctx.fillStyle = "rgba(21, 21, 21, 0.88)";
   ctx.beginPath();

@@ -8,7 +8,9 @@
     "dev": "node dev-server.cjs 5174 0.0.0.0",
     "icons": "node tools/generate-icons.cjs",
     "map:qa": "node tools/map-qa.cjs",
+    "smoke:map": "node tools/mobile-smoke.cjs \"/?demo=1&mapqa=1&smoke=map\"",
     "smoke:mobile": "node tools/mobile-smoke.cjs",
+    "smoke:public:map": "node tools/mobile-smoke.cjs \"https://neta-ji-demo.sd-skenterprises.chatgpt.site/?demo=1&mapqa=1\"",
     "smoke:public": "node tools/mobile-smoke.cjs https://neta-ji-demo.sd-skenterprises.chatgpt.site/?demo=1"
   }
 }
