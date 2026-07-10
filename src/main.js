@@ -861,6 +861,10 @@ function updateOnboarding() {
   });
 }
 
+function isOnboardingVisible() {
+  return Boolean(onboardingOverlay && !onboardingOverlay.hidden);
+}
+
 function showOnboarding(force = false) {
   if (!onboardingOverlay) return;
   if (!force) {
@@ -872,12 +876,16 @@ function showOnboarding(force = false) {
   }
   state.onboardingStep = 0;
   updateOnboarding();
+  if (confirmPanel) confirmPanel.hidden = true;
   onboardingOverlay.hidden = false;
 }
 
 function hideOnboarding(markSeen = true) {
   if (!onboardingOverlay) return;
   onboardingOverlay.hidden = true;
+  if (state.mode === "confirm" && state.campaign.pendingRegionId && confirmPanel) {
+    confirmPanel.hidden = false;
+  }
   if (!markSeen) return;
   try {
     localStorage.setItem(ONBOARDING_KEY, "yes");
@@ -1255,7 +1263,7 @@ function showRegionPrompt(regionId, options = {}) {
   confirmCopy.textContent = state.campaign.completed[region.id]
     ? "This mandate is already won. OK to replay this region."
     : "OK dabao, phir sirf is region ka bada outline arena khulega.";
-  confirmPanel.hidden = false;
+  confirmPanel.hidden = isOnboardingVisible();
 }
 
 function selectRegion(regionId) {
