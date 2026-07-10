@@ -5,6 +5,9 @@
   "description": "NETA JI pitch-ready static PWA demo.",
   "scripts": {
     "build": "node build-static.cjs",
-    "dev": "node dev-server.cjs 5174 0.0.0.0"
+    "dev": "node dev-server.cjs 5174 0.0.0.0",
+    "icons": "node tools/generate-icons.cjs",
+    "smoke:mobile": "node tools/mobile-smoke.cjs",
+    "smoke:public": "node tools/mobile-smoke.cjs https://neta-ji-demo.sd-skenterprises.chatgpt.site/?demo=1"
   }
 }

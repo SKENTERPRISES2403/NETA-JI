@@ -1,4 +1,4 @@
-const CACHE_NAME = "neta-ji-v18";
+const CACHE_NAME = "neta-ji-v19";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -6,6 +6,9 @@ const CORE_ASSETS = [
   "./src/main.js",
   "./data/game-data.json",
   "./assets/icon.svg",
+  "./assets/icon-192.png",
+  "./assets/icon-512.png",
+  "./assets/icon-maskable-512.png",
   "./manifest.webmanifest"
 ];
 

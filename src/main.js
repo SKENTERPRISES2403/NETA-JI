@@ -352,6 +352,350 @@ const REGION_SHAPE_PROFILES = {
   lakshadweep: { template: "island", label: "LD" }
 };
 
+const REGION_MAP_SHAPES = {
+  "jammu-kashmir": [
+    [
+      [0.3, 0.11],
+      [0.39, 0.08],
+      [0.48, 0.13],
+      [0.48, 0.2],
+      [0.39, 0.23],
+      [0.3, 0.19],
+      [0.27, 0.14]
+    ]
+  ],
+  ladakh: [
+    [
+      [0.46, 0.05],
+      [0.58, 0.04],
+      [0.68, 0.09],
+      [0.67, 0.16],
+      [0.57, 0.19],
+      [0.49, 0.15],
+      [0.44, 0.11]
+    ]
+  ],
+  "himachal-pradesh": [
+    [
+      [0.37, 0.22],
+      [0.48, 0.2],
+      [0.56, 0.24],
+      [0.52, 0.3],
+      [0.42, 0.3],
+      [0.36, 0.26]
+    ]
+  ],
+  punjab: [
+    [
+      [0.3, 0.24],
+      [0.39, 0.23],
+      [0.42, 0.3],
+      [0.36, 0.34],
+      [0.28, 0.31]
+    ]
+  ],
+  chandigarh: [
+    [
+      [0.384, 0.263],
+      [0.402, 0.264],
+      [0.403, 0.282],
+      [0.385, 0.283]
+    ]
+  ],
+  haryana: [
+    [
+      [0.38, 0.3],
+      [0.48, 0.3],
+      [0.51, 0.36],
+      [0.45, 0.4],
+      [0.36, 0.36]
+    ]
+  ],
+  delhi: [
+    [
+      [0.472, 0.358],
+      [0.492, 0.362],
+      [0.49, 0.386],
+      [0.47, 0.382]
+    ]
+  ],
+  uttarakhand: [
+    [
+      [0.49, 0.25],
+      [0.59, 0.26],
+      [0.63, 0.32],
+      [0.58, 0.37],
+      [0.49, 0.35],
+      [0.46, 0.3]
+    ]
+  ],
+  rajasthan: [
+    [
+      [0.18, 0.32],
+      [0.31, 0.29],
+      [0.41, 0.34],
+      [0.43, 0.44],
+      [0.37, 0.53],
+      [0.25, 0.56],
+      [0.16, 0.49],
+      [0.13, 0.39]
+    ]
+  ],
+  gujarat: [
+    [
+      [0.14, 0.52],
+      [0.24, 0.49],
+      [0.34, 0.56],
+      [0.35, 0.66],
+      [0.25, 0.73],
+      [0.17, 0.68],
+      [0.11, 0.6]
+    ],
+    [
+      [0.1, 0.5],
+      [0.17, 0.48],
+      [0.21, 0.54],
+      [0.14, 0.56]
+    ]
+  ],
+  "dadra-daman-diu": [
+    [
+      [0.305, 0.632],
+      [0.326, 0.636],
+      [0.323, 0.66],
+      [0.302, 0.655]
+    ],
+    [
+      [0.255, 0.61],
+      [0.272, 0.612],
+      [0.269, 0.628],
+      [0.252, 0.626]
+    ]
+  ],
+  goa: [
+    [
+      [0.362, 0.722],
+      [0.385, 0.73],
+      [0.378, 0.765],
+      [0.356, 0.756]
+    ]
+  ],
+  "madhya-pradesh": [
+    [
+      [0.38, 0.44],
+      [0.49, 0.41],
+      [0.61, 0.46],
+      [0.62, 0.55],
+      [0.54, 0.62],
+      [0.41, 0.6],
+      [0.34, 0.52]
+    ]
+  ],
+  "uttar-pradesh": [
+    [
+      [0.48, 0.35],
+      [0.62, 0.35],
+      [0.71, 0.4],
+      [0.69, 0.47],
+      [0.58, 0.49],
+      [0.47, 0.44],
+      [0.42, 0.39]
+    ]
+  ],
+  bihar: [
+    [
+      [0.69, 0.4],
+      [0.8, 0.39],
+      [0.83, 0.45],
+      [0.76, 0.5],
+      [0.68, 0.46]
+    ]
+  ],
+  sikkim: [
+    [
+      [0.744, 0.33],
+      [0.776, 0.34],
+      [0.77, 0.382],
+      [0.738, 0.372]
+    ]
+  ],
+  "west-bengal": [
+    [
+      [0.756, 0.45],
+      [0.823, 0.46],
+      [0.84, 0.54],
+      [0.794, 0.62],
+      [0.768, 0.7],
+      [0.724, 0.635],
+      [0.742, 0.54]
+    ],
+    [
+      [0.732, 0.36],
+      [0.77, 0.37],
+      [0.772, 0.43],
+      [0.738, 0.432]
+    ]
+  ],
+  jharkhand: [
+    [
+      [0.65, 0.49],
+      [0.745, 0.49],
+      [0.766, 0.56],
+      [0.694, 0.606],
+      [0.62, 0.56]
+    ]
+  ],
+  chhattisgarh: [
+    [
+      [0.55, 0.545],
+      [0.655, 0.57],
+      [0.675, 0.67],
+      [0.61, 0.725],
+      [0.53, 0.65]
+    ]
+  ],
+  odisha: [
+    [
+      [0.65, 0.585],
+      [0.756, 0.612],
+      [0.777, 0.696],
+      [0.69, 0.755],
+      [0.604, 0.705]
+    ]
+  ],
+  maharashtra: [
+    [
+      [0.32, 0.575],
+      [0.46, 0.58],
+      [0.57, 0.65],
+      [0.545, 0.735],
+      [0.41, 0.735],
+      [0.32, 0.68]
+    ]
+  ],
+  telangana: [
+    [
+      [0.505, 0.662],
+      [0.615, 0.682],
+      [0.635, 0.772],
+      [0.545, 0.798],
+      [0.478, 0.732]
+    ]
+  ],
+  "andhra-pradesh": [
+    [
+      [0.584, 0.742],
+      [0.724, 0.724],
+      [0.778, 0.8],
+      [0.69, 0.858],
+      [0.57, 0.832],
+      [0.522, 0.78]
+    ]
+  ],
+  karnataka: [
+    [
+      [0.382, 0.696],
+      [0.514, 0.718],
+      [0.552, 0.824],
+      [0.492, 0.89],
+      [0.386, 0.846],
+      [0.338, 0.762]
+    ]
+  ],
+  kerala: [
+    [
+      [0.42, 0.832],
+      [0.472, 0.862],
+      [0.485, 0.956],
+      [0.445, 0.985],
+      [0.398, 0.912]
+    ]
+  ],
+  "tamil-nadu": [
+    [
+      [0.502, 0.836],
+      [0.602, 0.824],
+      [0.654, 0.912],
+      [0.59, 0.99],
+      [0.492, 0.952]
+    ]
+  ],
+  puducherry: [
+    [
+      [0.602, 0.868],
+      [0.624, 0.872],
+      [0.621, 0.898],
+      [0.6, 0.894]
+    ],
+    [
+      [0.662, 0.792],
+      [0.684, 0.796],
+      [0.68, 0.818],
+      [0.66, 0.814]
+    ]
+  ],
+  assam: [
+    [
+      [0.77, 0.4],
+      [0.87, 0.37],
+      [0.945, 0.402],
+      [0.89, 0.472],
+      [0.79, 0.472],
+      [0.728, 0.44]
+    ]
+  ],
+  meghalaya: [
+    [
+      [0.772, 0.462],
+      [0.862, 0.462],
+      [0.872, 0.512],
+      [0.78, 0.515]
+    ]
+  ],
+  "arunachal-pradesh": [
+    [
+      [0.82, 0.29],
+      [0.94, 0.26],
+      [0.992, 0.31],
+      [0.96, 0.374],
+      [0.858, 0.386],
+      [0.79, 0.35]
+    ]
+  ],
+  nagaland: [
+    [
+      [0.912, 0.392],
+      [0.974, 0.404],
+      [0.982, 0.472],
+      [0.922, 0.486]
+    ]
+  ],
+  manipur: [
+    [
+      [0.888, 0.482],
+      [0.952, 0.494],
+      [0.952, 0.565],
+      [0.888, 0.555]
+    ]
+  ],
+  mizoram: [
+    [
+      [0.858, 0.548],
+      [0.924, 0.568],
+      [0.914, 0.652],
+      [0.848, 0.632]
+    ]
+  ],
+  tripura: [
+    [
+      [0.81, 0.522],
+      [0.862, 0.532],
+      [0.858, 0.592],
+      [0.81, 0.582]
+    ]
+  ]
+};
+
 const fallbackData = {
   opponentParties: [
     { name: "Chai Biscuit Front", color: "#2f7de1", symbol: "cup" },
@@ -2322,11 +2666,127 @@ function shadeHex(hex, amount) {
 }
 
 function getRegionMapPoint(region, rect = state.mapRect) {
+  const polygons = getRegionMapPolygons(region);
+  if (polygons) {
+    const point = getLargestPolygonCentroid(polygons);
+    return {
+      x: rect.x + point.x * rect.width,
+      y: rect.y + point.y * rect.height
+    };
+  }
   const position = REGION_POSITIONS[region.id] || [0.5, 0.5];
   return {
     x: rect.x + position[0] * rect.width,
     y: rect.y + position[1] * rect.height
   };
+}
+
+function getRegionMapPolygons(region) {
+  return REGION_MAP_SHAPES[region?.id] || null;
+}
+
+function getPolygonArea(points) {
+  let area = 0;
+  for (let i = 0; i < points.length; i += 1) {
+    const current = points[i];
+    const next = points[(i + 1) % points.length];
+    area += current[0] * next[1] - next[0] * current[1];
+  }
+  return Math.abs(area / 2);
+}
+
+function getPolygonCentroid(points) {
+  let areaTwice = 0;
+  let cx = 0;
+  let cy = 0;
+  for (let i = 0; i < points.length; i += 1) {
+    const current = points[i];
+    const next = points[(i + 1) % points.length];
+    const cross = current[0] * next[1] - next[0] * current[1];
+    areaTwice += cross;
+    cx += (current[0] + next[0]) * cross;
+    cy += (current[1] + next[1]) * cross;
+  }
+  if (Math.abs(areaTwice) < 0.0001) {
+    return points.reduce((sum, point) => ({ x: sum.x + point[0] / points.length, y: sum.y + point[1] / points.length }), { x: 0, y: 0 });
+  }
+  return {
+    x: cx / (3 * areaTwice),
+    y: cy / (3 * areaTwice)
+  };
+}
+
+function getLargestPolygonCentroid(polygons) {
+  const largest = polygons.reduce((best, polygon) => (getPolygonArea(polygon) > getPolygonArea(best) ? polygon : best), polygons[0]);
+  return getPolygonCentroid(largest);
+}
+
+function normalizedMapPoint(point, rect = state.mapRect) {
+  return {
+    x: (point.x - rect.x) / rect.width,
+    y: (point.y - rect.y) / rect.height
+  };
+}
+
+function pointInNormalizedPolygon(point, polygon) {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i, i += 1) {
+    const xi = polygon[i][0];
+    const yi = polygon[i][1];
+    const xj = polygon[j][0];
+    const yj = polygon[j][1];
+    if ((yi > point.y) !== (yj > point.y) && point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+function pointInRegionMapShape(point, region) {
+  const polygons = getRegionMapPolygons(region);
+  if (!polygons) return false;
+  const normalized = normalizedMapPoint(point);
+  return polygons.some((polygon) => pointInNormalizedPolygon(normalized, polygon));
+}
+
+function drawRegionMapPolygons(region, fill, options = {}) {
+  const polygons = getRegionMapPolygons(region);
+  if (!polygons) return false;
+  const rect = state.mapRect;
+  const point = getRegionMapPoint(region, rect);
+  const profile = getRegionShapeProfile(region);
+
+  ctx.save();
+  ctx.fillStyle = fill;
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = options.pending ? Math.max(2.8, rect.width * 0.007) : Math.max(1.8, rect.width * 0.0048);
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+
+  for (const polygon of polygons) {
+    ctx.beginPath();
+    polygon.forEach(([px, py], indexValue) => {
+      const x = rect.x + px * rect.width;
+      const y = rect.y + py * rect.height;
+      if (indexValue === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  const canLabel = rect.width > 285 && (region.type !== "UT" || options.pending || state.campaign.completed[region.id]);
+  if (profile.label && canLabel && !options.noLabel) {
+    const isDarkFill = fill !== "#fffdf7" && fill !== "#ffd166";
+    ctx.fillStyle = isDarkFill ? "#fffdf7" : "rgba(21, 21, 21, 0.8)";
+    ctx.font = `900 ${Math.max(6.5, rect.width * (region.type === "UT" ? 0.013 : 0.016))}px ui-sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(profile.label, point.x, point.y, Math.max(20, rect.width * 0.11));
+  }
+  ctx.restore();
+  return true;
 }
 
 function getRegionBlobSize(region) {
@@ -2396,6 +2856,8 @@ function drawCartoonIndiaBase(rect) {
 }
 
 function drawRegionBlob(region, fill, options = {}) {
+  if (drawRegionMapPolygons(region, fill, options)) return;
+
   const rect = state.mapRect;
   const point = getRegionMapPoint(region, rect);
   const [rxNorm, ryNorm] = getRegionBlobSize(region);
@@ -4111,6 +4573,19 @@ function updateTouchCue(dt) {
 }
 
 function pickRegionFromMap(point) {
+  let polygonHit = null;
+  let polygonHitArea = Infinity;
+  for (const region of REGIONS) {
+    if (!pointInRegionMapShape(point, region)) continue;
+    const polygons = getRegionMapPolygons(region);
+    const area = polygons ? Math.min(...polygons.map(getPolygonArea)) : Infinity;
+    if (area < polygonHitArea) {
+      polygonHit = region;
+      polygonHitArea = area;
+    }
+  }
+  if (polygonHit) return polygonHit;
+
   let best = null;
   let bestScore = Infinity;
   for (const region of REGIONS) {

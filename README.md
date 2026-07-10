@@ -20,6 +20,7 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - Campaign decisions: Tea Rally, Poster Wave, and Donor Lunch tradeoffs
 - Rough India state/UT campaign hub
 - Cartoon India map home screen drawn in canvas
+- Improved state/UT polygon map with more realistic India layout and tap targets
 - Flag-touch state/UT selection with confirmation
 - Selected region opens as a large outlined gameplay arena
 - State/UT win progression with saved progress
@@ -32,12 +33,14 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - Party-colored result card with mandate stamp and symbol badge
 - Lightweight generated sound effects
 - PWA manifest, service worker, and in-game install button for mobile app mode
+- PNG 192/512/maskable icons for PWA/APK packaging prep
 - Safe-area mobile layout support for notch/gesture-bar phones
 - Pause/resume support on mobile button and P key
 - Auto-pause when the app/tab is hidden
 - Quick Demo and `?demo=1` pitch flow for company/mobile demos
 - In-app pitch card and reviewer notes in [docs/pitch.md](docs/pitch.md)
 - APK prep notes in [docs/apk-prep.md](docs/apk-prep.md)
+- Mobile QA checklist in [docs/mobile-test-checklist.md](docs/mobile-test-checklist.md)
 - Production moderation roadmap in [docs/production-roadmap.md](docs/production-roadmap.md)
 
 ## Run Locally
@@ -58,6 +61,14 @@ Then open:
 
 ```text
 http://localhost:5173
+```
+
+Generate app icons and run a local mobile smoke check:
+
+```powershell
+npm.cmd run icons
+npm.cmd run build
+npm.cmd run smoke:mobile
 ```
 
 ## Public Demo
