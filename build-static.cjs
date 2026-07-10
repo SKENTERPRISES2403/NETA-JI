@@ -3,15 +3,15 @@ const path = require("path");
 
 const root = __dirname;
 const outDir = path.join(root, "dist");
-const copyItems = [
+const clientDir = path.join(outDir, "client");
+const clientItems = [
   "index.html",
   "styles.css",
   "sw.js",
   "manifest.webmanifest",
   "src",
   "data",
-  "assets",
-  ".openai"
+  "assets"
 ];
 
 function copyRecursive(source, target) {
@@ -28,14 +28,16 @@ function copyRecursive(source, target) {
 }
 
 fs.rmSync(outDir, { recursive: true, force: true });
-fs.mkdirSync(outDir, { recursive: true });
+fs.mkdirSync(clientDir, { recursive: true });
 
-for (const item of copyItems) {
+for (const item of clientItems) {
   const source = path.join(root, item);
   if (fs.existsSync(source)) {
-    copyRecursive(source, path.join(outDir, item));
+    copyRecursive(source, path.join(clientDir, item));
   }
 }
+
+copyRecursive(path.join(root, ".openai"), path.join(outDir, ".openai"));
 
 const serverDir = path.join(outDir, "server");
 fs.mkdirSync(serverDir, { recursive: true });
