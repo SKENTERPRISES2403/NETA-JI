@@ -915,7 +915,12 @@ function activateQuickDemo({ fromUrl = false } = {}) {
   renderRegionHub();
   showOnboarding(true);
   addFeed("Quick Demo ready: preset party, UP arena, installable PWA, safe fictional content.");
-  showToast("Quick Demo ready. Press OK to open the pitch arena.");
+  if (fromUrl) {
+    state.toastClock = 0;
+    toast.classList.remove("is-visible");
+  } else {
+    showToast("Quick Demo ready. Press OK to open the pitch arena.");
+  }
 }
 
 function symbolLabel(symbol) {

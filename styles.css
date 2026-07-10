@@ -34,6 +34,7 @@ body {
     linear-gradient(180deg, #bfe7ff 0%, #fff3d6 54%, #b9dfb5 100%);
   color: var(--ink);
   overscroll-behavior: none;
+  overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -227,7 +228,7 @@ canvas {
   margin-top: 10px;
   border: 2px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 253, 247, 0.96);
+  background: var(--white);
   box-shadow: var(--shadow);
   padding: 14px;
   pointer-events: auto;
@@ -1071,6 +1072,18 @@ input[type="color"] {
 }
 
 @media (max-width: 520px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  .app-shell,
+  .game-frame,
+  .side-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+
   .topbar {
     display: grid;
   }
@@ -1103,9 +1116,50 @@ input[type="color"] {
     padding: 18px;
   }
 
+  .canvas-wrap {
+    overflow: hidden;
+  }
+
+  .onboarding-overlay {
+    inset: 10px;
+    justify-items: start;
+  }
+
+  .onboarding-card {
+    width: min(320px, calc(100vw - 44px));
+    max-width: min(320px, calc(100vw - 44px));
+    margin-top: 8px;
+    padding: 12px;
+  }
+
+  .onboarding-card h2 {
+    font-size: 1.16rem;
+  }
+
+  .onboarding-card p:not(.eyebrow) {
+    font-size: 0.82rem;
+    overflow-wrap: anywhere;
+  }
+
+  .onboarding-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .onboarding-actions .compact-btn {
+    min-width: 0;
+    padding-inline: 6px;
+  }
+
   .confirm-panel {
     align-items: stretch;
     display: grid;
+    left: 10px;
+    right: auto;
+    width: min(320px, calc(100vw - 44px));
+  }
+
+  .confirm-panel small {
+    overflow-wrap: anywhere;
   }
 
   .confirm-actions {
