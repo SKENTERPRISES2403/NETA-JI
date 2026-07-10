@@ -37,6 +37,8 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - Auto-pause when the app/tab is hidden
 - Quick Demo and `?demo=1` pitch flow for company/mobile demos
 - In-app pitch card and reviewer notes in [docs/pitch.md](docs/pitch.md)
+- APK prep notes in [docs/apk-prep.md](docs/apk-prep.md)
+- Production moderation roadmap in [docs/production-roadmap.md](docs/production-roadmap.md)
 
 ## Run Locally
 

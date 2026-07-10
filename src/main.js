@@ -995,6 +995,9 @@ function playSound(kind) {
     tap: [420, 0.045, 0.05],
     rally: [240, 0.09, 0.09, 360, 0.09, 0.07],
     convert: [520, 0.07, 0.08, 760, 0.11, 0.06],
+    dhol: [150, 0.055, 0.1, 110, 0.055, 0.08, 210, 0.055, 0.09, 120, 0.075, 0.07],
+    meme: [660, 0.055, 0.05, 880, 0.055, 0.05, 990, 0.09, 0.045],
+    poster: [420, 0.045, 0.045, 520, 0.045, 0.04, 620, 0.045, 0.035, 720, 0.08, 0.03],
     loop: [300, 0.08, 0.08, 460, 0.08, 0.06, 620, 0.1, 0.05],
     event: [180, 0.06, 0.08, 260, 0.12, 0.06],
     win: [392, 0.1, 0.08, 523, 0.1, 0.07, 659, 0.18, 0.06],
@@ -1008,7 +1011,7 @@ function playSound(kind) {
     const gain = pattern[i + 2];
     const oscillator = ctxAudio.createOscillator();
     const volume = ctxAudio.createGain();
-    oscillator.type = kind === "rally" ? "square" : "triangle";
+    oscillator.type = kind === "rally" || kind === "dhol" ? "square" : kind === "meme" ? "sine" : "triangle";
     oscillator.frequency.setValueAtTime(frequency, cursor);
     volume.gain.setValueAtTime(0.0001, cursor);
     volume.gain.exponentialRampToValueAtTime(gain, cursor + 0.01);
@@ -2017,10 +2020,18 @@ function updateRouteDanger(dt) {
 
 function triggerEvent() {
   const event = state.data.randomEvents[Math.floor(Math.random() * state.data.randomEvents.length)];
+  const soundForEffect = {
+    dholBoost: "dhol",
+    memeWave: "meme",
+    posterRain: "poster",
+    raid: "lose",
+    teaBreak: "tap",
+    speedUp: "rally"
+  };
   eventStat.textContent = event.title;
   addFeed(event.title);
   showToast(event.copy);
-  playSound("event");
+  playSound(soundForEffect[event.effect] || "event");
 
   if (event.effect === "speedUp") {
     state.speedMul = 1.28;
@@ -2046,10 +2057,12 @@ function triggerEvent() {
     const cells = claimDisk(1, state.player.x, state.player.y, 3.2);
     addClaimBurst(cells, state.party.color);
     addConversionBurst(state.player.x, state.player.y, state.party.color);
+    addEventScene("memeWave", state.player.x, state.player.y, state.party.color);
     triggerScreenShake(3, 0.18);
   } else if (event.effect === "dholBoost") {
     state.speedMul = 1.35;
     state.boostClock = 5.4;
+    addEventScene("dholBoost", state.player.x, state.player.y, "#ffd166");
     addConversionBurst(state.player.x, state.player.y, "#ffd166");
   } else if (event.effect === "posterRain") {
     const cells = claimDisk(1, state.player.x, state.player.y, 4.6);
@@ -3053,6 +3066,17 @@ function drawMiniPerson(cx, cy, size, options = {}) {
   ctx.fillStyle = shadeHex(color, -24);
   ctx.fillRect(-bodyW / 2, size * 0.42, bodyW, size * 0.08);
 
+  if (options.sash) {
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = Math.max(1.2, size * 0.09);
+    ctx.beginPath();
+    ctx.moveTo(-bodyW * 0.42, -size * 0.02);
+    ctx.lineTo(bodyW * 0.42, size * 0.58);
+    ctx.stroke();
+    ctx.strokeStyle = "#151515";
+    ctx.lineWidth = Math.max(1.2, size * 0.08);
+  }
+
   ctx.fillStyle = accent;
   ctx.beginPath();
   ctx.moveTo(-bodyW * 0.2, -size * 0.04);
@@ -3089,6 +3113,17 @@ function drawMiniPerson(cx, cy, size, options = {}) {
     ctx.arc(bodyW * 0.76, rightHandY, size * 0.085, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
+    if (options.mic) {
+      ctx.strokeStyle = "#151515";
+      ctx.fillStyle = "#151515";
+      ctx.beginPath();
+      ctx.moveTo(bodyW * 0.76, rightHandY);
+      ctx.lineTo(bodyW * 1.04, rightHandY - size * 0.2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(bodyW * 1.08, rightHandY - size * 0.23, size * 0.08, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
   if (options.poster) {
@@ -3114,6 +3149,20 @@ function drawMiniPerson(cx, cy, size, options = {}) {
   ctx.moveTo(-size * 0.28, -size * 0.5);
   ctx.quadraticCurveTo(-size * 0.08, -size * 0.74, size * 0.22, -size * 0.53);
   ctx.stroke();
+
+  if (options.cap) {
+    ctx.fillStyle = accent;
+    ctx.strokeStyle = "#151515";
+    ctx.lineWidth = Math.max(1, size * 0.05);
+    ctx.beginPath();
+    ctx.arc(0, -size * 0.58, size * 0.26, Math.PI, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(size * 0.02, -size * 0.58);
+    ctx.lineTo(size * 0.36, -size * 0.55);
+    ctx.stroke();
+  }
 
   ctx.fillStyle = "#151515";
   ctx.beginPath();
@@ -3351,7 +3400,9 @@ function drawSupporters() {
       phase: supporter.phase + i * 0.8,
       flag: i % 4 === 0,
       poster: i % 7 === 3,
-      cheer: i % 5 === 1
+      cheer: i % 5 === 1,
+      cap: i % 3 === 0,
+      sash: i % 6 === 2
     });
   });
   ctx.restore();
@@ -3553,6 +3604,105 @@ function drawPosterRainScene(scene, s) {
   ctx.globalAlpha = 1;
 }
 
+function drawMemeWaveScene(scene, s) {
+  const x = (scene.x + 0.5) * s;
+  const y = (scene.y + 0.5) * s;
+  const alpha = clamp(scene.life / scene.maxLife, 0, 1);
+  const wave = (scene.maxLife - scene.life) * 1.2;
+  const captions = ["LOL", "TREND", "SHARE"];
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  for (let i = 0; i < 3; i += 1) {
+    ctx.strokeStyle = `rgba(255, 209, 102, ${0.34 - i * 0.07})`;
+    ctx.lineWidth = Math.max(2, s * 0.16);
+    ctx.beginPath();
+    ctx.arc(x, y, s * (1.2 + i * 0.9 + wave), 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  captions.forEach((caption, i) => {
+    const angle = scene.phase + i * 2.05 + wave * 0.8;
+    const px = x + Math.cos(angle) * s * (2.1 + i * 0.28);
+    const py = y + Math.sin(angle) * s * (1.3 + i * 0.18);
+    ctx.fillStyle = "#fffdf7";
+    ctx.strokeStyle = "#151515";
+    ctx.lineWidth = Math.max(1, s * 0.08);
+    ctx.beginPath();
+    ctx.roundRect(px - s * 0.85, py - s * 0.38, s * 1.7, s * 0.76, s * 0.2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = i === 1 ? state.party.color : "#151515";
+    ctx.font = `900 ${Math.max(7, s * 0.42)}px ui-sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(caption, px, py + s * 0.02, s * 1.35);
+  });
+
+  drawMiniPerson(x - s * 1.1, y + s * 0.82, s * 0.96, {
+    color: state.party.color,
+    accent: "#fffdf7",
+    cheer: true,
+    mic: true,
+    cap: true,
+    phase: scene.phase
+  });
+  drawMiniPerson(x + s * 1.2, y + s * 0.84, s * 0.9, {
+    color: "#fffdf7",
+    accent: state.party.color,
+    poster: "MEME",
+    cheer: true,
+    phase: scene.phase + 1.4
+  });
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+function drawDholBoostScene(scene, s) {
+  const x = (scene.x + 0.5) * s;
+  const y = (scene.y + 0.5) * s;
+  const alpha = clamp(scene.life / scene.maxLife, 0, 1);
+  const beat = Math.sin((state.lastTime || 0) * 0.026 + scene.phase);
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = "rgba(21, 21, 21, 0.28)";
+  ctx.lineWidth = Math.max(1.2, s * 0.09);
+  for (let i = 0; i < 4; i += 1) {
+    ctx.beginPath();
+    ctx.arc(x, y, s * (0.75 + i * 0.5 + Math.abs(beat) * 0.2), 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "#ffd166";
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = Math.max(1, s * 0.12);
+  ctx.beginPath();
+  ctx.ellipse(x, y + s * 0.2, s * (0.78 + Math.abs(beat) * 0.08), s * 0.52, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = state.party.color;
+  ctx.fillRect(x - s * 0.18, y - s * 0.28, s * 0.36, s * 0.96);
+  ctx.strokeRect(x - s * 0.18, y - s * 0.28, s * 0.36, s * 0.96);
+
+  drawMiniPerson(x - s * 1.85, y + s * 0.84, s * 0.96, {
+    color: state.party.color,
+    accent: "#fffdf7",
+    cheer: true,
+    cap: true,
+    phase: scene.phase
+  });
+  drawMiniPerson(x + s * 1.85, y + s * 0.84, s * 0.96, {
+    color: "#ffd166",
+    accent: state.party.color,
+    cheer: true,
+    sash: true,
+    phase: scene.phase + 1.1
+  });
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
 function drawEventScenes() {
   if (state.eventScenes.length === 0) return;
   ctx.save();
@@ -3562,6 +3712,8 @@ function drawEventScenes() {
     if (scene.type === "raid") drawRaidScene(scene, s);
     if (scene.type === "teaBreak") drawTeaBreakScene(scene, s);
     if (scene.type === "posterRain") drawPosterRainScene(scene, s);
+    if (scene.type === "memeWave") drawMemeWaveScene(scene, s);
+    if (scene.type === "dholBoost") drawDholBoostScene(scene, s);
   }
   ctx.restore();
   ctx.globalAlpha = 1;
@@ -3605,7 +3757,9 @@ function drawCampaignProps() {
           color: i % 3 === 0 ? state.party.color : "#fffdf7",
           accent: i % 3 === 0 ? "#fffdf7" : state.party.color,
           phase: i * 0.7,
-          flag: i % 4 === 1
+          flag: i % 4 === 1,
+          cap: i % 2 === 0,
+          sash: i % 3 === 0
         });
       }
     } else if (prop.type === "booth") {
@@ -3625,7 +3779,8 @@ function drawCampaignProps() {
           color: state.party.color,
           accent: "#fffdf7",
           phase: prop.x,
-          flag: true
+          flag: true,
+          cap: true
         });
       }
       const queueCount = state.neta.support > 64 ? 5 : state.neta.support > 48 ? 4 : 3;
@@ -3633,7 +3788,8 @@ function drawCampaignProps() {
         drawMiniPerson(px - s * (2.15 + i * 0.68), py + s * (0.58 + (i % 2) * 0.12), s * 0.72, {
           color: i % 2 ? "#fffdf7" : state.party.color,
           accent: i % 2 ? state.party.color : "#fffdf7",
-          phase: i * 0.9 + prop.y
+          phase: i * 0.9 + prop.y,
+          cap: i % 3 === 0
         });
       }
     } else {
@@ -3642,7 +3798,9 @@ function drawCampaignProps() {
         color: state.party.color,
         accent: "#fffdf7",
         phase: prop.x + prop.y,
-        flag: true
+        flag: true,
+        cap: true,
+        sash: true
       });
     }
   }
@@ -3696,7 +3854,10 @@ function drawAmbientPeople() {
       flag: person.role === "flag" || (isPartyArea && i % 9 === 0),
       poster: person.role === "poster" && !isPartyArea,
       cheer: person.role === "dhol" || (isPartyArea && i % 7 === 0),
-      foldedHands: person.role === "voter" && state.influence > 42 && i % 10 === 0
+      foldedHands: person.role === "voter" && state.influence > 42 && i % 10 === 0,
+      cap: person.role === "volunteer" || person.role === "flag" || person.role === "dhol",
+      sash: isPartyArea && i % 5 === 0,
+      mic: person.role === "camera"
     });
   }
 
