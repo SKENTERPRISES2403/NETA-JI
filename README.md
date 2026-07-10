@@ -68,6 +68,7 @@ Generate app icons and run a local mobile smoke check:
 ```powershell
 npm.cmd run icons
 npm.cmd run build
+npm.cmd run map:qa
 npm.cmd run smoke:mobile
 ```
 

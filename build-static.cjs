@@ -27,7 +27,7 @@ function copyRecursive(source, target) {
   fs.copyFileSync(source, target);
 }
 
-fs.rmSync(outDir, { recursive: true, force: true });
+fs.rmSync(outDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 120 });
 fs.mkdirSync(clientDir, { recursive: true });
 
 for (const item of clientItems) {

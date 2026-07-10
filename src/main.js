@@ -13,6 +13,7 @@ const DEMO_PARTY = {
   symbol: "star"
 };
 const DEMO_FROM_QUERY = new URLSearchParams(window.location.search).get("demo") === "1";
+const MAP_QA_FROM_QUERY = new URLSearchParams(window.location.search).get("mapqa") === "1";
 const ONBOARDING_STEPS = [
   {
     title: "Choose a state",
@@ -693,6 +694,52 @@ const REGION_MAP_SHAPES = {
       [0.858, 0.592],
       [0.81, 0.582]
     ]
+  ],
+  "andaman-nicobar": [
+    [
+      [0.805, 0.765],
+      [0.823, 0.782],
+      [0.818, 0.81],
+      [0.797, 0.8]
+    ],
+    [
+      [0.818, 0.835],
+      [0.838, 0.852],
+      [0.832, 0.884],
+      [0.81, 0.867]
+    ],
+    [
+      [0.828, 0.905],
+      [0.848, 0.922],
+      [0.842, 0.954],
+      [0.82, 0.937]
+    ],
+    [
+      [0.84, 0.972],
+      [0.856, 0.984],
+      [0.85, 0.998],
+      [0.833, 0.992]
+    ]
+  ],
+  lakshadweep: [
+    [
+      [0.215, 0.812],
+      [0.229, 0.824],
+      [0.223, 0.842],
+      [0.207, 0.832]
+    ],
+    [
+      [0.204, 0.862],
+      [0.218, 0.874],
+      [0.212, 0.892],
+      [0.196, 0.882]
+    ],
+    [
+      [0.222, 0.918],
+      [0.236, 0.93],
+      [0.23, 0.948],
+      [0.214, 0.938]
+    ]
   ]
 };
 
@@ -1263,6 +1310,17 @@ function activateQuickDemo({ fromUrl = false } = {}) {
   setupModal.classList.remove("is-open");
   regionModal.classList.remove("is-open");
   resultModal.classList.remove("is-open");
+  if (MAP_QA_FROM_QUERY) {
+    state.mode = "map";
+    state.campaign.pendingRegionId = null;
+    if (confirmPanel) confirmPanel.hidden = true;
+    hideOnboarding(false);
+    renderRegionHub();
+    addFeed("Map QA mode: full India state/UT map is visible without onboarding overlays.");
+    state.toastClock = 0;
+    toast.classList.remove("is-visible");
+    return;
+  }
   showRegionPrompt(DEMO_REGION_ID, { silent: fromUrl });
   renderRegionHub();
   showOnboarding(true);
@@ -2749,6 +2807,16 @@ function pointInRegionMapShape(point, region) {
   return polygons.some((polygon) => pointInNormalizedPolygon(normalized, polygon));
 }
 
+function getContainingRegionPolygonArea(point, region) {
+  const polygons = getRegionMapPolygons(region);
+  if (!polygons) return Infinity;
+  const normalized = normalizedMapPoint(point);
+  const containingAreas = polygons
+    .filter((polygon) => pointInNormalizedPolygon(normalized, polygon))
+    .map(getPolygonArea);
+  return containingAreas.length ? Math.min(...containingAreas) : Infinity;
+}
+
 function drawRegionMapPolygons(region, fill, options = {}) {
   const polygons = getRegionMapPolygons(region);
   if (!polygons) return false;
@@ -3100,7 +3168,7 @@ function drawMapHome(width, height) {
   }
 
   const availableH = Math.max(240, height - 86);
-  const availableW = Math.max(260, width - 28);
+  const availableW = Math.max(240, width - (width < 430 ? 56 : 44));
   const mapH = Math.min(availableH, availableW / MAP_ASPECT);
   const mapW = mapH * MAP_ASPECT;
   const x = (width - mapW) / 2;
@@ -4577,8 +4645,7 @@ function pickRegionFromMap(point) {
   let polygonHitArea = Infinity;
   for (const region of REGIONS) {
     if (!pointInRegionMapShape(point, region)) continue;
-    const polygons = getRegionMapPolygons(region);
-    const area = polygons ? Math.min(...polygons.map(getPolygonArea)) : Infinity;
+    const area = getContainingRegionPolygonArea(point, region);
     if (area < polygonHitArea) {
       polygonHit = region;
       polygonHitArea = area;

@@ -7,6 +7,7 @@ Use this before showing the game to a company reviewer.
 ```powershell
 npm.cmd run icons
 npm.cmd run build
+npm.cmd run map:qa
 npm.cmd run smoke:mobile
 ```
 
@@ -17,6 +18,7 @@ npm.cmd run smoke:public
 ```
 
 The smoke script checks the page, manifest, service worker, main game code, and captures mobile plus desktop screenshots under `dist/smoke/`.
+The map QA script verifies all 36 regions have polygons, points stay inside the normalized India canvas, and each region centroid selects itself.
 
 ## Real Phone Pass
 
