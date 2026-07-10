@@ -37,4 +37,23 @@ for (const item of copyItems) {
   }
 }
 
+const serverDir = path.join(outDir, "server");
+fs.mkdirSync(serverDir, { recursive: true });
+fs.writeFileSync(
+  path.join(serverDir, "index.js"),
+  `export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const assetRequest = new Request(url, request);
+    const response = await env.ASSETS.fetch(assetRequest);
+    if (response.status !== 404) return response;
+
+    url.pathname = "/index.html";
+    return env.ASSETS.fetch(new Request(url, request));
+  }
+};
+`,
+  "utf8"
+);
+
 console.log(`Built NETA JI static PWA to ${outDir}`);
