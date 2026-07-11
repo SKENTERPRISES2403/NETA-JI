@@ -21,6 +21,7 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - Rough India state/UT campaign hub
 - Cartoon India map home screen drawn in canvas
 - Improved state/UT polygon map with more realistic India layout and tap targets
+- External map shape data in [data/india-map-shapes.json](data/india-map-shapes.json), ready for future exact-boundary replacement
 - Flag-touch state/UT selection with confirmation
 - Selected region opens as a large outlined gameplay arena
 - State/UT win progression with saved progress

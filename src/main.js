@@ -743,6 +743,15 @@ const REGION_MAP_SHAPES = {
   ]
 };
 
+const fallbackMapData = {
+  schemaVersion: 1,
+  projection: "normalized-cartoon-india-v1",
+  regionCount: Object.keys(REGION_MAP_SHAPES).length,
+  sourceNote: "Stylized hand-tuned game polygons inspired by public India state/UT map references; not survey-grade official boundaries.",
+  officialReference: "https://www.india.gov.in/explore-india",
+  shapes: REGION_MAP_SHAPES
+};
+
 const fallbackData = {
   opponentParties: [
     { name: "Chai Biscuit Front", color: "#2f7de1", symbol: "cup" },
@@ -1008,6 +1017,7 @@ const decisionButtons = document.querySelectorAll("[data-decision]");
 
 const state = {
   data: fallbackData,
+  mapData: fallbackMapData,
   owner: new Uint8Array(COLS * ROWS),
   trail: new Uint8Array(COLS * ROWS),
   regionMask: new Uint8Array(COLS * ROWS),
@@ -1077,6 +1087,23 @@ async function loadGameData() {
     state.data = await response.json();
   } catch {
     state.data = fallbackData;
+  }
+}
+
+function isValidMapData(payload) {
+  if (!payload || typeof payload !== "object" || !payload.shapes || typeof payload.shapes !== "object") return false;
+  return REGIONS.every((region) => Array.isArray(payload.shapes[region.id]) && payload.shapes[region.id].length > 0);
+}
+
+async function loadMapData() {
+  try {
+    const response = await fetch("data/india-map-shapes.json", { cache: "no-store" });
+    if (!response.ok) throw new Error("Map data file unavailable");
+    const payload = await response.json();
+    if (!isValidMapData(payload)) throw new Error("Map data is incomplete");
+    state.mapData = payload;
+  } catch {
+    state.mapData = fallbackMapData;
   }
 }
 
@@ -2740,7 +2767,7 @@ function getRegionMapPoint(region, rect = state.mapRect) {
 }
 
 function getRegionMapPolygons(region) {
-  return REGION_MAP_SHAPES[region?.id] || null;
+  return state.mapData?.shapes?.[region?.id] || REGION_MAP_SHAPES[region?.id] || null;
 }
 
 function getPolygonArea(points) {
@@ -5247,7 +5274,7 @@ async function shareResult() {
 }
 
 async function init() {
-  await loadGameData();
+  await Promise.all([loadGameData(), loadMapData()]);
   loadCampaignProgress();
   setPartyPreview();
   renderRegionHub();

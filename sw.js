@@ -1,10 +1,11 @@
-const CACHE_NAME = "neta-ji-v19";
+const CACHE_NAME = "neta-ji-v20";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./src/main.js",
   "./data/game-data.json",
+  "./data/india-map-shapes.json",
   "./assets/icon.svg",
   "./assets/icon-192.png",
   "./assets/icon-512.png",

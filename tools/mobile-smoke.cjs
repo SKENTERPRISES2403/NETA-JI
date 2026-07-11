@@ -87,11 +87,12 @@ async function main() {
 
   try {
     await waitFor(baseUrl);
-    const [page, manifest, serviceWorker, mainJs] = await Promise.all([
+    const [page, manifest, serviceWorker, mainJs, mapData] = await Promise.all([
       requestText(baseUrl),
       requestText(makeUrl("/manifest.webmanifest")),
       requestText(makeUrl("/sw.js")),
-      requestText(makeUrl("/src/main.js"))
+      requestText(makeUrl("/src/main.js")),
+      requestText(makeUrl("/data/india-map-shapes.json"))
     ]);
 
     assertContains("index.html", page, "NETA JI");
@@ -99,6 +100,8 @@ async function main() {
     assertContains("service worker", serviceWorker, "CACHE_NAME");
     assertContains("main.js", mainJs, "drawMemeWaveScene");
     assertContains("main.js", mainJs, "isOnboardingVisible");
+    assertContains("main.js", mainJs, "loadMapData");
+    assertContains("map data", mapData, "normalized-cartoon-india-v1");
 
     const chrome = findChrome();
     if (!chrome) throw new Error("Chrome or Edge was not found. Set CHROME_PATH to run screenshots.");

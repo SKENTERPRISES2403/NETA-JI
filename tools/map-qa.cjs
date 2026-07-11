@@ -4,6 +4,7 @@ const vm = require("vm");
 
 const root = path.resolve(__dirname, "..");
 const source = fs.readFileSync(path.join(root, "src", "main.js"), "utf8");
+const mapData = JSON.parse(fs.readFileSync(path.join(root, "data", "india-map-shapes.json"), "utf8"));
 
 function extractConst(name, nextName) {
   const pattern = new RegExp(`const ${name} = ([\\s\\S]*?);\\n\\nconst ${nextName}`);
@@ -13,7 +14,7 @@ function extractConst(name, nextName) {
 }
 
 const regions = extractConst("REGIONS", "REGION_POSITIONS");
-const shapes = extractConst("REGION_MAP_SHAPES", "fallbackData");
+const shapes = mapData.shapes || {};
 
 function polygonArea(points) {
   let area = 0;
@@ -114,6 +115,9 @@ for (const region of regions) {
 
 const report = {
   checkedAt: new Date().toISOString(),
+  schemaVersion: mapData.schemaVersion ?? null,
+  projection: mapData.projection || null,
+  sourceNote: mapData.sourceNote || "",
   regionCount: regions.length,
   shapeCount: Object.keys(shapes).length,
   missing,
@@ -128,6 +132,6 @@ fs.mkdirSync(path.join(root, "reports"), { recursive: true });
 fs.writeFileSync(path.join(root, "reports", "map-qa-report.json"), JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));
 
-if (missing.length || extra.length || outOfRange.length || badPolygons.length || centroidMismatches.length) {
+if (!mapData.sourceNote || !mapData.officialReference || missing.length || extra.length || outOfRange.length || badPolygons.length || centroidMismatches.length) {
   process.exitCode = 1;
 }

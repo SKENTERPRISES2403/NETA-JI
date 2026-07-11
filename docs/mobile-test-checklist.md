@@ -21,6 +21,7 @@ npm.cmd run smoke:public:map
 
 The smoke script checks the page, manifest, service worker, main game code, and captures mobile plus desktop screenshots under `dist/smoke/`.
 The map QA script verifies all 36 regions have polygons, points stay inside the normalized India canvas, and each region centroid selects itself.
+Map data lives in `data/india-map-shapes.json`; see `docs/map-data.md`.
 
 ## Real Phone Pass
 
