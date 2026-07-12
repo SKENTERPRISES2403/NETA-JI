@@ -10,6 +10,10 @@ namespace NetaJi.Prototype
         [SerializeField] private string missionTitle = "Ravivaar Ki Seva";
         [SerializeField] private string completionTitle = "SEVA COMPLETE";
         [SerializeField] private string completionMessage = "Ghat saaf hua. Public Trust badha.";
+        [SerializeField] private int chapterNumber = 1;
+        [SerializeField] private string nextChapterScene = string.Empty;
+        [SerializeField] private string introTitle = "AZAD / 31 / SOCIAL WORKER";
+        [SerializeField] private string introMessage = "Daraganj ka beta. Helpers Hand ka field volunteer.";
         [SerializeField] private List<MissionObjective> objectives = new List<MissionObjective>();
         [SerializeField] private List<string> objectiveLabels = new List<string>();
         [SerializeField] private List<int> milestoneSteps = new List<int>();
@@ -21,6 +25,7 @@ namespace NetaJi.Prototype
         public string CurrentObjective => currentIndex < objectiveLabels.Count ? objectiveLabels[currentIndex] : "Mission complete";
         public MissionObjective CurrentObjectiveItem => currentIndex < objectives.Count ? objectives[currentIndex] : null;
         public bool IsComplete => currentIndex >= objectives.Count;
+        public int ChapterNumber => chapterNumber;
 
         public void Configure(
             string title,
@@ -43,6 +48,18 @@ namespace NetaJi.Prototype
             milestoneMessages = messages;
         }
 
+        public void ConfigureChapter(int number, string nextScene)
+        {
+            chapterNumber = Mathf.Max(1, number);
+            nextChapterScene = nextScene ?? string.Empty;
+        }
+
+        public void ConfigureIntro(string title, string message)
+        {
+            introTitle = title;
+            introMessage = message;
+        }
+
         private void Awake()
         {
             Instance = this;
@@ -50,16 +67,22 @@ namespace NetaJi.Prototype
 
         private void Start()
         {
-            currentIndex = Mathf.Clamp(GameSession.Instance?.Progress.missionStep ?? 0, 0, objectives.Count);
+            currentIndex = Mathf.Clamp(GameSession.Instance?.GetMissionStep(chapterNumber) ?? 0, 0, objectives.Count);
+            GameSession.Instance?.SetLastPlayedChapter(chapterNumber);
             for (int i = 0; i < currentIndex && i < objectives.Count; i++)
             {
                 objectives[i]?.RestoreAsCompleted();
             }
 
             PrototypeHud.Instance?.RefreshMission();
+            if (IsComplete)
+            {
+                PrototypeHud.Instance?.ShowChapterActions(nextChapterScene);
+                return;
+            }
             if (currentIndex == 0)
             {
-                PrototypeHud.Instance?.ShowBanner("AZAD / 31 / SOCIAL WORKER", "Daraganj ka beta. Helpers Hand ka field volunteer.");
+                PrototypeHud.Instance?.ShowBanner(introTitle, introMessage);
             }
         }
 
@@ -76,13 +99,15 @@ namespace NetaJi.Prototype
             }
 
             currentIndex++;
-            GameSession.Instance?.SetMissionStep(currentIndex);
+            GameSession.Instance?.SetMissionStep(chapterNumber, currentIndex);
             PrototypeHud.Instance?.RefreshMission();
 
             if (IsComplete)
             {
+                GameSession.Instance?.CompleteChapter(chapterNumber);
                 PrototypeAudio.Instance?.PlayCompletion();
                 PrototypeHud.Instance?.ShowBanner(completionTitle, completionMessage);
+                PrototypeHud.Instance?.ShowChapterActions(nextChapterScene);
                 return;
             }
 
@@ -101,7 +126,7 @@ namespace NetaJi.Prototype
             }
         }
 
-        public void ResetMission()
+        public void ResetMission(bool resetAllProgress = true)
         {
             currentIndex = 0;
             foreach (MissionObjective objective in objectives)
@@ -109,8 +134,17 @@ namespace NetaJi.Prototype
                 objective?.ResetObjective();
             }
 
-            GameSession.Instance?.ResetProgress();
+            if (resetAllProgress)
+            {
+                GameSession.Instance?.ResetProgress();
+            }
+            else
+            {
+                GameSession.Instance?.ResetChapter(chapterNumber);
+            }
+            PrototypeHud.Instance?.HideChapterActions();
             PrototypeHud.Instance?.RefreshMission();
+            PrototypeHud.Instance?.ShowBanner(introTitle, introMessage);
         }
     }
 }

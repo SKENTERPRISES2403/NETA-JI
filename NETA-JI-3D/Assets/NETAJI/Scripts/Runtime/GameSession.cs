@@ -7,10 +7,17 @@ namespace NetaJi.Prototype
     [Serializable]
     public sealed class PlayerProgress
     {
+        public int saveVersion = 2;
         public int publicTrust = 12;
         public int money = 850;
         public int reputation = 4;
         public int missionStep;
+        public int chapterOneStep;
+        public int chapterTwoStep;
+        public bool chapterOneComplete;
+        public bool chapterTwoComplete;
+        public int highestUnlockedChapter = 1;
+        public int lastPlayedChapter = 1;
     }
 
     public sealed class GameSession : MonoBehaviour
@@ -24,6 +31,8 @@ namespace NetaJi.Prototype
 
         public PlayerProgress Progress => progress;
         public static bool HasSave => File.Exists(GetSavePath());
+        public static int HighestUnlockedChapter => GetSavedChapterState().highestUnlockedChapter;
+        public static int LastPlayedChapter => Mathf.Clamp(GetSavedChapterState().lastPlayedChapter, 1, 2);
 
         public static void DeleteSave()
         {
@@ -61,10 +70,56 @@ namespace NetaJi.Prototype
             Save();
         }
 
-        public void SetMissionStep(int step)
+        public int GetMissionStep(int chapterNumber)
         {
-            progress.missionStep = Mathf.Max(0, step);
+            return chapterNumber == 2 ? progress.chapterTwoStep : progress.chapterOneStep;
+        }
+
+        public void SetMissionStep(int chapterNumber, int step)
+        {
+            int safeStep = Mathf.Max(0, step);
+            if (chapterNumber == 2)
+            {
+                progress.chapterTwoStep = safeStep;
+            }
+            else
+            {
+                progress.chapterOneStep = safeStep;
+                progress.missionStep = safeStep;
+            }
+            progress.lastPlayedChapter = Mathf.Clamp(chapterNumber, 1, 2);
             Save();
+        }
+
+        public void ResetChapter(int chapterNumber)
+        {
+            SetMissionStep(chapterNumber, 0);
+        }
+
+        public void CompleteChapter(int chapterNumber)
+        {
+            if (chapterNumber == 2)
+            {
+                progress.chapterTwoComplete = true;
+                progress.lastPlayedChapter = 2;
+            }
+            else
+            {
+                progress.chapterOneComplete = true;
+                progress.highestUnlockedChapter = Mathf.Max(progress.highestUnlockedChapter, 2);
+                progress.lastPlayedChapter = 2;
+            }
+            Save();
+        }
+
+        public void SetLastPlayedChapter(int chapterNumber)
+        {
+            int safeChapter = Mathf.Clamp(chapterNumber, 1, Mathf.Max(1, progress.highestUnlockedChapter));
+            if (progress.lastPlayedChapter != safeChapter)
+            {
+                progress.lastPlayedChapter = safeChapter;
+                Save();
+            }
         }
 
         public void ResetProgress()
@@ -80,6 +135,7 @@ namespace NetaJi.Prototype
                 if (File.Exists(SavePath))
                 {
                     progress = JsonUtility.FromJson<PlayerProgress>(File.ReadAllText(SavePath)) ?? new PlayerProgress();
+                    MigrateProgress();
                 }
             }
             catch (Exception exception)
@@ -108,6 +164,76 @@ namespace NetaJi.Prototype
         private static string GetSavePath()
         {
             return Path.Combine(Application.persistentDataPath, SaveFileName);
+        }
+
+        private void MigrateProgress()
+        {
+            bool changed = false;
+            if (progress.chapterOneStep == 0 && progress.missionStep > 0)
+            {
+                progress.chapterOneStep = progress.missionStep;
+                changed = true;
+            }
+            if (progress.chapterOneStep >= 9 && !progress.chapterOneComplete)
+            {
+                progress.chapterOneComplete = true;
+                changed = true;
+            }
+            if (progress.highestUnlockedChapter < 1)
+            {
+                progress.highestUnlockedChapter = progress.chapterOneComplete ? 2 : 1;
+                changed = true;
+            }
+            if (progress.chapterOneComplete && progress.highestUnlockedChapter < 2)
+            {
+                progress.highestUnlockedChapter = 2;
+                changed = true;
+            }
+            if (progress.lastPlayedChapter < 1)
+            {
+                progress.lastPlayedChapter = progress.chapterOneComplete ? 2 : 1;
+                changed = true;
+            }
+            if (progress.saveVersion < 2)
+            {
+                progress.saveVersion = 2;
+                changed = true;
+            }
+
+            if (changed)
+            {
+                Save();
+            }
+        }
+
+        private static PlayerProgress GetSavedChapterState()
+        {
+            try
+            {
+                string path = GetSavePath();
+                if (File.Exists(path))
+                {
+                    PlayerProgress saved = JsonUtility.FromJson<PlayerProgress>(File.ReadAllText(path));
+                    if (saved != null)
+                    {
+                        if (saved.highestUnlockedChapter < 1)
+                        {
+                            saved.highestUnlockedChapter = saved.missionStep >= 9 ? 2 : 1;
+                        }
+                        if (saved.lastPlayedChapter < 1)
+                        {
+                            saved.lastPlayedChapter = saved.highestUnlockedChapter;
+                        }
+                        return saved;
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"Save summary failed: {exception.Message}");
+            }
+
+            return new PlayerProgress();
         }
     }
 }

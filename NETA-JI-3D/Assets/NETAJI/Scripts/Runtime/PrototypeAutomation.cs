@@ -6,10 +6,24 @@ namespace NetaJi.Prototype
 {
     public sealed class PrototypeAutomation : MonoBehaviour
     {
+        [SerializeField] private int chapterNumber = 1;
+        [SerializeField] private int expectedTrust = 35;
+        [SerializeField] private int expectedMoney = 950;
+        [SerializeField] private int expectedReputation = 16;
+
+        public void Configure(int chapter, int trust, int money, int reputation)
+        {
+            chapterNumber = Mathf.Max(1, chapter);
+            expectedTrust = trust;
+            expectedMoney = money;
+            expectedReputation = reputation;
+        }
+
         private void Start()
         {
             string[] arguments = System.Environment.GetCommandLineArgs();
-            if (System.Array.IndexOf(arguments, "-prototypeSmoke") >= 0)
+            string smokeArgument = chapterNumber == 2 ? "-chapter2Smoke" : "-prototypeSmoke";
+            if (System.Array.IndexOf(arguments, smokeArgument) >= 0)
             {
                 StartCoroutine(RunSmoke(arguments));
             }
@@ -30,8 +44,20 @@ namespace NetaJi.Prototype
                 yield break;
             }
 
-            mission.ResetMission();
-            string startPath = Path.Combine(outputDirectory, "prototype-start.png");
+            if (chapterNumber == 1)
+            {
+                mission.ResetMission(true);
+            }
+            else
+            {
+                GameSession.Instance.ResetProgress();
+                GameSession.Instance.ApplyReward(23, 100, 12);
+                GameSession.Instance.CompleteChapter(1);
+                mission.ResetMission(false);
+            }
+
+            string filePrefix = chapterNumber == 1 ? "prototype" : $"chapter-{chapterNumber}";
+            string startPath = Path.Combine(outputDirectory, filePrefix + "-start.png");
             ScreenCapture.CaptureScreenshot(startPath);
             yield return new WaitForSeconds(0.8f);
 
@@ -50,15 +76,24 @@ namespace NetaJi.Prototype
             }
 
             yield return new WaitForSeconds(0.9f);
-            string finalPath = Path.Combine(outputDirectory, "prototype-final.png");
+            string finalPath = Path.Combine(outputDirectory, filePrefix + "-final.png");
             ScreenCapture.CaptureScreenshot(finalPath);
             yield return new WaitForSeconds(1f);
 
+            yield return new WaitForSeconds(6.5f);
+            string actionsPath = Path.Combine(outputDirectory, filePrefix + "-actions.png");
+            ScreenCapture.CaptureScreenshot(actionsPath);
+            yield return new WaitForSeconds(0.6f);
+
             PlayerProgress progress = GameSession.Instance.Progress;
-            bool passed = mission.IsComplete && progress.publicTrust == 35 && progress.money == 950 && progress.reputation == 16;
+            bool passed = mission.IsComplete
+                && progress.publicTrust == expectedTrust
+                && progress.money == expectedMoney
+                && progress.reputation == expectedReputation;
+            string marker = chapterNumber == 1 ? "PROTOTYPE" : $"CHAPTER_{chapterNumber}";
             Debug.Log(passed
-                ? $"PROTOTYPE_SMOKE_PASSED: trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}"
-                : $"PROTOTYPE_SMOKE_FAILED: complete={mission.IsComplete}, trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}");
+                ? $"{marker}_SMOKE_PASSED: trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}"
+                : $"{marker}_SMOKE_FAILED: complete={mission.IsComplete}, trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}");
             Application.Quit(passed ? 0 : 3);
         }
 

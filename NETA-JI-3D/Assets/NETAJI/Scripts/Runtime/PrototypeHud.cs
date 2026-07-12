@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace NetaJi.Prototype
 {
@@ -13,6 +14,8 @@ namespace NetaJi.Prototype
         private string bannerSubtitle = string.Empty;
         private float dialogueUntil;
         private float bannerUntil;
+        private bool showChapterActions;
+        private string nextChapterScene = string.Empty;
         private GUIStyle titleStyle;
         private GUIStyle bodyStyle;
         private GUIStyle smallStyle;
@@ -50,6 +53,18 @@ namespace NetaJi.Prototype
 
         public void RefreshMission()
         {
+        }
+
+        public void ShowChapterActions(string nextScene)
+        {
+            nextChapterScene = nextScene ?? string.Empty;
+            showChapterActions = true;
+        }
+
+        public void HideChapterActions()
+        {
+            showChapterActions = false;
+            nextChapterScene = string.Empty;
         }
 
         private void OnGUI()
@@ -105,6 +120,38 @@ namespace NetaJi.Prototype
                 darkBody.normal.textColor = new Color(0.03f, 0.11f, 0.12f);
                 GUI.Label(new Rect(bannerRect.x + 12f, bannerRect.y + 16f, bannerRect.width - 24f, 34f), bannerTitle, darkTitle);
                 GUI.Label(new Rect(bannerRect.x + 12f, bannerRect.y + 53f, bannerRect.width - 24f, 36f), bannerSubtitle, darkBody);
+            }
+
+            if (showChapterActions && Time.unscaledTime >= dialogueUntil && Time.unscaledTime >= bannerUntil)
+            {
+                DrawChapterActions();
+            }
+        }
+
+        private void DrawChapterActions()
+        {
+            float width = string.IsNullOrEmpty(nextChapterScene) ? 190f : 390f;
+            float height = 52f;
+            float x = (Screen.width - width) * 0.5f;
+            float y = Screen.height - height - 24f;
+            if (!string.IsNullOrEmpty(nextChapterScene))
+            {
+                Rect nextRect = new Rect(x, y, 190f, height);
+                DrawPanel(nextRect, new Color(0.93f, 0.61f, 0.10f, 0.96f));
+                GUIStyle nextStyle = new GUIStyle(statStyle);
+                nextStyle.normal.textColor = new Color(0.02f, 0.10f, 0.11f);
+                if (GUI.Button(nextRect, "NEXT CHAPTER", nextStyle))
+                {
+                    SceneManager.LoadScene(nextChapterScene);
+                }
+                x += 200f;
+            }
+
+            Rect menuRect = new Rect(x, y, 190f, height);
+            DrawPanel(menuRect, new Color(0.02f, 0.25f, 0.27f, 0.96f));
+            if (GUI.Button(menuRect, "MAIN MENU", statStyle))
+            {
+                SceneManager.LoadScene("MainMenu");
             }
         }
 

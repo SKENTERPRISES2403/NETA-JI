@@ -14,9 +14,10 @@ namespace NetaJi.Prototype.Editor
     public static class PrototypeSceneBuilder
     {
         private const string ScenePath = "Assets/NETAJI/Scenes/Prototype01.unity";
+        private const string ChapterTwoScenePath = "Assets/NETAJI/Scenes/Chapter02.unity";
         private const string MenuScenePath = "Assets/NETAJI/Scenes/MainMenu.unity";
         private const string MaterialPath = "Assets/NETAJI/Materials";
-        private static readonly string[] BuildScenes = { MenuScenePath, ScenePath };
+        private static readonly string[] BuildScenes = { MenuScenePath, ScenePath, ChapterTwoScenePath };
 
         [MenuItem("NETA JI/Build Prototype Scene")]
         public static void Build()
@@ -54,7 +55,8 @@ namespace NetaJi.Prototype.Editor
             systems.AddComponent<PrototypeInput>();
             systems.AddComponent<PrototypeAudio>();
             systems.AddComponent<PrototypeHud>();
-            systems.AddComponent<PrototypeAutomation>();
+            PrototypeAutomation automation = systems.AddComponent<PrototypeAutomation>();
+            automation.Configure(1, 35, 950, 16);
             MissionController mission = systems.AddComponent<MissionController>();
 
             GameObject azad = CreatePerson("Azad", new Vector3(0f, 0f, -5f), shirt, trousers, skin, hair, true);
@@ -227,10 +229,28 @@ namespace NetaJi.Prototype.Editor
                     "Safai report ho gayi. Ab ghar par Sandhya intezar kar rahi hai.",
                     "Pension verification ready hai. Constable Samrat se milna hoga."
                 });
+            mission.ConfigureChapter(1, "Chapter02");
+            mission.ConfigureIntro("AZAD / 31 / SOCIAL WORKER", "Daraganj ka beta. Helpers Hand ka field volunteer.");
 
             CreateLighting();
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
+            BuildChapterTwoScene(
+                sand,
+                stone,
+                darkStone,
+                teal,
+                yellow,
+                white,
+                shirt,
+                trousers,
+                skin,
+                hair,
+                shantiDress,
+                volunteerDress,
+                policeKhaki,
+                foliage,
+                trunk);
             BuildMainMenuScene(
                 sand,
                 stone,
@@ -249,13 +269,221 @@ namespace NetaJi.Prototype.Editor
             EditorBuildSettings.scenes = new[]
             {
                 new EditorBuildSettingsScene(MenuScenePath, true),
-                new EditorBuildSettingsScene(ScenePath, true)
+                new EditorBuildSettingsScene(ScenePath, true),
+                new EditorBuildSettingsScene(ChapterTwoScenePath, true)
             };
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             Selection.activeGameObject = GameObject.Find("Azad");
-            Debug.Log($"NETA JI menu and Prototype 1 scenes generated at {MenuScenePath} and {ScenePath}");
+            Debug.Log($"NETA JI menu and chapter scenes generated at {MenuScenePath}, {ScenePath}, and {ChapterTwoScenePath}");
+        }
+
+        private static void BuildChapterTwoScene(
+            Material sand,
+            Material stone,
+            Material darkStone,
+            Material teal,
+            Material yellow,
+            Material white,
+            Material shirt,
+            Material trousers,
+            Material skin,
+            Material hair,
+            Material shantiDress,
+            Material volunteerDress,
+            Material policeKhaki,
+            Material foliage,
+            Material trunk)
+        {
+            Scene chapterScene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            GameObject environment = new GameObject("Allahpur Evening Learning Courtyard");
+            CreateBox("Learning Courtyard", new Vector3(0f, -0.3f, 0f), new Vector3(42f, 0.6f, 34f), stone, environment.transform);
+            CreateBox("Courtyard Path", new Vector3(0f, 0.02f, -6f), new Vector3(7f, 0.08f, 22f), sand, environment.transform);
+            CreateBox("Community Hall", new Vector3(0f, 2.5f, 15.5f), new Vector3(20f, 5f, 6f), teal, environment.transform);
+            CreateBox("Class Blackboard", new Vector3(0f, 2.35f, 12.42f), new Vector3(7.6f, 2.55f, 0.18f), darkStone, environment.transform);
+            CreateWorldLabel("Class Title", "HELPERS HAND EVENING CLASS", new Vector3(0f, 4.42f, 12.30f), Vector3.zero, yellow, environment.transform, 0.027f);
+            CreateWorldLabel("Blackboard Lesson", "FORM  /  ENGLISH  /  MATHS", new Vector3(0f, 2.45f, 12.30f), Vector3.zero, white, environment.transform, 0.019f);
+
+            for (int i = 0; i < 6; i++)
+            {
+                float side = i % 2 == 0 ? -1f : 1f;
+                float x = side * (13f + (i % 3) * 2f);
+                float z = -7f + (i / 2) * 7f;
+                Material wall = i % 3 == 0 ? teal : i % 3 == 1 ? stone : shantiDress;
+                CreateBox($"Allahpur Home {i + 1}", new Vector3(x, 1.9f, z), new Vector3(5f, 3.8f, 5f), wall, environment.transform);
+            }
+
+            CreateTree("Courtyard Neem Left", new Vector3(-10f, 0f, 5f), foliage, trunk, environment.transform);
+            CreateTree("Courtyard Neem Right", new Vector3(10.5f, 0f, 7f), foliage, trunk, environment.transform);
+            CreateBench("Parent Bench", new Vector3(-9f, 0f, -3f), 12f, darkStone, teal, environment.transform);
+            CreateStreetLamp("Courtyard Solar Lamp", new Vector3(12f, 0f, 3.5f), darkStone, yellow, environment.transform);
+            CreateStreetLamp("Courtyard Entry Lamp", new Vector3(-12f, 0f, -8f), darkStone, yellow, environment.transform);
+
+            GameObject systems = new GameObject("Chapter 2 Systems");
+            systems.AddComponent<GameSession>();
+            systems.AddComponent<PrototypeInput>();
+            systems.AddComponent<PrototypeAudio>();
+            systems.AddComponent<PrototypeHud>();
+            PrototypeAutomation automation = systems.AddComponent<PrototypeAutomation>();
+            automation.Configure(2, 58, 1050, 30);
+            MissionController mission = systems.AddComponent<MissionController>();
+
+            GameObject azad = CreatePerson("Azad", new Vector3(0f, 0f, -9f), shirt, trousers, skin, hair, true);
+            AzadController controller = azad.AddComponent<AzadController>();
+            CharacterController characterController = azad.GetComponent<CharacterController>();
+            characterController.center = new Vector3(0f, 0.9f, 0f);
+            characterController.height = 1.8f;
+            characterController.radius = 0.34f;
+            characterController.stepOffset = 0.42f;
+            characterController.slopeLimit = 48f;
+            azad.AddComponent<ProceduralWalker>();
+            SetLayerRecursively(azad, 2);
+
+            GameObject cameraObject = new GameObject("Main Camera");
+            cameraObject.tag = "MainCamera";
+            Camera gameCamera = cameraObject.AddComponent<Camera>();
+            gameCamera.clearFlags = CameraClearFlags.Skybox;
+            gameCamera.fieldOfView = 62f;
+            gameCamera.nearClipPlane = 0.12f;
+            gameCamera.farClipPlane = 160f;
+            gameCamera.allowHDR = false;
+            gameCamera.allowMSAA = false;
+            cameraObject.AddComponent<AudioListener>();
+            ThirdPersonCamera orbitCamera = cameraObject.AddComponent<ThirdPersonCamera>();
+            orbitCamera.SetTarget(azad.transform);
+            orbitCamera.SetCollisionMask(~(1 << 2));
+            cameraObject.transform.position = new Vector3(0f, 3.6f, -14f);
+            controller.SetCamera(cameraObject.transform);
+
+            List<MissionObjective> objectives = new List<MissionObjective>();
+            List<string> labels = new List<string>();
+
+            GameObject shanti = CreatePerson("Shanti", new Vector3(-5f, 0f, 4f), shantiDress, darkStone, skin, hair, false);
+            AddScarf(shanti.transform, shantiDress);
+            objectives.Add(AddObjective(
+                shanti,
+                "class-plan",
+                "Shanti se class plan lein",
+                "Shanti",
+                "Azad, aaj admission forms bhi hain aur chhote bachchon ki English class bhi. Pehle do desks aur books ready kara do, main attendance bana rahi hoon.",
+                1,
+                0,
+                0,
+                false));
+            labels.Add("Shanti se evening class ka plan samjhein");
+
+            GameObject deskA = CreateStudyDesk("Study Desk A", new Vector3(-4.5f, 0f, 3f), darkStone, yellow);
+            objectives.Add(AddObjective(deskA, "desk-a", "Pehla desk lagayein", "Azad", "Desk seedha rahe, bachchon ko likhte waqt jagah milni chahiye.", 1, -25, 1, false));
+            labels.Add("Pehla study desk arrange karein");
+
+            GameObject deskB = CreateStudyDesk("Study Desk B", new Vector3(0f, 0f, 3f), darkStone, yellow);
+            objectives.Add(AddObjective(deskB, "desk-b", "Doosra desk lagayein", "Volunteer", "Is desk par admission form help hogi. Pens aur documents ke clips bhi rakh dete hain.", 1, -25, 1, false));
+            labels.Add("Doosra study desk arrange karein");
+
+            GameObject books = new GameObject("Donated Book Crate");
+            books.transform.position = new Vector3(5f, 0.42f, 4f);
+            CreatePrimitiveChild("Crate", PrimitiveType.Cube, books.transform, Vector3.zero, new Vector3(1.25f, 0.78f, 0.92f), darkStone);
+            for (int i = 0; i < 5; i++)
+            {
+                CreatePrimitiveChild($"Book {i + 1}", PrimitiveType.Cube, books.transform, new Vector3(-0.38f + i * 0.19f, 0.48f + (i % 2) * 0.08f, 0f), new Vector3(0.16f, 0.55f, 0.60f), i % 2 == 0 ? teal : yellow).transform.localRotation = Quaternion.Euler(0f, 0f, -8f + i * 4f);
+            }
+            objectives.Add(AddObjective(books, "books", "Donated books sort karein", "Azad", "Class 3 se 8 tak alag bundles. Naam likh denge, par kisi bachche ko kitab ke bina wapas nahi bhejna.", 2, 0, 1, false));
+            labels.Add("Donated books ko class-wise sort karein");
+
+            GameObject raju = CreatePerson("Student Raju", new Vector3(-2f, 0f, 7f), volunteerDress, darkStone, skin, hair, false);
+            raju.transform.localScale = Vector3.one * 0.82f;
+            objectives.Add(AddObjective(
+                raju,
+                "raju-form",
+                "Raju ka admission form dekhein",
+                "Raju",
+                "Bhaiya, address proof mein kiraye ka paper hai. School wale bol rahe the guardian signature bhi chahiye.",
+                4,
+                0,
+                2,
+                false));
+            labels.Add("Raju ka admission form complete karayein");
+
+            GameObject samrat = CreatePerson("Constable Samrat", new Vector3(9f, 0f, -1f), policeKhaki, darkStone, skin, hair, false);
+            AddPoliceDetails(samrat.transform, policeKhaki, darkStone);
+            objectives.Add(AddObjective(
+                samrat,
+                "samrat-safety",
+                "Samrat se safety update lein",
+                "Constable Samrat",
+                "Gali ki main light band hai. Complaint number mil gaya hai; tab tak solar lamp class ke exit par shift kara do. Bachche andhere mein nahi jayenge.",
+                2,
+                0,
+                1,
+                false));
+            labels.Add("Constable Samrat se streetlight update lein");
+
+            GameObject solarSwitch = new GameObject("Portable Solar Lamp Control");
+            solarSwitch.transform.position = new Vector3(12f, 0.92f, 3.5f);
+            CreatePrimitiveChild("Battery", PrimitiveType.Cube, solarSwitch.transform, Vector3.zero, new Vector3(0.72f, 0.65f, 0.52f), teal);
+            CreatePrimitiveChild("Switch", PrimitiveType.Cube, solarSwitch.transform, new Vector3(0f, 0.18f, 0.28f), new Vector3(0.18f, 0.18f, 0.08f), yellow);
+            objectives.Add(AddObjective(
+                solarSwitch,
+                "solar-lamp",
+                "Solar lamp activate karein",
+                "Azad",
+                "Temporary light chal gayi. Complaint receipt notice board par laga denge, permanent repair ka follow-up kal hoga.",
+                3,
+                -150,
+                2,
+                false));
+            labels.Add("Exit ke paas temporary solar lamp activate karein");
+
+            GameObject teachingPoint = new GameObject("Teaching Point");
+            teachingPoint.transform.position = new Vector3(0f, 1.2f, 11.6f);
+            CreatePrimitiveChild("Chalk Box", PrimitiveType.Cube, teachingPoint.transform, Vector3.zero, new Vector3(0.72f, 0.18f, 0.28f), white);
+            objectives.Add(AddObjective(
+                teachingPoint,
+                "teach-class",
+                "Evening class shuru karein",
+                "Azad",
+                "Aaj ka pehla lesson: form bharte waqt har box padhna hai, bina samjhe sign nahi karna. Phir English reading karenge.",
+                5,
+                0,
+                3,
+                false));
+            labels.Add("Blackboard par evening class shuru karein");
+
+            GameObject coordinator = CreatePerson("Helpers Hand Coordinator", new Vector3(7f, 0f, 7f), volunteerDress, darkStone, skin, hair, false);
+            CreatePrimitiveChild("Helpers Hand Badge", PrimitiveType.Cube, coordinator.transform, new Vector3(0f, 1.25f, 0.48f), new Vector3(0.20f, 0.20f, 0.04f), teal);
+            objectives.Add(AddObjective(
+                coordinator,
+                "class-report",
+                "Coordinator ko report dein",
+                "Helpers Hand Coordinator",
+                "Attendance 23, admission forms 4, books 17. Shanti ne tuition fund ka hisaab bhi note kar diya. Agli class Wednesday ko.",
+                4,
+                300,
+                3,
+                false));
+            labels.Add("Helpers Hand coordinator ko class report dein");
+
+            mission.Configure(
+                "Shaam Ki Paathshala",
+                objectives,
+                labels,
+                "CHAPTER 2 COMPLETE",
+                "Forms, books, safety aur class: mohalla school roshan hua.");
+            mission.ConfigureMilestones(
+                new List<int> { 4, 7 },
+                new List<string> { "ADMISSION HELP", "CLASS READY" },
+                new List<string>
+                {
+                    "Desks aur books ready hain. Ab Raju ka admission form dekhna hai.",
+                    "Safe exit light active hai. Evening class shuru ki ja sakti hai."
+                });
+            mission.ConfigureChapter(2, string.Empty);
+            mission.ConfigureIntro("CHAPTER 2 / SHAAM KI PAATHSHALA", "Allahpur courtyard. Forms, books aur safe evening class.");
+
+            CreateEveningLighting();
+            EditorSceneManager.MarkSceneDirty(chapterScene);
+            EditorSceneManager.SaveScene(chapterScene, ChapterTwoScenePath);
         }
 
         private static void BuildMainMenuScene(
@@ -381,12 +609,12 @@ namespace NetaJi.Prototype.Editor
         {
             PlayerSettings.companyName = "SK Enterprises";
             PlayerSettings.productName = "NETA JI";
-            PlayerSettings.bundleVersion = "0.2.0";
+            PlayerSettings.bundleVersion = "0.3.0";
             PlayerSettings.colorSpace = ColorSpace.Gamma;
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.skenterprises.netaji.prototype");
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
-            PlayerSettings.Android.bundleVersionCode = 2;
+            PlayerSettings.Android.bundleVersionCode = 3;
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.Mono2x);
             QualitySettings.vSyncCount = 0;
@@ -639,6 +867,17 @@ namespace NetaJi.Prototype.Editor
             CreatePrimitiveChild("Leg Right", PrimitiveType.Cube, bench.transform, new Vector3(0.95f, 0.32f, 0f), new Vector3(0.16f, 0.64f, 0.56f), frame);
         }
 
+        private static GameObject CreateStudyDesk(string name, Vector3 position, Material frame, Material surface)
+        {
+            GameObject desk = new GameObject(name);
+            desk.transform.position = position;
+            CreatePrimitiveChild("Writing Surface", PrimitiveType.Cube, desk.transform, new Vector3(0f, 0.72f, 0f), new Vector3(2.4f, 0.16f, 0.85f), surface);
+            CreatePrimitiveChild("Frame Left", PrimitiveType.Cube, desk.transform, new Vector3(-0.92f, 0.36f, 0f), new Vector3(0.14f, 0.72f, 0.64f), frame);
+            CreatePrimitiveChild("Frame Right", PrimitiveType.Cube, desk.transform, new Vector3(0.92f, 0.36f, 0f), new Vector3(0.14f, 0.72f, 0.64f), frame);
+            CreatePrimitiveChild("Notebook", PrimitiveType.Cube, desk.transform, new Vector3(0f, 0.84f, 0f), new Vector3(0.62f, 0.05f, 0.48f), frame);
+            return desk;
+        }
+
         private static void CreateStreetLamp(string name, Vector3 position, Material pole, Material lamp, Transform parent)
         {
             GameObject root = new GameObject(name);
@@ -725,6 +964,28 @@ namespace NetaJi.Prototype.Editor
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogStartDistance = 45f;
             RenderSettings.fogEndDistance = 140f;
+        }
+
+        private static void CreateEveningLighting()
+        {
+            GameObject lightObject = new GameObject("Evening Sun");
+            Light sunlight = lightObject.AddComponent<Light>();
+            sunlight.type = LightType.Directional;
+            sunlight.color = new Color(0.76f, 0.84f, 1f);
+            sunlight.intensity = 0.88f;
+            sunlight.shadows = LightShadows.Hard;
+            sunlight.shadowStrength = 0.48f;
+            lightObject.transform.rotation = Quaternion.Euler(34f, 24f, 0f);
+
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
+            RenderSettings.ambientSkyColor = new Color(0.22f, 0.34f, 0.52f);
+            RenderSettings.ambientEquatorColor = new Color(0.31f, 0.39f, 0.50f);
+            RenderSettings.ambientGroundColor = new Color(0.11f, 0.16f, 0.23f);
+            RenderSettings.fog = true;
+            RenderSettings.fogColor = new Color(0.28f, 0.37f, 0.52f);
+            RenderSettings.fogMode = FogMode.Linear;
+            RenderSettings.fogStartDistance = 42f;
+            RenderSettings.fogEndDistance = 120f;
         }
 
         private static Material CreateMaterial(string name, Color color, float smoothness)

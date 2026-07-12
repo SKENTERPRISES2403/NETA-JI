@@ -9,6 +9,7 @@ namespace NetaJi.Prototype
     public sealed class MainMenuController : MonoBehaviour
     {
         [SerializeField] private string gameplaySceneName = "Prototype01";
+        [SerializeField] private string chapterTwoSceneName = "Chapter02";
 
         private Texture2D whiteTexture;
         private Texture2D primaryTexture;
@@ -19,6 +20,7 @@ namespace NetaJi.Prototype
         private GUIStyle buttonStyle;
         private GUIStyle secondaryButtonStyle;
         private bool storyOpen;
+        private bool chaptersOpen;
 
         private void Awake()
         {
@@ -41,6 +43,10 @@ namespace NetaJi.Prototype
             {
                 SceneManager.LoadScene(gameplaySceneName);
             }
+            else if (Array.IndexOf(arguments, "-chapter2Smoke") >= 0)
+            {
+                SceneManager.LoadScene(chapterTwoSceneName);
+            }
         }
 
         private IEnumerator RunMenuSmoke(string[] arguments)
@@ -50,6 +56,10 @@ namespace NetaJi.Prototype
             yield return new WaitForSeconds(1.2f);
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "menu-start.png"));
             yield return new WaitForSeconds(0.8f);
+            chaptersOpen = true;
+            ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "menu-chapters.png"));
+            yield return new WaitForSeconds(0.8f);
+            chaptersOpen = false;
             storyOpen = true;
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "menu-story.png"));
             yield return new WaitForSeconds(1f);
@@ -62,6 +72,7 @@ namespace NetaJi.Prototype
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 storyOpen = false;
+                chaptersOpen = false;
             }
         }
 
@@ -90,20 +101,20 @@ namespace NetaJi.Prototype
             {
                 if (GUI.Button(new Rect(buttonX, nextButtonY, buttonWidth, buttonHeight), "SEVA JAARI RAKHEIN", buttonStyle))
                 {
-                    LoadGame(false);
+                    LoadChapter(GameSession.LastPlayedChapter, false);
                 }
                 nextButtonY += buttonHeight + 12f;
             }
 
             if (GUI.Button(new Rect(buttonX, nextButtonY, buttonWidth, buttonHeight), "NAYA SAFAR", buttonStyle))
             {
-                LoadGame(true);
+                LoadChapter(1, true);
             }
             nextButtonY += buttonHeight + 12f;
 
-            if (GUI.Button(new Rect(buttonX, nextButtonY, buttonWidth, buttonHeight), "AZAD KI KAHANI", secondaryButtonStyle))
+            if (GUI.Button(new Rect(buttonX, nextButtonY, buttonWidth, buttonHeight), "CHAPTER CHUNEIN", secondaryButtonStyle))
             {
-                storyOpen = true;
+                chaptersOpen = true;
             }
 
             GUI.Label(
@@ -114,6 +125,54 @@ namespace NetaJi.Prototype
             if (storyOpen)
             {
                 DrawStoryPanel(scale);
+            }
+            else if (chaptersOpen)
+            {
+                DrawChapterPanel();
+            }
+        }
+
+        private void DrawChapterPanel()
+        {
+            float width = Mathf.Min(700f, Screen.width - 42f);
+            float height = Mathf.Min(340f, Screen.height - 30f);
+            Rect panel = new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
+            DrawPanel(panel, new Color(0.01f, 0.055f, 0.065f, 0.98f));
+            GUI.Label(new Rect(panel.x + 24f, panel.y + 18f, panel.width - 48f, 46f), "AZAD KA SAFAR", subtitleStyle);
+
+            float cardWidth = (panel.width - 64f) * 0.5f;
+            Rect chapterOneRect = new Rect(panel.x + 24f, panel.y + 74f, cardWidth, 92f);
+            if (GUI.Button(chapterOneRect, "CHAPTER 1\nGHAT SE GHAR TAK", buttonStyle))
+            {
+                LoadChapter(1, false);
+            }
+
+            Rect chapterTwoRect = new Rect(chapterOneRect.xMax + 16f, chapterOneRect.y, cardWidth, 92f);
+            if (GameSession.HighestUnlockedChapter >= 2)
+            {
+                if (GUI.Button(chapterTwoRect, "CHAPTER 2\nSHAAM KI PAATHSHALA", buttonStyle))
+                {
+                    LoadChapter(2, false);
+                }
+            }
+            else
+            {
+                DrawPanel(chapterTwoRect, new Color(0.12f, 0.16f, 0.17f, 0.96f));
+                GUI.Label(chapterTwoRect, "CHAPTER 2\nLOCKED - COMPLETE CHAPTER 1", secondaryButtonStyle);
+            }
+
+            GUI.Label(
+                new Rect(panel.x + 24f, panel.y + 184f, panel.width - 48f, 58f),
+                "Har chapter ke decisions aur seva rewards same local profile mein save hote hain.",
+                bodyStyle);
+            if (GUI.Button(new Rect(panel.x + 24f, panel.y + panel.height - 62f, 190f, 42f), "AZAD KI KAHANI", secondaryButtonStyle))
+            {
+                chaptersOpen = false;
+                storyOpen = true;
+            }
+            if (GUI.Button(new Rect(panel.x + panel.width - 154f, panel.y + panel.height - 62f, 130f, 42f), "WAPAS", secondaryButtonStyle))
+            {
+                chaptersOpen = false;
             }
         }
 
@@ -134,14 +193,14 @@ namespace NetaJi.Prototype
             }
         }
 
-        private void LoadGame(bool reset)
+        private void LoadChapter(int chapterNumber, bool reset)
         {
             if (reset)
             {
                 GameSession.DeleteSave();
             }
 
-            SceneManager.LoadScene(gameplaySceneName);
+            SceneManager.LoadScene(chapterNumber == 2 ? chapterTwoSceneName : gameplaySceneName);
         }
 
         private void EnsureStyles()
