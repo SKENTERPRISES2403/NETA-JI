@@ -55,7 +55,7 @@ namespace NetaJi.Prototype
             yield return new WaitForSeconds(1f);
 
             PlayerProgress progress = GameSession.Instance.Progress;
-            bool passed = mission.IsComplete && progress.publicTrust == 26 && progress.money == 800 && progress.reputation == 10;
+            bool passed = mission.IsComplete && progress.publicTrust == 35 && progress.money == 950 && progress.reputation == 16;
             Debug.Log(passed
                 ? $"PROTOTYPE_SMOKE_PASSED: trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}"
                 : $"PROTOTYPE_SMOKE_FAILED: complete={mission.IsComplete}, trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}");

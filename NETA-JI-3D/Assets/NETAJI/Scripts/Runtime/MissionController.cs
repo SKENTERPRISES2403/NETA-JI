@@ -8,6 +8,8 @@ namespace NetaJi.Prototype
         public static MissionController Instance { get; private set; }
 
         [SerializeField] private string missionTitle = "Ravivaar Ki Seva";
+        [SerializeField] private string completionTitle = "SEVA COMPLETE";
+        [SerializeField] private string completionMessage = "Ghat saaf hua. Public Trust badha.";
         [SerializeField] private List<MissionObjective> objectives = new List<MissionObjective>();
         [SerializeField] private List<string> objectiveLabels = new List<string>();
         private int currentIndex;
@@ -17,11 +19,18 @@ namespace NetaJi.Prototype
         public MissionObjective CurrentObjectiveItem => currentIndex < objectives.Count ? objectives[currentIndex] : null;
         public bool IsComplete => currentIndex >= objectives.Count;
 
-        public void Configure(string title, List<MissionObjective> steps, List<string> labels)
+        public void Configure(
+            string title,
+            List<MissionObjective> steps,
+            List<string> labels,
+            string completedTitle,
+            string completedMessage)
         {
             missionTitle = title;
             objectives = steps;
             objectiveLabels = labels;
+            completionTitle = completedTitle;
+            completionMessage = completedMessage;
         }
 
         private void Awake()
@@ -58,7 +67,7 @@ namespace NetaJi.Prototype
 
             if (IsComplete)
             {
-                PrototypeHud.Instance?.ShowBanner("SEVA COMPLETE", "Ghat saaf hua. Public Trust badha.");
+                PrototypeHud.Instance?.ShowBanner(completionTitle, completionMessage);
             }
         }
 

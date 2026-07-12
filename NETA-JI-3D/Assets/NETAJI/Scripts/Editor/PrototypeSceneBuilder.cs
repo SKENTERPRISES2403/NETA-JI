@@ -36,6 +36,8 @@ namespace NetaJi.Prototype.Editor
             Material skin = CreateMaterial("Skin", new Color(0.52f, 0.31f, 0.21f), 0.02f);
             Material hair = CreateMaterial("Hair", new Color(0.05f, 0.04f, 0.035f), 0.01f);
             Material shantiDress = CreateMaterial("ShantiDress", new Color(0.76f, 0.20f, 0.27f), 0.08f);
+            Material sandhyaDress = CreateMaterial("SandhyaDress", new Color(0.18f, 0.48f, 0.76f), 0.08f);
+            Material policeKhaki = CreateMaterial("PoliceKhaki", new Color(0.58f, 0.47f, 0.30f), 0.06f);
             Material volunteerDress = CreateMaterial("VolunteerDress", new Color(0.90f, 0.74f, 0.24f), 0.08f);
             Material foliage = CreateMaterial("Foliage", new Color(0.16f, 0.39f, 0.22f), 0.03f);
             Material trunk = CreateMaterial("Trunk", new Color(0.28f, 0.16f, 0.08f), 0.03f);
@@ -142,7 +144,73 @@ namespace NetaJi.Prototype.Editor
             objectives.Add(coordinatorObjective);
             labels.Add("Volunteer coordinator ko update dein");
 
-            mission.Configure("Ravivaar Ki Seva", objectives, labels);
+            GameObject sandhya = CreatePerson("Sandhya", new Vector3(-8f, 0f, -9.4f), sandhyaDress, darkStone, skin, hair, false);
+            sandhya.transform.localScale = Vector3.one * 0.72f;
+            MissionObjective sandhyaObjective = AddObjective(
+                sandhya,
+                "talk-sandhya",
+                "Sandhya se baat karein",
+                "Sandhya",
+                "Papa, Mumma ne ghar ki diary mez par rakhi hai. Aur maine Helpers Hand ke bachchon ke liye apni purani copies bhi nikaal di hain.",
+                1,
+                0,
+                1,
+                false);
+            objectives.Add(sandhyaObjective);
+            labels.Add("Ghar par Sandhya se milen");
+
+            GameObject ledger = new GameObject("Household Ledger");
+            ledger.transform.position = new Vector3(-7.1f, 0.72f, -10.5f);
+            CreatePrimitiveChild("Ledger", PrimitiveType.Cube, ledger.transform, Vector3.zero, new Vector3(0.48f, 0.12f, 0.62f), yellow);
+            MissionObjective ledgerObjective = AddObjective(
+                ledger,
+                "read-ledger",
+                "Ghar ki diary dekhein",
+                "Shanti ka Note",
+                "Aaj ki tuition fees Rs 250. Rs 150 ghar ke liye, Rs 100 NGO photocopies ke liye. Hisaab saaf rahega toh hausla bhi saaf rahega.",
+                0,
+                250,
+                0,
+                false);
+            objectives.Add(ledgerObjective);
+            labels.Add("Shanti ki household diary padhein");
+
+            GameObject samrat = CreatePerson("Constable Samrat", new Vector3(8.2f, 0f, -7f), policeKhaki, darkStone, skin, hair, false);
+            MissionObjective samratObjective = AddObjective(
+                samrat,
+                "talk-samrat",
+                "Constable Samrat se baat karein",
+                "Constable Samrat",
+                "Azad, budhiya amma ki pension file ka verification sahi hai. Main record room se entry nikalwa deta hoon; tum NGO se application aaj hi jama kara do.",
+                3,
+                0,
+                2,
+                false);
+            objectives.Add(samratObjective);
+            labels.Add("Constable Samrat se pension file verify karayein");
+
+            GameObject ngoFolder = new GameObject("Helpers Hand Pension Folder");
+            ngoFolder.transform.position = new Vector3(4.3f, 1.08f, -1f);
+            CreatePrimitiveChild("Application File", PrimitiveType.Cube, ngoFolder.transform, Vector3.zero, new Vector3(0.52f, 0.08f, 0.68f), teal);
+            MissionObjective ngoObjective = AddObjective(
+                ngoFolder,
+                "submit-pension-file",
+                "Pension file jama karein",
+                "Azad",
+                "Verification lag gaya. Ab receipt amma ko deni hai aur saat din baad status check karna hai. Madad tab poori hoti hai jab kaam daftar se bahar aa jaye.",
+                5,
+                -100,
+                3,
+                false);
+            objectives.Add(ngoObjective);
+            labels.Add("Helpers Hand desk par pension application jama karein");
+
+            mission.Configure(
+                "Ravivaar Ki Seva: Ghat Se Ghar Tak",
+                objectives,
+                labels,
+                "CHAPTER COMPLETE",
+                "Safai, ghar aur pension file: Azad ka Sunday poora hua.");
 
             CreateLighting();
             EditorSceneManager.MarkSceneDirty(scene);
@@ -266,6 +334,11 @@ namespace NetaJi.Prototype.Editor
 
             CreateBox("Helpers Hand Table", new Vector3(4.3f, 0.45f, -1f), new Vector3(2.6f, 0.16f, 1.2f), teal, root);
             CreateBox("Donation Box", new Vector3(4.3f, 0.86f, -1f), new Vector3(0.62f, 0.66f, 0.48f), yellow, root);
+
+            CreateBox("Azad Home Facade", new Vector3(-8f, 2f, -12.8f), new Vector3(5.4f, 4f, 3.6f), sand, root);
+            CreateBox("Azad Home Door", new Vector3(-8f, 1.05f, -10.95f), new Vector3(1.15f, 2.1f, 0.12f), darkStone, root);
+            CreateBox("Azad Home Awning", new Vector3(-8f, 2.45f, -10.55f), new Vector3(2.8f, 0.16f, 1.05f), teal, root);
+            CreateBox("Home Ledger Table", new Vector3(-7.1f, 0.48f, -10.5f), new Vector3(1.5f, 0.12f, 0.9f), darkStone, root);
 
             for (int i = 0; i < 4; i++)
             {

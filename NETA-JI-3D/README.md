@@ -10,7 +10,8 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Hinglish NPC interaction and ordered mission objectives
 - Public Trust, Money, and Reputation progression
 - Local JSON save data
-- First mission: `Ravivaar Ki Seva`
+- First chapter: `Ravivaar Ki Seva: Ghat Se Ghar Tak`
+- Story introductions for Shanti, Sandhya, Constable Samrat, and Helpers Hand
 
 The existing browser/PWA game remains separate in the repository root. This Unity project does not depend on its capture-game code.
 
