@@ -35,6 +35,7 @@ namespace NetaJi.Prototype.Editor
             Material trousers = CreateMaterial("AzadTrousers", new Color(0.12f, 0.20f, 0.28f), 0.08f);
             Material skin = CreateMaterial("Skin", new Color(0.52f, 0.31f, 0.21f), 0.02f);
             Material hair = CreateMaterial("Hair", new Color(0.05f, 0.04f, 0.035f), 0.01f);
+            Material white = CreateMaterial("EyeWhite", new Color(0.92f, 0.94f, 0.90f), 0.04f);
             Material shantiDress = CreateMaterial("ShantiDress", new Color(0.76f, 0.20f, 0.27f), 0.08f);
             Material sandhyaDress = CreateMaterial("SandhyaDress", new Color(0.18f, 0.48f, 0.76f), 0.08f);
             Material policeKhaki = CreateMaterial("PoliceKhaki", new Color(0.58f, 0.47f, 0.30f), 0.06f);
@@ -44,11 +45,12 @@ namespace NetaJi.Prototype.Editor
             Material litter = CreateMaterial("Litter", new Color(0.72f, 0.28f, 0.16f), 0.02f);
 
             GameObject environment = new GameObject("Daraganj Ghat Greybox");
-            CreateEnvironment(environment.transform, sand, stone, darkStone, water, teal, yellow, foliage, trunk);
+            CreateEnvironment(environment.transform, sand, stone, darkStone, water, teal, yellow, white, foliage, trunk);
 
             GameObject systems = new GameObject("Prototype Systems");
             systems.AddComponent<GameSession>();
             systems.AddComponent<PrototypeInput>();
+            systems.AddComponent<PrototypeAudio>();
             systems.AddComponent<PrototypeHud>();
             systems.AddComponent<PrototypeAutomation>();
             MissionController mission = systems.AddComponent<MissionController>();
@@ -84,6 +86,7 @@ namespace NetaJi.Prototype.Editor
             List<string> labels = new List<string>();
 
             GameObject shanti = CreatePerson("Shanti", new Vector3(2.8f, 0f, -0.8f), shantiDress, darkStone, skin, hair, false);
+            AddScarf(shanti.transform, shantiDress);
             MissionObjective shantiObjective = AddObjective(
                 shanti,
                 "talk-shanti",
@@ -131,6 +134,7 @@ namespace NetaJi.Prototype.Editor
             labels.Add("Aakhri litter cluster saaf karein");
 
             GameObject coordinator = CreatePerson("Volunteer Coordinator", new Vector3(7f, 0f, 9.2f), volunteerDress, darkStone, skin, hair, false);
+            CreatePrimitiveChild("Helpers Hand Badge", PrimitiveType.Cube, coordinator.transform, new Vector3(0f, 1.25f, 0.48f), new Vector3(0.20f, 0.20f, 0.04f), teal);
             MissionObjective coordinatorObjective = AddObjective(
                 coordinator,
                 "report-complete",
@@ -145,6 +149,7 @@ namespace NetaJi.Prototype.Editor
             labels.Add("Volunteer coordinator ko update dein");
 
             GameObject sandhya = CreatePerson("Sandhya", new Vector3(-8f, 0f, -9.4f), sandhyaDress, darkStone, skin, hair, false);
+            AddPigtails(sandhya.transform, hair);
             sandhya.transform.localScale = Vector3.one * 0.72f;
             MissionObjective sandhyaObjective = AddObjective(
                 sandhya,
@@ -176,6 +181,7 @@ namespace NetaJi.Prototype.Editor
             labels.Add("Shanti ki household diary padhein");
 
             GameObject samrat = CreatePerson("Constable Samrat", new Vector3(8.2f, 0f, -7f), policeKhaki, darkStone, skin, hair, false);
+            AddPoliceDetails(samrat.transform, policeKhaki, darkStone);
             MissionObjective samratObjective = AddObjective(
                 samrat,
                 "talk-samrat",
@@ -190,7 +196,7 @@ namespace NetaJi.Prototype.Editor
             labels.Add("Constable Samrat se pension file verify karayein");
 
             GameObject ngoFolder = new GameObject("Helpers Hand Pension Folder");
-            ngoFolder.transform.position = new Vector3(4.3f, 1.08f, -1f);
+            ngoFolder.transform.position = new Vector3(8.2f, 1.08f, -1f);
             CreatePrimitiveChild("Application File", PrimitiveType.Cube, ngoFolder.transform, Vector3.zero, new Vector3(0.52f, 0.08f, 0.68f), teal);
             MissionObjective ngoObjective = AddObjective(
                 ngoFolder,
@@ -211,6 +217,14 @@ namespace NetaJi.Prototype.Editor
                 labels,
                 "CHAPTER COMPLETE",
                 "Safai, ghar aur pension file: Azad ka Sunday poora hua.");
+            mission.ConfigureMilestones(
+                new List<int> { 5, 7 },
+                new List<string> { "GHAT ROUTE COMPLETE", "COMMUNITY CASE" },
+                new List<string>
+                {
+                    "Safai report ho gayi. Ab ghar par Sandhya intezar kar rahi hai.",
+                    "Pension verification ready hai. Constable Samrat se milna hoga."
+                });
 
             CreateLighting();
             EditorSceneManager.MarkSceneDirty(scene);
@@ -289,6 +303,7 @@ namespace NetaJi.Prototype.Editor
             Material water,
             Material teal,
             Material yellow,
+            Material white,
             Material foliage,
             Material trunk)
         {
@@ -332,13 +347,28 @@ namespace NetaJi.Prototype.Editor
                 CreateTree($"Neem Tree {i + 1}", new Vector3(x, 0f, z), foliage, trunk, root);
             }
 
-            CreateBox("Helpers Hand Table", new Vector3(4.3f, 0.45f, -1f), new Vector3(2.6f, 0.16f, 1.2f), teal, root);
-            CreateBox("Donation Box", new Vector3(4.3f, 0.86f, -1f), new Vector3(0.62f, 0.66f, 0.48f), yellow, root);
+            CreateBox("Helpers Hand Table", new Vector3(8.2f, 0.45f, -1f), new Vector3(2.6f, 0.16f, 1.2f), teal, root);
+            CreateBox("Donation Box", new Vector3(8.2f, 0.86f, -1f), new Vector3(0.62f, 0.66f, 0.48f), yellow, root);
+            CreateBox("Helpers Hand Backboard", new Vector3(8.2f, 1.46f, -1.72f), new Vector3(4.1f, 1.75f, 0.18f), teal, root);
+            CreateWorldLabel("Helpers Hand Sign", "HELPERS HAND", new Vector3(8.2f, 1.72f, -1.60f), Vector3.zero, yellow, root, 0.028f);
+            CreateWorldLabel("Helpers Hand Service", "PENSION  /  EDUCATION  /  SEVA", new Vector3(8.2f, 1.28f, -1.60f), Vector3.zero, white, root, 0.013f);
 
             CreateBox("Azad Home Facade", new Vector3(-8f, 2f, -12.8f), new Vector3(5.4f, 4f, 3.6f), sand, root);
             CreateBox("Azad Home Door", new Vector3(-8f, 1.05f, -10.95f), new Vector3(1.15f, 2.1f, 0.12f), darkStone, root);
             CreateBox("Azad Home Awning", new Vector3(-8f, 2.45f, -10.55f), new Vector3(2.8f, 0.16f, 1.05f), teal, root);
             CreateBox("Home Ledger Table", new Vector3(-7.1f, 0.48f, -10.5f), new Vector3(1.5f, 0.12f, 0.9f), darkStone, root);
+            CreateWorldLabel("Azad Home Nameplate", "AZAD  /  SHANTI", new Vector3(-8f, 2.82f, -10.88f), Vector3.zero, darkStone, root, 0.020f);
+
+            CreateBox("Daraganj Sign Board", new Vector3(-11.7f, 1.78f, 4.5f), new Vector3(6.2f, 2.15f, 0.20f), darkStone, root);
+            CreateWorldLabel("Daraganj Sign", "DARAGANJ GHAT", new Vector3(-11.7f, 2.02f, 4.37f), Vector3.zero, yellow, root, 0.030f);
+            CreateWorldLabel("Daraganj Subsign", "PRAYAGRAJ", new Vector3(-11.7f, 1.47f, 4.37f), Vector3.zero, white, root, 0.018f);
+
+            CreateBench("Public Bench Left", new Vector3(-10.5f, 0f, -1f), 18f, darkStone, yellow, root);
+            CreateBench("Public Bench Right", new Vector3(11f, 0f, 3f), -12f, darkStone, teal, root);
+            CreateStreetLamp("Ghat Lamp A", new Vector3(-14.5f, 0f, -5f), darkStone, yellow, root);
+            CreateStreetLamp("Ghat Lamp B", new Vector3(14.5f, 0f, -3f), darkStone, yellow, root);
+            CreateStreetLamp("Ghat Lamp C", new Vector3(-15f, -0.45f, 14f), darkStone, yellow, root);
+            CreateStreetLamp("Ghat Lamp D", new Vector3(15f, -0.45f, 14f), darkStone, yellow, root);
 
             for (int i = 0; i < 4; i++)
             {
@@ -363,6 +393,8 @@ namespace NetaJi.Prototype.Editor
             CreatePrimitiveChild("Bow", PrimitiveType.Cube, boat.transform, new Vector3(1.85f, 0.1f, 0f), new Vector3(0.9f, 0.3f, 0.85f), hull);
             CreatePrimitiveChild("Bench Front", PrimitiveType.Cube, boat.transform, new Vector3(0.8f, 0.32f, 0f), new Vector3(0.18f, 0.12f, 1.05f), trim);
             CreatePrimitiveChild("Bench Rear", PrimitiveType.Cube, boat.transform, new Vector3(-0.8f, 0.32f, 0f), new Vector3(0.18f, 0.12f, 1.05f), trim);
+            WorldMotion motion = boat.AddComponent<WorldMotion>();
+            motion.Configure(WorldMotionKind.Float, 0.11f, 1.25f, Vector3.up);
         }
 
         private static MissionObjective CreateLitterObjective(
@@ -446,6 +478,22 @@ namespace NetaJi.Prototype.Editor
             CreatePrimitiveChild("Head", PrimitiveType.Sphere, root.transform, new Vector3(0f, 1.78f, 0f), new Vector3(0.42f, 0.48f, 0.42f), skin);
             CreatePrimitiveChild("Hair", PrimitiveType.Sphere, root.transform, new Vector3(0f, 1.96f, -0.015f), new Vector3(0.43f, 0.19f, 0.43f), hair);
             CreatePrimitiveChild("Shoulder Bag", PrimitiveType.Cube, root.transform, new Vector3(0.46f, 0.98f, 0.04f), new Vector3(0.16f, 0.62f, 0.48f), player ? lower : top);
+            CreatePrimitiveChild("Belt", PrimitiveType.Cube, root.transform, new Vector3(0f, 0.78f, 0f), new Vector3(0.68f, 0.10f, 0.54f), lower);
+            CreatePrimitiveChild("Shoe Left", PrimitiveType.Cube, root.transform, new Vector3(-0.18f, 0.08f, 0.10f), new Vector3(0.25f, 0.15f, 0.42f), lower);
+            CreatePrimitiveChild("Shoe Right", PrimitiveType.Cube, root.transform, new Vector3(0.18f, 0.08f, 0.10f), new Vector3(0.25f, 0.15f, 0.42f), lower);
+            CreatePrimitiveChild("Hand Left", PrimitiveType.Sphere, root.transform, new Vector3(-0.43f, 0.72f, 0f), new Vector3(0.18f, 0.20f, 0.18f), skin);
+            CreatePrimitiveChild("Hand Right", PrimitiveType.Sphere, root.transform, new Vector3(0.43f, 0.72f, 0f), new Vector3(0.18f, 0.20f, 0.18f), skin);
+            CreatePrimitiveChild("Eye Left", PrimitiveType.Sphere, root.transform, new Vector3(-0.13f, 1.82f, 0.37f), new Vector3(0.07f, 0.08f, 0.05f), hair);
+            CreatePrimitiveChild("Eye Right", PrimitiveType.Sphere, root.transform, new Vector3(0.13f, 1.82f, 0.37f), new Vector3(0.07f, 0.08f, 0.05f), hair);
+            CreatePrimitiveChild("Nose", PrimitiveType.Sphere, root.transform, new Vector3(0f, 1.69f, 0.40f), new Vector3(0.09f, 0.13f, 0.10f), skin);
+            CreatePrimitiveChild("Mouth", PrimitiveType.Cube, root.transform, new Vector3(0f, 1.57f, 0.40f), new Vector3(0.16f, 0.035f, 0.035f), hair);
+            CreatePrimitiveChild("Collar Left", PrimitiveType.Cube, root.transform, new Vector3(-0.14f, 1.45f, 0.43f), new Vector3(0.22f, 0.20f, 0.05f), top).transform.localRotation = Quaternion.Euler(0f, 0f, -24f);
+            CreatePrimitiveChild("Collar Right", PrimitiveType.Cube, root.transform, new Vector3(0.14f, 1.45f, 0.43f), new Vector3(0.22f, 0.20f, 0.05f), top).transform.localRotation = Quaternion.Euler(0f, 0f, 24f);
+            if (player)
+            {
+                CreatePrimitiveChild("Moustache", PrimitiveType.Cube, root.transform, new Vector3(0f, 1.63f, 0.43f), new Vector3(0.22f, 0.045f, 0.04f), hair);
+                CreatePrimitiveChild("Wrist Watch", PrimitiveType.Cylinder, root.transform, new Vector3(-0.43f, 0.77f, 0f), new Vector3(0.10f, 0.04f, 0.10f), lower).transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            }
             return root;
         }
 
@@ -457,6 +505,65 @@ namespace NetaJi.Prototype.Editor
             CreatePrimitiveChild("Trunk", PrimitiveType.Cylinder, root.transform, new Vector3(0f, 1.45f, 0f), new Vector3(0.34f, 1.45f, 0.34f), trunk, true);
             CreatePrimitiveChild("Canopy A", PrimitiveType.Sphere, root.transform, new Vector3(0f, 3.25f, 0f), new Vector3(2.2f, 1.35f, 2.1f), foliage);
             CreatePrimitiveChild("Canopy B", PrimitiveType.Sphere, root.transform, new Vector3(0.8f, 3.1f, 0.1f), new Vector3(1.35f, 1.05f, 1.35f), foliage);
+            WorldMotion motion = root.AddComponent<WorldMotion>();
+            motion.Configure(WorldMotionKind.Sway, 1.4f, 0.72f, Vector3.forward);
+        }
+
+        private static void AddScarf(Transform person, Material material)
+        {
+            CreatePrimitiveChild("Dupatta Left", PrimitiveType.Cube, person, new Vector3(-0.38f, 1.06f, 0.08f), new Vector3(0.12f, 0.78f, 0.48f), material).transform.localRotation = Quaternion.Euler(0f, 0f, -5f);
+            CreatePrimitiveChild("Dupatta Right", PrimitiveType.Cube, person, new Vector3(0.38f, 1.06f, 0.08f), new Vector3(0.12f, 0.78f, 0.48f), material).transform.localRotation = Quaternion.Euler(0f, 0f, 5f);
+        }
+
+        private static void AddPigtails(Transform person, Material hair)
+        {
+            CreatePrimitiveChild("Pigtail Left", PrimitiveType.Sphere, person, new Vector3(-0.38f, 1.82f, -0.02f), new Vector3(0.25f, 0.38f, 0.25f), hair);
+            CreatePrimitiveChild("Pigtail Right", PrimitiveType.Sphere, person, new Vector3(0.38f, 1.82f, -0.02f), new Vector3(0.25f, 0.38f, 0.25f), hair);
+        }
+
+        private static void AddPoliceDetails(Transform person, Material khaki, Material dark)
+        {
+            CreatePrimitiveChild("Police Cap", PrimitiveType.Cube, person, new Vector3(0f, 2.08f, 0f), new Vector3(0.58f, 0.16f, 0.55f), khaki);
+            CreatePrimitiveChild("Cap Brim", PrimitiveType.Cube, person, new Vector3(0f, 2.02f, 0.30f), new Vector3(0.52f, 0.06f, 0.30f), dark);
+            CreatePrimitiveChild("Name Badge", PrimitiveType.Cube, person, new Vector3(0.22f, 1.25f, 0.48f), new Vector3(0.26f, 0.10f, 0.04f), dark);
+        }
+
+        private static void CreateBench(string name, Vector3 position, float yaw, Material frame, Material seat, Transform parent)
+        {
+            GameObject bench = new GameObject(name);
+            bench.transform.SetParent(parent);
+            bench.transform.position = position;
+            bench.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            CreatePrimitiveChild("Seat", PrimitiveType.Cube, bench.transform, new Vector3(0f, 0.65f, 0f), new Vector3(2.6f, 0.18f, 0.72f), seat);
+            CreatePrimitiveChild("Back", PrimitiveType.Cube, bench.transform, new Vector3(0f, 1.05f, -0.31f), new Vector3(2.6f, 0.62f, 0.14f), seat);
+            CreatePrimitiveChild("Leg Left", PrimitiveType.Cube, bench.transform, new Vector3(-0.95f, 0.32f, 0f), new Vector3(0.16f, 0.64f, 0.56f), frame);
+            CreatePrimitiveChild("Leg Right", PrimitiveType.Cube, bench.transform, new Vector3(0.95f, 0.32f, 0f), new Vector3(0.16f, 0.64f, 0.56f), frame);
+        }
+
+        private static void CreateStreetLamp(string name, Vector3 position, Material pole, Material lamp, Transform parent)
+        {
+            GameObject root = new GameObject(name);
+            root.transform.SetParent(parent);
+            root.transform.position = position;
+            CreatePrimitiveChild("Pole", PrimitiveType.Cylinder, root.transform, new Vector3(0f, 1.9f, 0f), new Vector3(0.11f, 1.9f, 0.11f), pole);
+            CreatePrimitiveChild("Lamp", PrimitiveType.Sphere, root.transform, new Vector3(0f, 3.95f, 0f), new Vector3(0.36f, 0.30f, 0.36f), lamp);
+            CreatePrimitiveChild("Cap", PrimitiveType.Cube, root.transform, new Vector3(0f, 4.23f, 0f), new Vector3(0.52f, 0.10f, 0.52f), pole);
+        }
+
+        private static void CreateWorldLabel(string name, string value, Vector3 position, Vector3 rotation, Material material, Transform parent, float size)
+        {
+            GameObject label = new GameObject(name);
+            label.transform.SetParent(parent);
+            label.transform.position = position;
+            label.transform.rotation = Quaternion.Euler(rotation);
+            TextMesh text = label.AddComponent<TextMesh>();
+            text.text = value;
+            text.anchor = TextAnchor.MiddleCenter;
+            text.alignment = TextAlignment.Center;
+            text.fontSize = 72;
+            text.characterSize = size;
+            text.fontStyle = FontStyle.Bold;
+            text.color = material.color;
         }
 
         private static GameObject CreateBox(string name, Vector3 position, Vector3 scale, Material material, Transform parent)

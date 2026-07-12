@@ -27,6 +27,8 @@ The first playable space is a compact Prayagraj/Daraganj-inspired ghat district.
 
 - Windows executable smoke-tested at 1280x720 and 844x390
 - Mission automation verifies final values: Trust 35, Funds Rs 950, Reputation 16
+- Runtime log verifies procedural audio initialization without errors
+- Mobile screenshots verify route hints, chapter overlays, and readable world signage
 - Android development APK builds successfully for ARMv7 with min SDK 26 and target SDK 36
 - APK package manifest and v2 debug signature verified
 - Physical Android install and touch-feel testing still require a connected phone

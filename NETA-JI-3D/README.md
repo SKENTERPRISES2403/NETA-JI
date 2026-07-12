@@ -12,6 +12,9 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Local JSON save data
 - First chapter: `Ravivaar Ki Seva: Ghat Se Ghar Tak`
 - Story introductions for Shanti, Sandhya, Constable Samrat, and Helpers Hand
+- Objective direction and distance guidance for mobile play
+- Animated boats/trees plus procedural ghat ambience, footsteps, and mission chimes
+- Role-specific character details and labeled Daraganj, home, and NGO landmarks
 
 The existing browser/PWA game remains separate in the repository root. This Unity project does not depend on its capture-game code.
 

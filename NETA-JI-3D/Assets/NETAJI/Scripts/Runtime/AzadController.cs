@@ -18,6 +18,7 @@ namespace NetaJi.Prototype
         private CharacterController characterController;
         private Vector3 planarVelocity;
         private float verticalVelocity;
+        private float nextFootstepAt;
         private IInteractable focusedInteractable;
 
         public void SetCamera(Transform value)
@@ -66,12 +67,25 @@ namespace NetaJi.Prototype
             }
 
             characterController.Move((planarVelocity + Vector3.up * verticalVelocity) * Time.deltaTime);
+            UpdateFootsteps();
             RefreshFocusedInteractable();
 
             if (PrototypeInput.Instance.ConsumeInteract() && focusedInteractable != null && focusedInteractable.CanInteract)
             {
                 focusedInteractable.Interact(this);
             }
+        }
+
+        private void UpdateFootsteps()
+        {
+            if (!characterController.isGrounded || planarVelocity.sqrMagnitude < 0.4f || Time.time < nextFootstepAt)
+            {
+                return;
+            }
+
+            bool running = PrototypeInput.Instance != null && PrototypeInput.Instance.RunHeld;
+            PrototypeAudio.Instance?.PlayFootstep(running);
+            nextFootstepAt = Time.time + (running ? 0.28f : 0.43f);
         }
 
         private void RefreshFocusedInteractable()
@@ -101,4 +115,3 @@ namespace NetaJi.Prototype
         }
     }
 }
-

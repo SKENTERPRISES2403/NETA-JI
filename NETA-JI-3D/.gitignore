@@ -9,6 +9,7 @@
 [Rr]ecordings/
 .utmp/
 *.log
+Screenshots/pitch-pass-mobile/
 
 *.csproj
 *.sln

@@ -18,6 +18,8 @@ namespace NetaJi.Prototype
         private GUIStyle smallStyle;
         private GUIStyle statStyle;
         private Texture2D whiteTexture;
+        private AzadController routePlayer;
+        private Camera routeCamera;
 
         private void Awake()
         {
@@ -53,12 +55,17 @@ namespace NetaJi.Prototype
         private void OnGUI()
         {
             EnsureStyles();
-            DrawPanel(new Rect(18f, 16f, Mathf.Min(440f, Screen.width * 0.52f), 104f), new Color(0.015f, 0.08f, 0.10f, 0.88f));
+            DrawPanel(new Rect(18f, 16f, Mathf.Min(440f, Screen.width * 0.52f), 124f), new Color(0.015f, 0.08f, 0.10f, 0.88f));
             GUI.Label(new Rect(34f, 26f, 380f, 30f), "NETA JI  /  PRAYAGRAJ", titleStyle);
             string mission = MissionController.Instance != null ? MissionController.Instance.MissionTitle : "Prototype 1";
             string objective = MissionController.Instance != null ? MissionController.Instance.CurrentObjective : "Loading seva route...";
             GUI.Label(new Rect(34f, 58f, Mathf.Min(400f, Screen.width * 0.47f), 22f), mission, smallStyle);
             GUI.Label(new Rect(34f, 80f, Mathf.Min(400f, Screen.width * 0.47f), 30f), objective, bodyStyle);
+            string routeHint = GetRouteHint();
+            if (!string.IsNullOrEmpty(routeHint))
+            {
+                GUI.Label(new Rect(34f, 105f, Mathf.Min(400f, Screen.width * 0.47f), 22f), routeHint, smallStyle);
+            }
 
             PlayerProgress progress = GameSession.Instance?.Progress;
             if (progress != null)
@@ -99,6 +106,45 @@ namespace NetaJi.Prototype
                 GUI.Label(new Rect(bannerRect.x + 12f, bannerRect.y + 16f, bannerRect.width - 24f, 34f), bannerTitle, darkTitle);
                 GUI.Label(new Rect(bannerRect.x + 12f, bannerRect.y + 53f, bannerRect.width - 24f, 36f), bannerSubtitle, darkBody);
             }
+        }
+
+        private string GetRouteHint()
+        {
+            MissionObjective objective = MissionController.Instance?.CurrentObjectiveItem;
+            if (routePlayer == null)
+            {
+                routePlayer = FindFirstObjectByType<AzadController>();
+            }
+            if (routeCamera == null)
+            {
+                routeCamera = Camera.main;
+            }
+            if (objective == null || routePlayer == null || routeCamera == null)
+            {
+                return string.Empty;
+            }
+
+            Vector3 localTarget = routeCamera.transform.InverseTransformPoint(objective.transform.position);
+            string direction;
+            if (localTarget.z < -1.5f)
+            {
+                direction = "BEHIND";
+            }
+            else if (localTarget.x < -1.5f)
+            {
+                direction = "LEFT";
+            }
+            else if (localTarget.x > 1.5f)
+            {
+                direction = "RIGHT";
+            }
+            else
+            {
+                direction = "AHEAD";
+            }
+
+            float distance = Vector3.Distance(routePlayer.transform.position, objective.transform.position);
+            return $"ROUTE  {direction}  /  {distance:0} m";
         }
 
         private void EnsureStyles()

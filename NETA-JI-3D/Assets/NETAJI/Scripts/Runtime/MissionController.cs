@@ -12,6 +12,9 @@ namespace NetaJi.Prototype
         [SerializeField] private string completionMessage = "Ghat saaf hua. Public Trust badha.";
         [SerializeField] private List<MissionObjective> objectives = new List<MissionObjective>();
         [SerializeField] private List<string> objectiveLabels = new List<string>();
+        [SerializeField] private List<int> milestoneSteps = new List<int>();
+        [SerializeField] private List<string> milestoneTitles = new List<string>();
+        [SerializeField] private List<string> milestoneMessages = new List<string>();
         private int currentIndex;
 
         public string MissionTitle => missionTitle;
@@ -33,6 +36,13 @@ namespace NetaJi.Prototype
             completionMessage = completedMessage;
         }
 
+        public void ConfigureMilestones(List<int> steps, List<string> titles, List<string> messages)
+        {
+            milestoneSteps = steps;
+            milestoneTitles = titles;
+            milestoneMessages = messages;
+        }
+
         private void Awake()
         {
             Instance = this;
@@ -47,6 +57,10 @@ namespace NetaJi.Prototype
             }
 
             PrototypeHud.Instance?.RefreshMission();
+            if (currentIndex == 0)
+            {
+                PrototypeHud.Instance?.ShowBanner("AZAD / 31 / SOCIAL WORKER", "Daraganj ka beta. Helpers Hand ka field volunteer.");
+            }
         }
 
         public bool IsCurrent(MissionObjective objective)
@@ -67,7 +81,23 @@ namespace NetaJi.Prototype
 
             if (IsComplete)
             {
+                PrototypeAudio.Instance?.PlayCompletion();
                 PrototypeHud.Instance?.ShowBanner(completionTitle, completionMessage);
+                return;
+            }
+
+            for (int i = 0; i < milestoneSteps.Count; i++)
+            {
+                if (milestoneSteps[i] != currentIndex)
+                {
+                    continue;
+                }
+
+                string title = i < milestoneTitles.Count ? milestoneTitles[i] : "MISSION UPDATE";
+                string message = i < milestoneMessages.Count ? milestoneMessages[i] : CurrentObjective;
+                PrototypeAudio.Instance?.PlayMilestone();
+                PrototypeHud.Instance?.ShowBanner(title, message);
+                break;
             }
         }
 

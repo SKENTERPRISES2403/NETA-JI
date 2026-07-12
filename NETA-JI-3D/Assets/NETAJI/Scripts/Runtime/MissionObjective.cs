@@ -47,6 +47,7 @@ namespace NetaJi.Prototype
             }
 
             completed = true;
+            PrototypeAudio.Instance?.PlayInteraction();
             PrototypeHud.Instance?.ShowDialogue(speaker, dialogue);
             GameSession.Instance?.ApplyReward(trustReward, moneyReward, reputationReward);
             MissionController.Instance.Complete(this);
