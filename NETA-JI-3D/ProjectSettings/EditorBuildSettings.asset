@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/NETAJI/Scenes/MainMenu.unity
+    guid: b9609bbe509f0ec4f8f83b07d397084a
+  - enabled: 1
     path: Assets/NETAJI/Scenes/Prototype01.unity
     guid: 37c94cba0ce145744af3394fb33ae61f
   m_configObjects: {}

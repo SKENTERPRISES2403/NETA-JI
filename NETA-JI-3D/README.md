@@ -15,6 +15,7 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Objective direction and distance guidance for mobile play
 - Animated boats/trees plus procedural ghat ambience, footsteps, and mission chimes
 - Role-specific character details and labeled Daraganj, home, and NGO landmarks
+- Full-screen 3D title scene with Continue, New Game, and Azad story modal
 
 The existing browser/PWA game remains separate in the repository root. This Unity project does not depend on its capture-game code.
 
@@ -32,7 +33,7 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Store/release builds will switch to IL2CPP ARM64 after the prototype is approved
 
 The Android artifact is a debug-signed development build. Its package id is
-`com.skenterprises.netaji.prototype`.
+`com.skenterprises.netaji.prototype`, version `0.2.0` (`versionCode 2`).
 
 ## Generate The Scene
 

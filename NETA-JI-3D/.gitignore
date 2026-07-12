@@ -10,6 +10,8 @@
 .utmp/
 *.log
 Screenshots/pitch-pass-mobile/
+Screenshots/menu-mobile/
+Screenshots/menu-bypass-gameplay/
 
 *.csproj
 *.sln

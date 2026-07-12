@@ -14,7 +14,9 @@ namespace NetaJi.Prototype.Editor
     public static class PrototypeSceneBuilder
     {
         private const string ScenePath = "Assets/NETAJI/Scenes/Prototype01.unity";
+        private const string MenuScenePath = "Assets/NETAJI/Scenes/MainMenu.unity";
         private const string MaterialPath = "Assets/NETAJI/Materials";
+        private static readonly string[] BuildScenes = { MenuScenePath, ScenePath };
 
         [MenuItem("NETA JI/Build Prototype Scene")]
         public static void Build()
@@ -229,11 +231,107 @@ namespace NetaJi.Prototype.Editor
             CreateLighting();
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, ScenePath);
-            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
+            BuildMainMenuScene(
+                sand,
+                stone,
+                darkStone,
+                water,
+                teal,
+                yellow,
+                shirt,
+                trousers,
+                skin,
+                hair,
+                shantiDress,
+                sandhyaDress,
+                foliage,
+                trunk);
+            EditorBuildSettings.scenes = new[]
+            {
+                new EditorBuildSettingsScene(MenuScenePath, true),
+                new EditorBuildSettingsScene(ScenePath, true)
+            };
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Selection.activeGameObject = azad;
-            Debug.Log($"NETA JI Prototype 1 scene generated at {ScenePath}");
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            Selection.activeGameObject = GameObject.Find("Azad");
+            Debug.Log($"NETA JI menu and Prototype 1 scenes generated at {MenuScenePath} and {ScenePath}");
+        }
+
+        private static void BuildMainMenuScene(
+            Material sand,
+            Material stone,
+            Material darkStone,
+            Material water,
+            Material teal,
+            Material yellow,
+            Material shirt,
+            Material trousers,
+            Material skin,
+            Material hair,
+            Material shantiDress,
+            Material sandhyaDress,
+            Material foliage,
+            Material trunk)
+        {
+            Scene menuScene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            GameObject world = new GameObject("Prayagraj Menu Backdrop");
+
+            CreateBox("Menu Plaza", new Vector3(0f, -0.3f, 3f), new Vector3(46f, 0.6f, 28f), sand, world.transform);
+            for (int i = 0; i < 6; i++)
+            {
+                CreateBox(
+                    $"Menu Ghat Step {i + 1}",
+                    new Vector3(0f, -0.4f - i * 0.30f, 13f + i * 2.5f),
+                    new Vector3(40f, 0.45f, 2.7f),
+                    stone,
+                    world.transform);
+            }
+
+            CreateBox("Menu River", new Vector3(0f, -2.2f, 31f), new Vector3(90f, 0.22f, 22f), water, world.transform);
+            CreateBoat("Menu Boat", new Vector3(10f, -1.86f, 29f), -14f, darkStone, yellow, world.transform);
+
+            for (int i = 0; i < 8; i++)
+            {
+                float x = -18f + i * 5.2f;
+                float height = 4f + (i % 4) * 0.9f;
+                CreateBox($"Menu Skyline {i + 1}", new Vector3(x, height * 0.5f - 0.1f, 41f), new Vector3(4.5f, height, 7f), i % 2 == 0 ? teal : yellow, world.transform);
+            }
+
+            CreateTree("Menu Neem Left", new Vector3(-10f, 0f, 4f), foliage, trunk, world.transform);
+            CreateTree("Menu Neem Right", new Vector3(14f, 0f, 6f), foliage, trunk, world.transform);
+            CreateStreetLamp("Menu Lamp Left", new Vector3(-4f, 0f, 5f), darkStone, yellow, world.transform);
+            CreateStreetLamp("Menu Lamp Right", new Vector3(11f, 0f, 6f), darkStone, yellow, world.transform);
+            CreateBench("Menu Bench", new Vector3(12f, 0f, 1f), -18f, darkStone, teal, world.transform);
+
+            GameObject azad = CreatePerson("Menu Azad", new Vector3(4.8f, 0f, 3f), shirt, trousers, skin, hair, true);
+            azad.transform.rotation = Quaternion.Euler(0f, -18f, 0f);
+            GameObject shanti = CreatePerson("Menu Shanti", new Vector3(7.2f, 0f, 4.2f), shantiDress, darkStone, skin, hair, false);
+            AddScarf(shanti.transform, shantiDress);
+            GameObject sandhya = CreatePerson("Menu Sandhya", new Vector3(6.2f, 0f, 2.6f), sandhyaDress, darkStone, skin, hair, false);
+            AddPigtails(sandhya.transform, hair);
+            sandhya.transform.localScale = Vector3.one * 0.72f;
+
+            GameObject cameraObject = new GameObject("Main Camera");
+            cameraObject.tag = "MainCamera";
+            Camera camera = cameraObject.AddComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.Skybox;
+            camera.fieldOfView = 58f;
+            camera.nearClipPlane = 0.12f;
+            camera.farClipPlane = 180f;
+            camera.allowHDR = false;
+            camera.allowMSAA = false;
+            cameraObject.AddComponent<AudioListener>();
+            cameraObject.transform.position = new Vector3(0f, 3.1f, -9.5f);
+            cameraObject.transform.LookAt(new Vector3(5.5f, 1.2f, 4f));
+
+            GameObject systems = new GameObject("Main Menu Systems");
+            systems.AddComponent<PrototypeAudio>();
+            systems.AddComponent<MainMenuController>();
+            CreateLighting();
+
+            EditorSceneManager.MarkSceneDirty(menuScene);
+            EditorSceneManager.SaveScene(menuScene, MenuScenePath);
         }
 
         public static void BuildFromCommandLine()
@@ -256,7 +354,7 @@ namespace NetaJi.Prototype.Editor
             Directory.CreateDirectory("Builds/Windows");
             BuildPlayerOptions options = new BuildPlayerOptions
             {
-                scenes = new[] { ScenePath },
+                scenes = BuildScenes,
                 locationPathName = "Builds/Windows/NETA-JI-Prototype.exe",
                 target = BuildTarget.StandaloneWindows64,
                 options = BuildOptions.Development
@@ -271,7 +369,7 @@ namespace NetaJi.Prototype.Editor
             Directory.CreateDirectory("Builds/Android");
             BuildPlayerOptions options = new BuildPlayerOptions
             {
-                scenes = new[] { ScenePath },
+                scenes = BuildScenes,
                 locationPathName = "Builds/Android/NETA-JI-Prototype.apk",
                 target = BuildTarget.Android,
                 options = BuildOptions.Development
@@ -283,11 +381,12 @@ namespace NetaJi.Prototype.Editor
         {
             PlayerSettings.companyName = "SK Enterprises";
             PlayerSettings.productName = "NETA JI";
-            PlayerSettings.bundleVersion = "0.1.0";
+            PlayerSettings.bundleVersion = "0.2.0";
             PlayerSettings.colorSpace = ColorSpace.Gamma;
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.skenterprises.netaji.prototype");
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
+            PlayerSettings.Android.bundleVersionCode = 2;
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.Mono2x);
             QualitySettings.vSyncCount = 0;

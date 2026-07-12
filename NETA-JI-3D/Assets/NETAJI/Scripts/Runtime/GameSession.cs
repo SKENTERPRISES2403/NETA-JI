@@ -15,13 +15,31 @@ namespace NetaJi.Prototype
 
     public sealed class GameSession : MonoBehaviour
     {
+        private const string SaveFileName = "neta-ji-prototype-save.json";
         public static GameSession Instance { get; private set; }
         public event Action ProgressChanged;
 
         [SerializeField] private PlayerProgress progress = new PlayerProgress();
-        private string SavePath => Path.Combine(Application.persistentDataPath, "neta-ji-prototype-save.json");
+        private string SavePath => GetSavePath();
 
         public PlayerProgress Progress => progress;
+        public static bool HasSave => File.Exists(GetSavePath());
+
+        public static void DeleteSave()
+        {
+            try
+            {
+                string path = GetSavePath();
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"Save reset failed: {exception.Message}");
+            }
+        }
 
         private void Awake()
         {
@@ -86,6 +104,10 @@ namespace NetaJi.Prototype
 
             ProgressChanged?.Invoke();
         }
+
+        private static string GetSavePath()
+        {
+            return Path.Combine(Application.persistentDataPath, SaveFileName);
+        }
     }
 }
-
