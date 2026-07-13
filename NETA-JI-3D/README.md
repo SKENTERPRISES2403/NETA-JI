@@ -46,6 +46,10 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Tenth playable chapter: `Janata Ka Mandate`, covering the full lawful assembly campaign
 - Save v10 migration and independently verified issue-yatra/media-convoy outcomes
 - Candidate-era Azad outfit with white kurta-pajama, teal-yellow stole, and chappals
+- Persistent MLA `LEGISLATIVE`, constituency `SERVICE`, `ETHICS`, public allocation, and review state
+- Computed MLA performance with election, ethics, fund-balance, governance, reputation, and pressure gates
+- Eleventh playable chapter: `Janata Ka MLA`, covering constituency and legislative duty
+- Save v11 migration and independently verified open-scorecard/closed-list outcomes
 
 The existing browser/PWA game remains separate in the repository root. This Unity project does not depend on its capture-game code.
 
@@ -63,7 +67,7 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Store/release builds will switch to IL2CPP ARM64 after the prototype is approved
 
 The Android artifact is a debug-signed development build. Its package id is
-`com.skenterprises.netaji.prototype`, version `0.11.0` (`versionCode 11`).
+`com.skenterprises.netaji.prototype`, version `0.12.0` (`versionCode 12`).
 
 ## Generate The Scene
 
