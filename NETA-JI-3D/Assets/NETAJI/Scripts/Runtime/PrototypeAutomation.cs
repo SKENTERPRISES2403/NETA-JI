@@ -23,7 +23,8 @@ namespace NetaJi.Prototype
         {
             string[] arguments = System.Environment.GetCommandLineArgs();
             string smokeArgument = chapterNumber == 1 ? "-prototypeSmoke" : $"-chapter{chapterNumber}Smoke";
-            if (System.Array.IndexOf(arguments, smokeArgument) >= 0)
+            if (System.Array.IndexOf(arguments, smokeArgument) >= 0
+                || (chapterNumber == 4 && System.Array.IndexOf(arguments, "-riskyDecisionSmoke") >= 0))
             {
                 StartCoroutine(RunSmoke(arguments));
             }
@@ -33,6 +34,8 @@ namespace NetaJi.Prototype
         {
             string outputDirectory = ReadArgument(arguments, "-screenshotPath") ?? Application.persistentDataPath;
             Directory.CreateDirectory(outputDirectory);
+            bool riskyDecision = chapterNumber == 4
+                && System.Array.IndexOf(arguments, "-riskyDecisionSmoke") >= 0;
 
             yield return new WaitForSeconds(1.2f);
             MissionController mission = MissionController.Instance;
@@ -55,7 +58,7 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(1);
                 mission.ResetMission(false);
             }
-            else
+            else if (chapterNumber == 3)
             {
                 GameSession.Instance.ResetProgress();
                 GameSession.Instance.ApplyReward(46, 200, 26);
@@ -63,8 +66,19 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(2);
                 mission.ResetMission(false);
             }
+            else
+            {
+                GameSession.Instance.ResetProgress();
+                GameSession.Instance.ApplyReward(55, 50, 36);
+                GameSession.Instance.CompleteChapter(1);
+                GameSession.Instance.CompleteChapter(2);
+                GameSession.Instance.CompleteChapter(3);
+                mission.ResetMission(false);
+            }
 
-            string filePrefix = chapterNumber == 1 ? "prototype" : $"chapter-{chapterNumber}";
+            string filePrefix = chapterNumber == 1
+                ? "prototype"
+                : riskyDecision ? "chapter-4-risky" : $"chapter-{chapterNumber}";
             string startPath = Path.Combine(outputDirectory, filePrefix + "-start.png");
             ScreenCapture.CaptureScreenshot(startPath);
             yield return new WaitForSeconds(0.8f);
@@ -80,10 +94,17 @@ namespace NetaJi.Prototype
 
                 player.transform.position = objective.transform.position + new Vector3(0f, 0.1f, -1.1f);
                 objective.Interact(player);
+                if (objective.RequiresDecision)
+                {
+                    yield return new WaitForSeconds(0.25f);
+                    ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, filePrefix + "-decision.png"));
+                    yield return new WaitForSeconds(0.55f);
+                    objective.ResolveDecisionForAutomation(riskyDecision ? 2 : 1);
+                }
                 yield return new WaitForSeconds(0.45f);
             }
 
-            if (chapterNumber == 3)
+            if (chapterNumber >= 3)
             {
                 player.transform.position = new Vector3(0f, 0.1f, -4f);
                 player.transform.rotation = Quaternion.identity;
@@ -101,11 +122,19 @@ namespace NetaJi.Prototype
             yield return new WaitForSeconds(0.6f);
 
             PlayerProgress progress = GameSession.Instance.Progress;
+            int requiredTrust = riskyDecision ? 76 : expectedTrust;
+            int requiredMoney = riskyDecision ? 750 : expectedMoney;
+            int requiredReputation = riskyDecision ? 50 : expectedReputation;
+            int requiredDecision = riskyDecision ? 2 : 1;
             bool passed = mission.IsComplete
-                && progress.publicTrust == expectedTrust
-                && progress.money == expectedMoney
-                && progress.reputation == expectedReputation;
-            string marker = chapterNumber == 1 ? "PROTOTYPE" : $"CHAPTER_{chapterNumber}";
+                && progress.publicTrust == requiredTrust
+                && progress.money == requiredMoney
+                && progress.reputation == requiredReputation
+                && (chapterNumber != 4 || progress.rescueApproach == requiredDecision)
+                && (PrototypeHud.Instance == null || !PrototypeHud.Instance.IsDecisionOpen);
+            string marker = chapterNumber == 1
+                ? "PROTOTYPE"
+                : riskyDecision ? "CHAPTER_4_RISKY" : $"CHAPTER_{chapterNumber}";
             Debug.Log(passed
                 ? $"{marker}_SMOKE_PASSED: trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}"
                 : $"{marker}_SMOKE_FAILED: complete={mission.IsComplete}, trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}");

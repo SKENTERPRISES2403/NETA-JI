@@ -20,6 +20,9 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Second playable chapter: `Shaam Ki Paathshala`, with nine community-education objectives
 - Third playable chapter: `Sandhya Kahan Hai?`, with evidence-led community search objectives
 - Save v3 migration, three-chapter unlock flow, and deterministic chapter smoke tests
+- Reusable two-option decision UI with persisted story consequences
+- Fourth playable chapter: `Operation Umeed`, a non-graphic police-led rescue
+- Save v4 migration and independent safe/risky branch verification
 
 The existing browser/PWA game remains separate in the repository root. This Unity project does not depend on its capture-game code.
 
@@ -37,7 +40,7 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Store/release builds will switch to IL2CPP ARM64 after the prototype is approved
 
 The Android artifact is a debug-signed development build. Its package id is
-`com.skenterprises.netaji.prototype`, version `0.4.0` (`versionCode 4`).
+`com.skenterprises.netaji.prototype`, version `0.5.0` (`versionCode 5`).
 
 ## Generate The Scene
 

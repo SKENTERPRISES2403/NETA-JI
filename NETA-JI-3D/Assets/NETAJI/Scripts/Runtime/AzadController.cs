@@ -37,6 +37,12 @@ namespace NetaJi.Prototype
             {
                 return;
             }
+            if (PrototypeHud.Instance != null && PrototypeHud.Instance.IsDecisionOpen)
+            {
+                planarVelocity = Vector3.zero;
+                PrototypeHud.Instance.SetInteractionPrompt(string.Empty);
+                return;
+            }
 
             Vector2 input = PrototypeInput.Instance.Move;
             Vector3 forward = cameraTransform.forward;

@@ -264,7 +264,7 @@ namespace NetaJi.Prototype.Editor
                     "Footage ne old godown route confirm kiya. Helpers Hand aur Samrat ko evidence dena hoga.",
                     "Verified search route ready hai. Ghar ka phone baj raha hai."
                 });
-            mission.ConfigureChapter(3, string.Empty);
+            mission.ConfigureChapter(3, "Chapter04");
             mission.ConfigureIntro(
                 "CHAPTER 3 / GHAR KA SANNATA",
                 "Sandhya ghar nahi lauti. Har clue verify karo, har minute sambhal kar chalo.");

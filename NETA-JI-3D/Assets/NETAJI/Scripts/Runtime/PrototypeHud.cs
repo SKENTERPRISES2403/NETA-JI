@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -16,6 +17,11 @@ namespace NetaJi.Prototype
         private float bannerUntil;
         private bool showChapterActions;
         private string nextChapterScene = string.Empty;
+        private string decisionTitle = string.Empty;
+        private string decisionMessage = string.Empty;
+        private string decisionLeft = string.Empty;
+        private string decisionRight = string.Empty;
+        private Action<int> decisionCallback;
         private GUIStyle titleStyle;
         private GUIStyle bodyStyle;
         private GUIStyle smallStyle;
@@ -23,6 +29,7 @@ namespace NetaJi.Prototype
         private Texture2D whiteTexture;
         private AzadController routePlayer;
         private Camera routeCamera;
+        public bool IsDecisionOpen => decisionCallback != null;
 
         private void Awake()
         {
@@ -65,6 +72,24 @@ namespace NetaJi.Prototype
         {
             showChapterActions = false;
             nextChapterScene = string.Empty;
+        }
+
+        public void ShowDecision(string title, string message, string leftOption, string rightOption, Action<int> callback)
+        {
+            decisionTitle = title;
+            decisionMessage = message;
+            decisionLeft = leftOption;
+            decisionRight = rightOption;
+            decisionCallback = callback;
+            interactionPrompt = string.Empty;
+        }
+
+        public void SelectDecisionForAutomation(int option)
+        {
+            if (IsDecisionOpen)
+            {
+                ResolveDecision(Mathf.Clamp(option, 1, 2));
+            }
         }
 
         private void OnGUI()
@@ -126,6 +151,45 @@ namespace NetaJi.Prototype
             {
                 DrawChapterActions();
             }
+
+            if (IsDecisionOpen)
+            {
+                DrawDecision();
+            }
+        }
+
+        private void DrawDecision()
+        {
+            float width = Mathf.Min(680f, Screen.width - 36f);
+            float height = Mathf.Min(230f, Screen.height - 42f);
+            Rect panel = new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
+            DrawPanel(panel, new Color(0.01f, 0.045f, 0.06f, 0.985f));
+            GUI.Label(new Rect(panel.x + 22f, panel.y + 16f, panel.width - 44f, 30f), decisionTitle, titleStyle);
+            GUI.Label(new Rect(panel.x + 22f, panel.y + 50f, panel.width - 44f, 68f), decisionMessage, bodyStyle);
+
+            float buttonWidth = (panel.width - 60f) * 0.5f;
+            Rect leftRect = new Rect(panel.x + 22f, panel.y + panel.height - 76f, buttonWidth, 54f);
+            Rect rightRect = new Rect(leftRect.xMax + 16f, leftRect.y, buttonWidth, 54f);
+            DrawPanel(leftRect, new Color(0.93f, 0.61f, 0.10f, 0.98f));
+            GUIStyle safeStyle = new GUIStyle(statStyle);
+            safeStyle.normal.textColor = new Color(0.02f, 0.10f, 0.11f);
+            if (GUI.Button(leftRect, decisionLeft, safeStyle))
+            {
+                ResolveDecision(1);
+            }
+
+            DrawPanel(rightRect, new Color(0.33f, 0.15f, 0.16f, 0.98f));
+            if (GUI.Button(rightRect, decisionRight, statStyle))
+            {
+                ResolveDecision(2);
+            }
+        }
+
+        private void ResolveDecision(int option)
+        {
+            Action<int> callback = decisionCallback;
+            decisionCallback = null;
+            callback?.Invoke(option);
         }
 
         private void DrawChapterActions()
