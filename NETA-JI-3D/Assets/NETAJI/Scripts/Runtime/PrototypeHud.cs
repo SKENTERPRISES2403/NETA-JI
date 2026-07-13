@@ -95,7 +95,7 @@ namespace NetaJi.Prototype
         private void OnGUI()
         {
             EnsureStyles();
-            DrawPanel(new Rect(18f, 16f, Mathf.Min(440f, Screen.width * 0.52f), 124f), new Color(0.015f, 0.08f, 0.10f, 0.88f));
+            DrawPanel(new Rect(18f, 16f, Mathf.Min(440f, Screen.width * 0.52f), 124f), new Color(0.015f, 0.08f, 0.10f, 0.97f));
             GUI.Label(new Rect(34f, 26f, 380f, 30f), "NETA JI  /  PRAYAGRAJ", titleStyle);
             string mission = MissionController.Instance != null ? MissionController.Instance.MissionTitle : "Prototype 1";
             string objective = MissionController.Instance != null ? MissionController.Instance.CurrentObjective : "Loading seva route...";
@@ -113,9 +113,11 @@ namespace NetaJi.Prototype
                 float width = Mathf.Min(420f, Screen.width * 0.42f);
                 bool showPolitics = progress.politicalPower > 0 || progress.volunteers > 0 || progress.oppositionPressure > 0;
                 bool showCampaign = progress.wardSupport > 0 || progress.boothReadiness > 0 || progress.wardVoteShare > 0;
-                float statsHeight = showCampaign ? 102f : showPolitics ? 76f : 52f;
+                bool showGovernance = progress.serviceDelivery > 0 || progress.fiscalIntegrity > 0
+                    || progress.wardBudgetLakhs != 0 || progress.governanceScore > 0;
+                float statsHeight = showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
                 Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, statsHeight);
-                DrawPanel(statsRect, new Color(0.015f, 0.08f, 0.10f, 0.84f));
+                DrawPanel(statsRect, new Color(0.015f, 0.08f, 0.10f, 0.96f));
                 GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 8f, statsRect.width - 20f, 26f),
                     $"TRUST {progress.publicTrust}%  Rs {progress.money}  REP {progress.reputation}  PROOF {progress.caseProof}", statStyle);
                 if (showPolitics)
@@ -128,6 +130,14 @@ namespace NetaJi.Prototype
                     string vote = progress.wardVoteShare > 0 ? progress.wardVoteShare + "%" : "--";
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"WARD {progress.wardSupport}  BOOTH {progress.boothReadiness}  VOTE {vote}", statStyle);
+                }
+                if (showGovernance)
+                {
+                    string review = progress.governanceScore > 0 ? progress.governanceScore.ToString() : "--";
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 94f, statsRect.width - 20f, 26f),
+                        $"DELIVERY {progress.serviceDelivery}  INTEGRITY {progress.fiscalIntegrity}", statStyle);
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 122f, statsRect.width - 20f, 26f),
+                        $"BUDGET Rs {progress.wardBudgetLakhs}L  REVIEW {review}/100", statStyle);
                 }
             }
 
@@ -148,7 +158,7 @@ namespace NetaJi.Prototype
                 GUI.Label(new Rect(dialogueRect.x + 18f, dialogueRect.y + 40f, dialogueRect.width - 36f, 50f), dialogueText, bodyStyle);
             }
 
-            if (Time.unscaledTime < bannerUntil)
+            if (Time.unscaledTime < bannerUntil && !IsDecisionOpen)
             {
                 float width = Mathf.Min(560f, Screen.width - 44f);
                 Rect bannerRect = new Rect((Screen.width - width) * 0.5f, Screen.height * 0.18f, width, 104f);

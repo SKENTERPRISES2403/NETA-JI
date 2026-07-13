@@ -7,7 +7,7 @@ namespace NetaJi.Prototype
     [Serializable]
     public sealed class PlayerProgress
     {
-        public int saveVersion = 7;
+        public int saveVersion = 8;
         public int publicTrust = 12;
         public int money = 850;
         public int reputation = 4;
@@ -19,6 +19,11 @@ namespace NetaJi.Prototype
         public int boothReadiness;
         public int wardVoteShare;
         public bool wardElectionWon;
+        public int serviceDelivery;
+        public int fiscalIntegrity;
+        public int wardBudgetLakhs;
+        public int governanceScore;
+        public bool hundredDayReviewPassed;
         public int missionStep;
         public int chapterOneStep;
         public int chapterTwoStep;
@@ -27,6 +32,7 @@ namespace NetaJi.Prototype
         public int chapterFiveStep;
         public int chapterSixStep;
         public int chapterSevenStep;
+        public int chapterEightStep;
         public bool chapterOneComplete;
         public bool chapterTwoComplete;
         public bool chapterThreeComplete;
@@ -34,10 +40,12 @@ namespace NetaJi.Prototype
         public bool chapterFiveComplete;
         public bool chapterSixComplete;
         public bool chapterSevenComplete;
+        public bool chapterEightComplete;
         public int rescueApproach;
         public int hospitalApproach;
         public int oppositionResponse;
         public int campaignStrategy;
+        public int governanceApproach;
         public int highestUnlockedChapter = 1;
         public int lastPlayedChapter = 1;
     }
@@ -54,7 +62,7 @@ namespace NetaJi.Prototype
         public PlayerProgress Progress => progress;
         public static bool HasSave => File.Exists(GetSavePath());
         public static int HighestUnlockedChapter => GetSavedChapterState().highestUnlockedChapter;
-        public static int LastPlayedChapter => Mathf.Clamp(GetSavedChapterState().lastPlayedChapter, 1, 7);
+        public static int LastPlayedChapter => Mathf.Clamp(GetSavedChapterState().lastPlayedChapter, 1, 8);
 
         public static void DeleteSave()
         {
@@ -123,6 +131,38 @@ namespace NetaJi.Prototype
             return progress.wardElectionWon;
         }
 
+        public void ApplyGovernanceReward(int delivery, int integrity, int budgetLakhs)
+        {
+            progress.serviceDelivery = Mathf.Clamp(progress.serviceDelivery + delivery, 0, 100);
+            progress.fiscalIntegrity = Mathf.Clamp(progress.fiscalIntegrity + integrity, 0, 100);
+            progress.wardBudgetLakhs = Mathf.Clamp(progress.wardBudgetLakhs + budgetLakhs, -99, 999);
+            Save();
+        }
+
+        public bool ResolveHundredDayReview()
+        {
+            float score = 20f
+                + progress.serviceDelivery * 0.45f
+                + progress.fiscalIntegrity * 0.35f
+                + progress.reputation * 0.05f
+                + progress.caseProof * 0.04f
+                - progress.oppositionPressure * 0.08f;
+            int roundedScore = Mathf.Clamp(Mathf.RoundToInt(score), 0, 100);
+            if (progress.fiscalIntegrity < 60)
+            {
+                roundedScore = Mathf.Min(roundedScore, 64);
+            }
+            if (progress.wardBudgetLakhs < 0)
+            {
+                roundedScore = Mathf.Min(roundedScore, 55);
+            }
+
+            progress.governanceScore = roundedScore;
+            progress.hundredDayReviewPassed = roundedScore >= 70;
+            Save();
+            return progress.hundredDayReviewPassed;
+        }
+
         public int GetMissionStep(int chapterNumber)
         {
             switch (chapterNumber)
@@ -139,6 +179,8 @@ namespace NetaJi.Prototype
                     return progress.chapterSixStep;
                 case 7:
                     return progress.chapterSevenStep;
+                case 8:
+                    return progress.chapterEightStep;
                 default:
                     return progress.chapterOneStep;
             }
@@ -147,7 +189,11 @@ namespace NetaJi.Prototype
         public void SetMissionStep(int chapterNumber, int step)
         {
             int safeStep = Mathf.Max(0, step);
-            if (chapterNumber == 7)
+            if (chapterNumber == 8)
+            {
+                progress.chapterEightStep = safeStep;
+            }
+            else if (chapterNumber == 7)
             {
                 progress.chapterSevenStep = safeStep;
             }
@@ -176,13 +222,22 @@ namespace NetaJi.Prototype
                 progress.chapterOneStep = safeStep;
                 progress.missionStep = safeStep;
             }
-            progress.lastPlayedChapter = Mathf.Clamp(chapterNumber, 1, 7);
+            progress.lastPlayedChapter = Mathf.Clamp(chapterNumber, 1, 8);
             Save();
         }
 
         public void ResetChapter(int chapterNumber)
         {
-            if (chapterNumber == 4)
+            if (chapterNumber == 8)
+            {
+                progress.governanceApproach = 0;
+                progress.serviceDelivery = 0;
+                progress.fiscalIntegrity = 0;
+                progress.wardBudgetLakhs = 0;
+                progress.governanceScore = 0;
+                progress.hundredDayReviewPassed = false;
+            }
+            else if (chapterNumber == 4)
             {
                 progress.rescueApproach = 0;
             }
@@ -205,10 +260,16 @@ namespace NetaJi.Prototype
 
         public void CompleteChapter(int chapterNumber)
         {
-            if (chapterNumber == 7)
+            if (chapterNumber == 8)
+            {
+                progress.chapterEightComplete = true;
+                progress.lastPlayedChapter = 8;
+            }
+            else if (chapterNumber == 7)
             {
                 progress.chapterSevenComplete = true;
-                progress.lastPlayedChapter = 7;
+                progress.highestUnlockedChapter = Mathf.Max(progress.highestUnlockedChapter, 8);
+                progress.lastPlayedChapter = 8;
             }
             else if (chapterNumber == 6)
             {
@@ -269,6 +330,11 @@ namespace NetaJi.Prototype
             else if (key == "campaign-strategy")
             {
                 progress.campaignStrategy = Mathf.Clamp(option, 1, 2);
+                Save();
+            }
+            else if (key == "governance-approach")
+            {
+                progress.governanceApproach = Mathf.Clamp(option, 1, 2);
                 Save();
             }
         }
@@ -400,14 +466,24 @@ namespace NetaJi.Prototype
                 progress.highestUnlockedChapter = 7;
                 changed = true;
             }
+            if (progress.chapterSevenStep >= 12 && !progress.chapterSevenComplete)
+            {
+                progress.chapterSevenComplete = true;
+                changed = true;
+            }
+            if (progress.chapterSevenComplete && progress.highestUnlockedChapter < 8)
+            {
+                progress.highestUnlockedChapter = 8;
+                changed = true;
+            }
             if (progress.lastPlayedChapter < 1)
             {
                 progress.lastPlayedChapter = progress.chapterOneComplete ? 2 : 1;
                 changed = true;
             }
-            if (progress.saveVersion < 7)
+            if (progress.saveVersion < 8)
             {
-                progress.saveVersion = 7;
+                progress.saveVersion = 8;
                 changed = true;
             }
 
@@ -450,6 +526,10 @@ namespace NetaJi.Prototype
                         if (saved.chapterSixComplete || saved.chapterSixStep >= 12)
                         {
                             saved.highestUnlockedChapter = Mathf.Max(saved.highestUnlockedChapter, 7);
+                        }
+                        if (saved.chapterSevenComplete || saved.chapterSevenStep >= 12)
+                        {
+                            saved.highestUnlockedChapter = Mathf.Max(saved.highestUnlockedChapter, 8);
                         }
                         if (saved.lastPlayedChapter < 1)
                         {

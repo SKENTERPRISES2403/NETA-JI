@@ -251,7 +251,7 @@ namespace NetaJi.Prototype.Editor
                     "Rival claims aur misinformation documented hain. Final campaign strategy choose karo.",
                     "Polling systems ready hain. Counting center par result ka wait hai."
                 });
-            mission.ConfigureChapter(7, string.Empty);
+            mission.ConfigureChapter(7, "Chapter08");
             mission.ConfigureIntro(
                 "CHAPTER 7 / WARD KA FAISLA",
                 "First local election: issues, expenses, booths aur public mandate.");

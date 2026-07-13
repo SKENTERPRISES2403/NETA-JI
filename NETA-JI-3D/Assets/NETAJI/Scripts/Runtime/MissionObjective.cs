@@ -18,6 +18,10 @@ namespace NetaJi.Prototype
         [SerializeField] private int supportReward;
         [SerializeField] private int boothReward;
         [SerializeField] private bool resolvesWardElection;
+        [SerializeField] private int deliveryReward;
+        [SerializeField] private int integrityReward;
+        [SerializeField] private int budgetReward;
+        [SerializeField] private bool resolvesHundredDayReview;
         [SerializeField] private bool hideAfterCompletion;
         [SerializeField] private bool requiresDecision;
         [SerializeField] private string decisionKey;
@@ -35,6 +39,9 @@ namespace NetaJi.Prototype
         [SerializeField] private int secondPressureReward;
         [SerializeField] private int secondSupportReward;
         [SerializeField] private int secondBoothReward;
+        [SerializeField] private int secondDeliveryReward;
+        [SerializeField] private int secondIntegrityReward;
+        [SerializeField] private int secondBudgetReward;
 
         private bool completed;
         private bool decisionPending;
@@ -81,7 +88,10 @@ namespace NetaJi.Prototype
             int riskyVolunteers = 0,
             int riskyPressure = 0,
             int riskySupport = 0,
-            int riskyBooth = 0)
+            int riskyBooth = 0,
+            int riskyDelivery = 0,
+            int riskyIntegrity = 0,
+            int riskyBudget = 0)
         {
             requiresDecision = true;
             decisionKey = key;
@@ -99,6 +109,9 @@ namespace NetaJi.Prototype
             secondPressureReward = riskyPressure;
             secondSupportReward = riskySupport;
             secondBoothReward = riskyBooth;
+            secondDeliveryReward = riskyDelivery;
+            secondIntegrityReward = riskyIntegrity;
+            secondBudgetReward = riskyBudget;
         }
 
         public void ConfigurePoliticalReward(int power, int team, int pressure)
@@ -117,6 +130,18 @@ namespace NetaJi.Prototype
         public void ConfigureWardElectionResult()
         {
             resolvesWardElection = true;
+        }
+
+        public void ConfigureGovernanceReward(int delivery, int integrity, int budgetLakhs)
+        {
+            deliveryReward = delivery;
+            integrityReward = integrity;
+            budgetReward = budgetLakhs;
+        }
+
+        public void ConfigureHundredDayReview()
+        {
+            resolvesHundredDayReview = true;
         }
 
         public void Interact(AzadController player)
@@ -143,7 +168,8 @@ namespace NetaJi.Prototype
             }
 
             CompleteInteraction(speaker, dialogue, trustReward, moneyReward, reputationReward, proofReward,
-                powerReward, volunteerReward, pressureReward, supportReward, boothReward);
+                powerReward, volunteerReward, pressureReward, supportReward, boothReward,
+                deliveryReward, integrityReward, budgetReward);
         }
 
         public void ResolveDecisionForAutomation(int option)
@@ -173,12 +199,14 @@ namespace NetaJi.Prototype
             if (option == 2)
             {
                 CompleteInteraction(speaker, secondDialogue, secondTrustReward, secondMoneyReward, secondReputationReward, secondProofReward,
-                    secondPowerReward, secondVolunteerReward, secondPressureReward, secondSupportReward, secondBoothReward);
+                    secondPowerReward, secondVolunteerReward, secondPressureReward, secondSupportReward, secondBoothReward,
+                    secondDeliveryReward, secondIntegrityReward, secondBudgetReward);
             }
             else
             {
                 CompleteInteraction(speaker, dialogue, trustReward, moneyReward, reputationReward, proofReward,
-                    powerReward, volunteerReward, pressureReward, supportReward, boothReward);
+                    powerReward, volunteerReward, pressureReward, supportReward, boothReward,
+                    deliveryReward, integrityReward, budgetReward);
             }
         }
 
@@ -193,13 +221,17 @@ namespace NetaJi.Prototype
             int team,
             int pressure,
             int support,
-            int booth)
+            int booth,
+            int delivery,
+            int integrity,
+            int budget)
         {
             completed = true;
             PrototypeAudio.Instance?.PlayInteraction();
             GameSession.Instance?.ApplyReward(trust, money, reputation, proof);
             GameSession.Instance?.ApplyPoliticalReward(power, team, pressure);
             GameSession.Instance?.ApplyCampaignReward(support, booth);
+            GameSession.Instance?.ApplyGovernanceReward(delivery, integrity, budget);
             if (resolvesWardElection && GameSession.Instance != null)
             {
                 bool won = GameSession.Instance.ResolveWardElection();
@@ -207,6 +239,14 @@ namespace NetaJi.Prototype
                 dialogueText = won
                     ? $"Counting complete: India Helping Party {share}% vote share ke saath ward election jeet gayi."
                     : $"Counting complete: {share}% vote share. Is baar haar hui; organization aur public work jaari rahega.";
+            }
+            if (resolvesHundredDayReview && GameSession.Instance != null)
+            {
+                bool passed = GameSession.Instance.ResolveHundredDayReview();
+                PlayerProgress progress = GameSession.Instance.Progress;
+                dialogueText = passed
+                    ? $"100-day public review passed: {progress.governanceScore}/100. Delivery {progress.serviceDelivery}, integrity {progress.fiscalIntegrity}, balance Rs {progress.wardBudgetLakhs} lakh."
+                    : $"100-day review: {progress.governanceScore}/100. Audit pass nahi hua; delivery {progress.serviceDelivery}, integrity {progress.fiscalIntegrity}, balance Rs {progress.wardBudgetLakhs} lakh. Corrective plan ab mandatory hai.";
             }
             PrototypeHud.Instance?.ShowDialogue(dialogueSpeaker, dialogueText);
             MissionController.Instance.Complete(this);
