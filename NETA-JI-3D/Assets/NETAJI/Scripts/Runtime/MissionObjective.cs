@@ -12,6 +12,9 @@ namespace NetaJi.Prototype
         [SerializeField] private int moneyReward;
         [SerializeField] private int reputationReward;
         [SerializeField] private int proofReward;
+        [SerializeField] private int powerReward;
+        [SerializeField] private int volunteerReward;
+        [SerializeField] private int pressureReward;
         [SerializeField] private bool hideAfterCompletion;
         [SerializeField] private bool requiresDecision;
         [SerializeField] private string decisionKey;
@@ -24,6 +27,9 @@ namespace NetaJi.Prototype
         [SerializeField] private int secondMoneyReward;
         [SerializeField] private int secondReputationReward;
         [SerializeField] private int secondProofReward;
+        [SerializeField] private int secondPowerReward;
+        [SerializeField] private int secondVolunteerReward;
+        [SerializeField] private int secondPressureReward;
 
         private bool completed;
         private bool decisionPending;
@@ -65,7 +71,10 @@ namespace NetaJi.Prototype
             int riskyTrust,
             int riskyMoney,
             int riskyReputation,
-            int riskyProof = 0)
+            int riskyProof = 0,
+            int riskyPower = 0,
+            int riskyVolunteers = 0,
+            int riskyPressure = 0)
         {
             requiresDecision = true;
             decisionKey = key;
@@ -78,6 +87,16 @@ namespace NetaJi.Prototype
             secondMoneyReward = riskyMoney;
             secondReputationReward = riskyReputation;
             secondProofReward = riskyProof;
+            secondPowerReward = riskyPower;
+            secondVolunteerReward = riskyVolunteers;
+            secondPressureReward = riskyPressure;
+        }
+
+        public void ConfigurePoliticalReward(int power, int team, int pressure)
+        {
+            powerReward = power;
+            volunteerReward = team;
+            pressureReward = pressure;
         }
 
         public void Interact(AzadController player)
@@ -103,7 +122,8 @@ namespace NetaJi.Prototype
                 return;
             }
 
-            CompleteInteraction(speaker, dialogue, trustReward, moneyReward, reputationReward, proofReward);
+            CompleteInteraction(speaker, dialogue, trustReward, moneyReward, reputationReward, proofReward,
+                powerReward, volunteerReward, pressureReward);
         }
 
         public void ResolveDecisionForAutomation(int option)
@@ -132,20 +152,32 @@ namespace NetaJi.Prototype
             GameSession.Instance?.SetStoryDecision(decisionKey, option);
             if (option == 2)
             {
-                CompleteInteraction(speaker, secondDialogue, secondTrustReward, secondMoneyReward, secondReputationReward, secondProofReward);
+                CompleteInteraction(speaker, secondDialogue, secondTrustReward, secondMoneyReward, secondReputationReward, secondProofReward,
+                    secondPowerReward, secondVolunteerReward, secondPressureReward);
             }
             else
             {
-                CompleteInteraction(speaker, dialogue, trustReward, moneyReward, reputationReward, proofReward);
+                CompleteInteraction(speaker, dialogue, trustReward, moneyReward, reputationReward, proofReward,
+                    powerReward, volunteerReward, pressureReward);
             }
         }
 
-        private void CompleteInteraction(string dialogueSpeaker, string dialogueText, int trust, int money, int reputation, int proof)
+        private void CompleteInteraction(
+            string dialogueSpeaker,
+            string dialogueText,
+            int trust,
+            int money,
+            int reputation,
+            int proof,
+            int power,
+            int team,
+            int pressure)
         {
             completed = true;
             PrototypeAudio.Instance?.PlayInteraction();
             PrototypeHud.Instance?.ShowDialogue(dialogueSpeaker, dialogueText);
             GameSession.Instance?.ApplyReward(trust, money, reputation, proof);
+            GameSession.Instance?.ApplyPoliticalReward(power, team, pressure);
             MissionController.Instance.Complete(this);
 
             if (hideAfterCompletion)

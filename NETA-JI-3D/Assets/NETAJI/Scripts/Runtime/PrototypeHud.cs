@@ -111,10 +111,16 @@ namespace NetaJi.Prototype
             if (progress != null)
             {
                 float width = Mathf.Min(420f, Screen.width * 0.42f);
-                Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, 52f);
+                bool showPolitics = progress.politicalPower > 0 || progress.volunteers > 0 || progress.oppositionPressure > 0;
+                Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, showPolitics ? 76f : 52f);
                 DrawPanel(statsRect, new Color(0.015f, 0.08f, 0.10f, 0.84f));
-                GUI.Label(new Rect(statsRect.x + 16f, statsRect.y + 14f, statsRect.width - 32f, 28f),
+                GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 8f, statsRect.width - 20f, 26f),
                     $"TRUST {progress.publicTrust}%  Rs {progress.money}  REP {progress.reputation}  PROOF {progress.caseProof}", statStyle);
+                if (showPolitics)
+                {
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 38f, statsRect.width - 20f, 26f),
+                        $"POWER {progress.politicalPower}  TEAM {progress.volunteers}  PRESSURE {progress.oppositionPressure}", statStyle);
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(interactionPrompt) && Time.unscaledTime >= dialogueUntil)

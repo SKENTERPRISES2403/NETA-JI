@@ -11,14 +11,28 @@ namespace NetaJi.Prototype
         [SerializeField] private int expectedMoney = 950;
         [SerializeField] private int expectedReputation = 16;
         [SerializeField] private int expectedProof;
+        [SerializeField] private int expectedPower;
+        [SerializeField] private int expectedVolunteers;
+        [SerializeField] private int expectedPressure;
 
-        public void Configure(int chapter, int trust, int money, int reputation, int proof = 0)
+        public void Configure(
+            int chapter,
+            int trust,
+            int money,
+            int reputation,
+            int proof = 0,
+            int power = 0,
+            int team = 0,
+            int pressure = 0)
         {
             chapterNumber = Mathf.Max(1, chapter);
             expectedTrust = trust;
             expectedMoney = money;
             expectedReputation = reputation;
             expectedProof = proof;
+            expectedPower = power;
+            expectedVolunteers = team;
+            expectedPressure = pressure;
         }
 
         private void Start()
@@ -27,7 +41,8 @@ namespace NetaJi.Prototype
             string smokeArgument = chapterNumber == 1 ? "-prototypeSmoke" : $"-chapter{chapterNumber}Smoke";
             if (System.Array.IndexOf(arguments, smokeArgument) >= 0
                 || (chapterNumber == 4 && System.Array.IndexOf(arguments, "-riskyDecisionSmoke") >= 0)
-                || (chapterNumber == 5 && System.Array.IndexOf(arguments, "-riskyHospitalSmoke") >= 0))
+                || (chapterNumber == 5 && System.Array.IndexOf(arguments, "-riskyHospitalSmoke") >= 0)
+                || (chapterNumber == 6 && System.Array.IndexOf(arguments, "-riskyOppositionSmoke") >= 0))
             {
                 StartCoroutine(RunSmoke(arguments));
             }
@@ -40,7 +55,9 @@ namespace NetaJi.Prototype
             bool riskyDecision = (chapterNumber == 4
                     && System.Array.IndexOf(arguments, "-riskyDecisionSmoke") >= 0)
                 || (chapterNumber == 5
-                    && System.Array.IndexOf(arguments, "-riskyHospitalSmoke") >= 0);
+                    && System.Array.IndexOf(arguments, "-riskyHospitalSmoke") >= 0)
+                || (chapterNumber == 6
+                    && System.Array.IndexOf(arguments, "-riskyOppositionSmoke") >= 0);
 
             yield return new WaitForSeconds(1.2f);
             MissionController mission = MissionController.Instance;
@@ -80,7 +97,7 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(3);
                 mission.ResetMission(false);
             }
-            else
+            else if (chapterNumber == 5)
             {
                 GameSession.Instance.ResetProgress();
                 GameSession.Instance.ApplyReward(71, -200, 52);
@@ -88,6 +105,17 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(2);
                 GameSession.Instance.CompleteChapter(3);
                 GameSession.Instance.CompleteChapter(4);
+                mission.ResetMission(false);
+            }
+            else
+            {
+                GameSession.Instance.ResetProgress();
+                GameSession.Instance.ApplyReward(85, -700, 67, 17);
+                GameSession.Instance.CompleteChapter(1);
+                GameSession.Instance.CompleteChapter(2);
+                GameSession.Instance.CompleteChapter(3);
+                GameSession.Instance.CompleteChapter(4);
+                GameSession.Instance.CompleteChapter(5);
                 mission.ResetMission(false);
             }
 
@@ -144,14 +172,28 @@ namespace NetaJi.Prototype
             int requiredReputation = chapterNumber == 4 && riskyDecision ? 50
                 : chapterNumber == 5 && riskyDecision ? 64 : expectedReputation;
             int requiredProof = chapterNumber == 5 && riskyDecision ? 9 : expectedProof;
+            if (chapterNumber == 6 && riskyDecision)
+            {
+                requiredTrust = 100;
+                requiredMoney = 550;
+                requiredReputation = 77;
+                requiredProof = 26;
+            }
             int requiredDecision = riskyDecision ? 2 : 1;
+            int requiredPower = chapterNumber == 6 && riskyDecision ? 20 : expectedPower;
+            int requiredVolunteers = chapterNumber == 6 && riskyDecision ? 32 : expectedVolunteers;
+            int requiredPressure = chapterNumber == 6 && riskyDecision ? 17 : expectedPressure;
             bool passed = mission.IsComplete
                 && progress.publicTrust == requiredTrust
                 && progress.money == requiredMoney
                 && progress.reputation == requiredReputation
                 && progress.caseProof == requiredProof
+                && progress.politicalPower == requiredPower
+                && progress.volunteers == requiredVolunteers
+                && progress.oppositionPressure == requiredPressure
                 && (chapterNumber != 4 || progress.rescueApproach == requiredDecision)
                 && (chapterNumber != 5 || progress.hospitalApproach == requiredDecision)
+                && (chapterNumber != 6 || progress.oppositionResponse == requiredDecision)
                 && (PrototypeHud.Instance == null || !PrototypeHud.Instance.IsDecisionOpen);
             string marker = chapterNumber == 1
                 ? "PROTOTYPE"

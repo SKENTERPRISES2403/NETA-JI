@@ -26,6 +26,9 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Persistent `PROOF` stat for documents, evidence chains, and future opposition cases
 - Fifth playable chapter: `Dawa Ka Sach`, a fictional hospital-supply investigation
 - Save v5 migration and independently verified case-file/public-post outcomes
+- Persistent `POWER`, `TEAM`, and `PRESSURE` political-organization stats
+- Sixth playable chapter: `India Helping Party`, covering accountable party foundation
+- Save v6 migration and independently verified dialogue/confrontation opposition outcomes
 
 The existing browser/PWA game remains separate in the repository root. This Unity project does not depend on its capture-game code.
 
@@ -43,7 +46,7 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Store/release builds will switch to IL2CPP ARM64 after the prototype is approved
 
 The Android artifact is a debug-signed development build. Its package id is
-`com.skenterprises.netaji.prototype`, version `0.6.0` (`versionCode 6`).
+`com.skenterprises.netaji.prototype`, version `0.7.0` (`versionCode 7`).
 
 ## Generate The Scene
 

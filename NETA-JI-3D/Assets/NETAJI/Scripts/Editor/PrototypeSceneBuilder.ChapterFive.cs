@@ -216,7 +216,7 @@ namespace NetaJi.Prototype.Editor
                     "Shanti stable hai, par family ne pregnancy kho di. Gusse ko verified case mein badalna hoga.",
                     "Tender aur medicine evidence sealed hai. Recovery garden mein Shanti intezar kar rahi hai."
                 });
-            mission.ConfigureChapter(5, string.Empty);
+            mission.ConfigureChapter(5, "Chapter06");
             mission.ConfigureIntro(
                 "CHAPTER 5 / DAWA KA SACH",
                 "Rescue ke baad ek nayi emergency. Shanti ki jaan, documents aur sach tino sambhalo.");
