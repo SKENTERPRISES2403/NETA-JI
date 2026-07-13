@@ -37,6 +37,10 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Computed governance review with integrity and overspending gates instead of a scripted pass
 - Eighth playable chapter: `Pehle 100 Din`, covering measurable local governance
 - Save v8 migration and independently verified open-tender/shortcut outcomes
+- Persistent constituency `REACH`, coalition `UNITY`, assembly `READY`, and computed `NOM` state
+- Stats-driven MLA candidate nomination gated by the passed 100-day public audit
+- Ninth playable chapter: `Vidhansabha Ki Raah`, covering ethical urban-rural expansion
+- Save v9 migration and independently verified ground-jan-sabha/dhol-roadshow outcomes
 
 The existing browser/PWA game remains separate in the repository root. This Unity project does not depend on its capture-game code.
 
@@ -54,7 +58,7 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Store/release builds will switch to IL2CPP ARM64 after the prototype is approved
 
 The Android artifact is a debug-signed development build. Its package id is
-`com.skenterprises.netaji.prototype`, version `0.9.0` (`versionCode 9`).
+`com.skenterprises.netaji.prototype`, version `0.10.0` (`versionCode 10`).
 
 ## Generate The Scene
 

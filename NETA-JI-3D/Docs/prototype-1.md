@@ -30,7 +30,8 @@ The first playable space is a compact Prayagraj/Daraganj-inspired ghat district.
 - Runtime log verifies procedural audio initialization without errors
 - Mobile screenshots verify route hints, chapter overlays, and readable world signage
 - Menu automation verifies title/story views and the menu-to-game smoke bypass
-- Legacy `missionStep` and save-v2/v3/v4/v5/v6/v7 profiles migrate into eight-chapter save progress
+- Legacy `missionStep` and save-v2 through save-v8 profiles migrate into nine-chapter save progress
+- Chapter 9 automation verifies safe and risky constituency-expansion routes plus computed MLA nomination
 - Android development APK builds successfully for ARMv7 with min SDK 26 and target SDK 36
 - APK package manifest and v2 debug signature verified
 - Physical Android install and touch-feel testing still require a connected phone

@@ -115,7 +115,9 @@ namespace NetaJi.Prototype
                 bool showCampaign = progress.wardSupport > 0 || progress.boothReadiness > 0 || progress.wardVoteShare > 0;
                 bool showGovernance = progress.serviceDelivery > 0 || progress.fiscalIntegrity > 0
                     || progress.wardBudgetLakhs != 0 || progress.governanceScore > 0;
-                float statsHeight = showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
+                bool showExpansion = progress.assemblyReach > 0 || progress.coalitionUnity > 0
+                    || progress.assemblyReadiness > 0 || progress.nominationScore > 0;
+                float statsHeight = showExpansion ? 186f : showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
                 Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, statsHeight);
                 DrawPanel(statsRect, new Color(0.015f, 0.08f, 0.10f, 0.96f));
                 GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 8f, statsRect.width - 20f, 26f),
@@ -138,6 +140,12 @@ namespace NetaJi.Prototype
                         $"DELIVERY {progress.serviceDelivery}  INTEGRITY {progress.fiscalIntegrity}", statStyle);
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 122f, statsRect.width - 20f, 26f),
                         $"BUDGET Rs {progress.wardBudgetLakhs}L  REVIEW {review}/100", statStyle);
+                }
+                if (showExpansion)
+                {
+                    string nomination = progress.nominationScore > 0 ? progress.nominationScore.ToString() : "--";
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 150f, statsRect.width - 20f, 26f),
+                        $"REACH {progress.assemblyReach}  UNITY {progress.coalitionUnity}  READY {progress.assemblyReadiness}  NOM {nomination}", statStyle);
                 }
             }
 

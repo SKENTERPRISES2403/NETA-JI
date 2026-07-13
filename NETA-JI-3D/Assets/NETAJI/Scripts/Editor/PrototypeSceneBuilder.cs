@@ -21,9 +21,10 @@ namespace NetaJi.Prototype.Editor
         private const string ChapterSixScenePath = "Assets/NETAJI/Scenes/Chapter06.unity";
         private const string ChapterSevenScenePath = "Assets/NETAJI/Scenes/Chapter07.unity";
         private const string ChapterEightScenePath = "Assets/NETAJI/Scenes/Chapter08.unity";
+        private const string ChapterNineScenePath = "Assets/NETAJI/Scenes/Chapter09.unity";
         private const string MenuScenePath = "Assets/NETAJI/Scenes/MainMenu.unity";
         private const string MaterialPath = "Assets/NETAJI/Materials";
-        private static readonly string[] BuildScenes = { MenuScenePath, ScenePath, ChapterTwoScenePath, ChapterThreeScenePath, ChapterFourScenePath, ChapterFiveScenePath, ChapterSixScenePath, ChapterSevenScenePath, ChapterEightScenePath };
+        private static readonly string[] BuildScenes = { MenuScenePath, ScenePath, ChapterTwoScenePath, ChapterThreeScenePath, ChapterFourScenePath, ChapterFiveScenePath, ChapterSixScenePath, ChapterSevenScenePath, ChapterEightScenePath, ChapterNineScenePath };
 
         [MenuItem("NETA JI/Build Prototype Scene")]
         public static void Build()
@@ -355,6 +356,22 @@ namespace NetaJi.Prototype.Editor
                 policeKhaki,
                 foliage,
                 trunk);
+            BuildChapterNineScene(
+                sand,
+                stone,
+                darkStone,
+                teal,
+                yellow,
+                white,
+                shirt,
+                trousers,
+                skin,
+                hair,
+                shantiDress,
+                volunteerDress,
+                policeKhaki,
+                foliage,
+                trunk);
             BuildMainMenuScene(
                 sand,
                 stone,
@@ -380,13 +397,14 @@ namespace NetaJi.Prototype.Editor
                 new EditorBuildSettingsScene(ChapterFiveScenePath, true),
                 new EditorBuildSettingsScene(ChapterSixScenePath, true),
                 new EditorBuildSettingsScene(ChapterSevenScenePath, true),
-                new EditorBuildSettingsScene(ChapterEightScenePath, true)
+                new EditorBuildSettingsScene(ChapterEightScenePath, true),
+                new EditorBuildSettingsScene(ChapterNineScenePath, true)
             };
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             Selection.activeGameObject = GameObject.Find("Azad");
-            Debug.Log($"NETA JI menu and chapter scenes generated at {MenuScenePath}, {ScenePath}, {ChapterTwoScenePath}, {ChapterThreeScenePath}, {ChapterFourScenePath}, {ChapterFiveScenePath}, {ChapterSixScenePath}, {ChapterSevenScenePath}, and {ChapterEightScenePath}");
+            Debug.Log($"NETA JI menu and chapter scenes generated through {ChapterNineScenePath}");
         }
 
         private static void BuildChapterTwoScene(
@@ -720,12 +738,12 @@ namespace NetaJi.Prototype.Editor
         {
             PlayerSettings.companyName = "SK Enterprises";
             PlayerSettings.productName = "NETA JI";
-            PlayerSettings.bundleVersion = "0.9.0";
+            PlayerSettings.bundleVersion = "0.10.0";
             PlayerSettings.colorSpace = ColorSpace.Gamma;
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.skenterprises.netaji.prototype");
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
-            PlayerSettings.Android.bundleVersionCode = 9;
+            PlayerSettings.Android.bundleVersionCode = 10;
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.Mono2x);
             QualitySettings.vSyncCount = 0;
