@@ -35,5 +35,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/NETAJI/Scenes/Chapter09.unity
     guid: 359cee88c3f7e7f488e523a1f8ed0527
+  - enabled: 1
+    path: Assets/NETAJI/Scenes/Chapter10.unity
+    guid: 171a267466ed4834ea37ae5adf5e97ea
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

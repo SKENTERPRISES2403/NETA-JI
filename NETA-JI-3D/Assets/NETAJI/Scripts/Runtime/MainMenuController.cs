@@ -17,6 +17,7 @@ namespace NetaJi.Prototype
         [SerializeField] private string chapterSevenSceneName = "Chapter07";
         [SerializeField] private string chapterEightSceneName = "Chapter08";
         [SerializeField] private string chapterNineSceneName = "Chapter09";
+        [SerializeField] private string chapterTenSceneName = "Chapter10";
 
         private Texture2D whiteTexture;
         private Texture2D primaryTexture;
@@ -89,6 +90,11 @@ namespace NetaJi.Prototype
             {
                 SceneManager.LoadScene(chapterNineSceneName);
             }
+            else if (Array.IndexOf(arguments, "-chapter10Smoke") >= 0
+                || Array.IndexOf(arguments, "-riskyAssemblyCampaignSmoke") >= 0)
+            {
+                SceneManager.LoadScene(chapterTenSceneName);
+            }
         }
 
         private IEnumerator RunMenuSmoke(string[] arguments)
@@ -107,6 +113,7 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(6);
                 GameSession.Instance.CompleteChapter(7);
                 GameSession.Instance.CompleteChapter(8);
+                GameSession.Instance.CompleteChapter(9);
             }
             yield return new WaitForSeconds(1.2f);
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "menu-start.png"));
@@ -207,12 +214,12 @@ namespace NetaJi.Prototype
             DrawChapterCard(new Rect(firstX + (cardWidth + cardGap) * 4f, firstY, cardWidth, cardHeight), 5, "DAWA KA SACH");
 
             float secondY = firstY + cardHeight + 12f;
-            float secondRowWidth = cardWidth * 4f + cardGap * 3f;
-            float secondX = panel.x + (panel.width - secondRowWidth) * 0.5f;
+            float secondX = firstX;
             DrawChapterCard(new Rect(secondX, secondY, cardWidth, cardHeight), 6, "SEVA SE SIYASAT");
             DrawChapterCard(new Rect(secondX + cardWidth + cardGap, secondY, cardWidth, cardHeight), 7, "WARD KA FAISLA");
             DrawChapterCard(new Rect(secondX + (cardWidth + cardGap) * 2f, secondY, cardWidth, cardHeight), 8, "PEHLE 100 DIN");
             DrawChapterCard(new Rect(secondX + (cardWidth + cardGap) * 3f, secondY, cardWidth, cardHeight), 9, "VIDHANSABHA KI RAAH");
+            DrawChapterCard(new Rect(secondX + (cardWidth + cardGap) * 4f, secondY, cardWidth, cardHeight), 10, "JANATA KA MANDATE");
 
             GUI.Label(
                 new Rect(panel.x + 24f, panel.y + 224f, panel.width - 48f, 44f),
@@ -300,6 +307,10 @@ namespace NetaJi.Prototype
             else if (chapterNumber == 9)
             {
                 sceneName = chapterNineSceneName;
+            }
+            else if (chapterNumber == 10)
+            {
+                sceneName = chapterTenSceneName;
             }
             SceneManager.LoadScene(sceneName);
         }

@@ -117,7 +117,10 @@ namespace NetaJi.Prototype
                     || progress.wardBudgetLakhs != 0 || progress.governanceScore > 0;
                 bool showExpansion = progress.assemblyReach > 0 || progress.coalitionUnity > 0
                     || progress.assemblyReadiness > 0 || progress.nominationScore > 0;
-                float statsHeight = showExpansion ? 186f : showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
+                bool showAssemblyElection = progress.constituencySupport > 0 || progress.campaignCompliance > 0
+                    || progress.electionOperations > 0 || progress.assemblyVoteShare > 0;
+                float statsHeight = showAssemblyElection ? 186f : showExpansion ? 158f
+                    : showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
                 Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, statsHeight);
                 DrawPanel(statsRect, new Color(0.015f, 0.08f, 0.10f, 0.96f));
                 GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 8f, statsRect.width - 20f, 26f),
@@ -127,7 +130,7 @@ namespace NetaJi.Prototype
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 38f, statsRect.width - 20f, 26f),
                         $"POWER {progress.politicalPower}  TEAM {progress.volunteers}  PRESSURE {progress.oppositionPressure}", statStyle);
                 }
-                if (showCampaign)
+                if (showCampaign && !showExpansion)
                 {
                     string vote = progress.wardVoteShare > 0 ? progress.wardVoteShare + "%" : "--";
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
@@ -136,16 +139,23 @@ namespace NetaJi.Prototype
                 if (showGovernance)
                 {
                     string review = progress.governanceScore > 0 ? progress.governanceScore.ToString() : "--";
-                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 94f, statsRect.width - 20f, 26f),
+                    float governanceY = showExpansion ? 66f : 94f;
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + governanceY, statsRect.width - 20f, 26f),
                         $"DELIVERY {progress.serviceDelivery}  INTEGRITY {progress.fiscalIntegrity}", statStyle);
-                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 122f, statsRect.width - 20f, 26f),
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + governanceY + 28f, statsRect.width - 20f, 26f),
                         $"BUDGET Rs {progress.wardBudgetLakhs}L  REVIEW {review}/100", statStyle);
                 }
                 if (showExpansion)
                 {
                     string nomination = progress.nominationScore > 0 ? progress.nominationScore.ToString() : "--";
-                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 150f, statsRect.width - 20f, 26f),
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 122f, statsRect.width - 20f, 26f),
                         $"REACH {progress.assemblyReach}  UNITY {progress.coalitionUnity}  READY {progress.assemblyReadiness}  NOM {nomination}", statStyle);
+                }
+                if (showAssemblyElection)
+                {
+                    string vote = progress.assemblyVoteShare > 0 ? progress.assemblyVoteShare + "%" : "--";
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 150f, statsRect.width - 20f, 26f),
+                        $"SUP {progress.constituencySupport}  RULES {progress.campaignCompliance}  OPS {progress.electionOperations}  VOTE {vote}", statStyle);
                 }
             }
 
