@@ -22,7 +22,7 @@ namespace NetaJi.Prototype
         private void Start()
         {
             string[] arguments = System.Environment.GetCommandLineArgs();
-            string smokeArgument = chapterNumber == 2 ? "-chapter2Smoke" : "-prototypeSmoke";
+            string smokeArgument = chapterNumber == 1 ? "-prototypeSmoke" : $"-chapter{chapterNumber}Smoke";
             if (System.Array.IndexOf(arguments, smokeArgument) >= 0)
             {
                 StartCoroutine(RunSmoke(arguments));
@@ -48,11 +48,19 @@ namespace NetaJi.Prototype
             {
                 mission.ResetMission(true);
             }
-            else
+            else if (chapterNumber == 2)
             {
                 GameSession.Instance.ResetProgress();
                 GameSession.Instance.ApplyReward(23, 100, 12);
                 GameSession.Instance.CompleteChapter(1);
+                mission.ResetMission(false);
+            }
+            else
+            {
+                GameSession.Instance.ResetProgress();
+                GameSession.Instance.ApplyReward(46, 200, 26);
+                GameSession.Instance.CompleteChapter(1);
+                GameSession.Instance.CompleteChapter(2);
                 mission.ResetMission(false);
             }
 
@@ -62,7 +70,7 @@ namespace NetaJi.Prototype
             yield return new WaitForSeconds(0.8f);
 
             int guard = 0;
-            while (!mission.IsComplete && guard++ < 12)
+            while (!mission.IsComplete && guard++ < 16)
             {
                 MissionObjective objective = mission.CurrentObjectiveItem;
                 if (objective == null)
@@ -73,6 +81,13 @@ namespace NetaJi.Prototype
                 player.transform.position = objective.transform.position + new Vector3(0f, 0.1f, -1.1f);
                 objective.Interact(player);
                 yield return new WaitForSeconds(0.45f);
+            }
+
+            if (chapterNumber == 3)
+            {
+                player.transform.position = new Vector3(0f, 0.1f, -4f);
+                player.transform.rotation = Quaternion.identity;
+                yield return new WaitForSeconds(0.8f);
             }
 
             yield return new WaitForSeconds(0.9f);

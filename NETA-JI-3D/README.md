@@ -18,6 +18,8 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Full-screen 3D title scene with Continue, New Game, and Azad story modal
 - Save-compatible chapter selection with unlock and resume state
 - Second playable chapter: `Shaam Ki Paathshala`, with nine community-education objectives
+- Third playable chapter: `Sandhya Kahan Hai?`, with evidence-led community search objectives
+- Save v3 migration, three-chapter unlock flow, and deterministic chapter smoke tests
 
 The existing browser/PWA game remains separate in the repository root. This Unity project does not depend on its capture-game code.
 
@@ -35,7 +37,7 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Store/release builds will switch to IL2CPP ARM64 after the prototype is approved
 
 The Android artifact is a debug-signed development build. Its package id is
-`com.skenterprises.netaji.prototype`, version `0.3.0` (`versionCode 3`).
+`com.skenterprises.netaji.prototype`, version `0.4.0` (`versionCode 4`).
 
 ## Generate The Scene
 
@@ -45,7 +47,7 @@ Open the project once, then use `NETA JI > Build Prototype Scene`. The same acti
 Unity.exe -batchmode -quit -projectPath . -executeMethod NetaJi.Prototype.Editor.PrototypeSceneBuilder.BuildFromCommandLine
 ```
 
-The generated scene is saved as `Assets/NETAJI/Scenes/Prototype01.unity`.
+The generated menu and chapter scenes are saved under `Assets/NETAJI/Scenes/`.
 
 ## Controls
 

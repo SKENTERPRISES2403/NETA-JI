@@ -10,6 +10,7 @@ namespace NetaJi.Prototype
     {
         [SerializeField] private string gameplaySceneName = "Prototype01";
         [SerializeField] private string chapterTwoSceneName = "Chapter02";
+        [SerializeField] private string chapterThreeSceneName = "Chapter03";
 
         private Texture2D whiteTexture;
         private Texture2D primaryTexture;
@@ -28,6 +29,7 @@ namespace NetaJi.Prototype
             primaryTexture = MakeTexture(new Color(0.93f, 0.61f, 0.10f, 0.96f));
             secondaryTexture = MakeTexture(new Color(0.02f, 0.25f, 0.27f, 0.94f));
             Application.targetFrameRate = 60;
+            Application.runInBackground = true;
         }
 
         private void Start()
@@ -47,12 +49,23 @@ namespace NetaJi.Prototype
             {
                 SceneManager.LoadScene(chapterTwoSceneName);
             }
+            else if (Array.IndexOf(arguments, "-chapter3Smoke") >= 0)
+            {
+                SceneManager.LoadScene(chapterThreeSceneName);
+            }
         }
 
         private IEnumerator RunMenuSmoke(string[] arguments)
         {
             string outputDirectory = ReadArgument(arguments, "-screenshotPath") ?? Application.persistentDataPath;
             Directory.CreateDirectory(outputDirectory);
+            if (GameSession.Instance != null)
+            {
+                GameSession.Instance.ResetProgress();
+                GameSession.Instance.ApplyReward(46, 200, 26);
+                GameSession.Instance.CompleteChapter(1);
+                GameSession.Instance.CompleteChapter(2);
+            }
             yield return new WaitForSeconds(1.2f);
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "menu-start.png"));
             yield return new WaitForSeconds(0.8f);
@@ -134,13 +147,13 @@ namespace NetaJi.Prototype
 
         private void DrawChapterPanel()
         {
-            float width = Mathf.Min(700f, Screen.width - 42f);
+            float width = Mathf.Min(800f, Screen.width - 30f);
             float height = Mathf.Min(340f, Screen.height - 30f);
             Rect panel = new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
             DrawPanel(panel, new Color(0.01f, 0.055f, 0.065f, 0.98f));
             GUI.Label(new Rect(panel.x + 24f, panel.y + 18f, panel.width - 48f, 46f), "AZAD KA SAFAR", subtitleStyle);
 
-            float cardWidth = (panel.width - 64f) * 0.5f;
+            float cardWidth = (panel.width - 80f) / 3f;
             Rect chapterOneRect = new Rect(panel.x + 24f, panel.y + 74f, cardWidth, 92f);
             if (GUI.Button(chapterOneRect, "CHAPTER 1\nGHAT SE GHAR TAK", buttonStyle))
             {
@@ -159,6 +172,20 @@ namespace NetaJi.Prototype
             {
                 DrawPanel(chapterTwoRect, new Color(0.12f, 0.16f, 0.17f, 0.96f));
                 GUI.Label(chapterTwoRect, "CHAPTER 2\nLOCKED - COMPLETE CHAPTER 1", secondaryButtonStyle);
+            }
+
+            Rect chapterThreeRect = new Rect(chapterTwoRect.xMax + 16f, chapterOneRect.y, cardWidth, 92f);
+            if (GameSession.HighestUnlockedChapter >= 3)
+            {
+                if (GUI.Button(chapterThreeRect, "CHAPTER 3\nSANDHYA KAHAN HAI", buttonStyle))
+                {
+                    LoadChapter(3, false);
+                }
+            }
+            else
+            {
+                DrawPanel(chapterThreeRect, new Color(0.12f, 0.16f, 0.17f, 0.96f));
+                GUI.Label(chapterThreeRect, "CHAPTER 3\nLOCKED - COMPLETE CHAPTER 2", secondaryButtonStyle);
             }
 
             GUI.Label(
@@ -200,7 +227,16 @@ namespace NetaJi.Prototype
                 GameSession.DeleteSave();
             }
 
-            SceneManager.LoadScene(chapterNumber == 2 ? chapterTwoSceneName : gameplaySceneName);
+            string sceneName = gameplaySceneName;
+            if (chapterNumber == 2)
+            {
+                sceneName = chapterTwoSceneName;
+            }
+            else if (chapterNumber == 3)
+            {
+                sceneName = chapterThreeSceneName;
+            }
+            SceneManager.LoadScene(sceneName);
         }
 
         private void EnsureStyles()
