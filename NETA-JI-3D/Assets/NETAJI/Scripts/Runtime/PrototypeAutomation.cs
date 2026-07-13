@@ -39,6 +39,11 @@ namespace NetaJi.Prototype
         [SerializeField] private int expectedMlaAllocation;
         [SerializeField] private int expectedMlaPerformance;
         [SerializeField] private bool expectedMlaTermOnTrack;
+        [SerializeField] private int expectedDistrictReach;
+        [SerializeField] private int expectedCandidateQuality;
+        [SerializeField] private int expectedOrganizationDiscipline;
+        [SerializeField] private int expectedDistrictExpansionScore;
+        [SerializeField] private bool expectedDistrictNetworkReady;
 
         public void Configure(
             int chapter,
@@ -73,7 +78,12 @@ namespace NetaJi.Prototype
             int ethics = 0,
             int mlaAllocation = 0,
             int mlaPerformance = 0,
-            bool mlaTermOnTrack = false)
+            bool mlaTermOnTrack = false,
+            int districtReach = 0,
+            int candidateQuality = 0,
+            int organizationDiscipline = 0,
+            int districtExpansionScore = 0,
+            bool districtNetworkReady = false)
         {
             chapterNumber = Mathf.Max(1, chapter);
             expectedTrust = trust;
@@ -108,6 +118,11 @@ namespace NetaJi.Prototype
             expectedMlaAllocation = mlaAllocation;
             expectedMlaPerformance = mlaPerformance;
             expectedMlaTermOnTrack = mlaTermOnTrack;
+            expectedDistrictReach = districtReach;
+            expectedCandidateQuality = candidateQuality;
+            expectedOrganizationDiscipline = organizationDiscipline;
+            expectedDistrictExpansionScore = districtExpansionScore;
+            expectedDistrictNetworkReady = districtNetworkReady;
         }
 
         private void Start()
@@ -122,7 +137,8 @@ namespace NetaJi.Prototype
                 || (chapterNumber == 8 && System.Array.IndexOf(arguments, "-riskyGovernanceSmoke") >= 0)
                 || (chapterNumber == 9 && System.Array.IndexOf(arguments, "-riskyExpansionSmoke") >= 0)
                 || (chapterNumber == 10 && System.Array.IndexOf(arguments, "-riskyAssemblyCampaignSmoke") >= 0)
-                || (chapterNumber == 11 && System.Array.IndexOf(arguments, "-riskyLegislativeSmoke") >= 0))
+                || (chapterNumber == 11 && System.Array.IndexOf(arguments, "-riskyLegislativeSmoke") >= 0)
+                || (chapterNumber == 12 && System.Array.IndexOf(arguments, "-riskyDistrictSmoke") >= 0))
             {
                 StartCoroutine(RunSmoke(arguments));
             }
@@ -147,7 +163,9 @@ namespace NetaJi.Prototype
                 || (chapterNumber == 10
                     && System.Array.IndexOf(arguments, "-riskyAssemblyCampaignSmoke") >= 0)
                 || (chapterNumber == 11
-                    && System.Array.IndexOf(arguments, "-riskyLegislativeSmoke") >= 0);
+                    && System.Array.IndexOf(arguments, "-riskyLegislativeSmoke") >= 0)
+                || (chapterNumber == 12
+                    && System.Array.IndexOf(arguments, "-riskyDistrictSmoke") >= 0);
 
             yield return new WaitForSeconds(1.2f);
             MissionController mission = MissionController.Instance;
@@ -290,7 +308,7 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(9);
                 mission.ResetMission(false);
             }
-            else
+            else if (chapterNumber == 11)
             {
                 GameSession.Instance.ResetProgress();
                 GameSession.Instance.ApplyReward(88, -500, 86, 42);
@@ -325,6 +343,48 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(8);
                 GameSession.Instance.CompleteChapter(9);
                 GameSession.Instance.CompleteChapter(10);
+                mission.ResetMission(false);
+            }
+            else
+            {
+                GameSession.Instance.ResetProgress();
+                GameSession.Instance.ApplyReward(88, -500, 86, 42);
+                GameSession.Instance.ApplyPoliticalReward(28, 55, 17);
+                GameSession.Instance.ApplyCampaignReward(62, 85);
+                GameSession.Instance.ResolveWardElection();
+                GameSession.Instance.ApplyReward(0, 0, 10, 14);
+                GameSession.Instance.ApplyPoliticalReward(5, 9, 14);
+                GameSession.Instance.ApplyCampaignReward(5, 0);
+                GameSession.Instance.ApplyGovernanceReward(65, 75, 2);
+                GameSession.Instance.ResolveHundredDayReview();
+                GameSession.Instance.ApplyReward(0, 0, 0, 2);
+                GameSession.Instance.ApplyGovernanceReward(0, 12, 3);
+                GameSession.Instance.ApplyAssemblyReward(2, 5, 2);
+                GameSession.Instance.ResolveHundredDayReview();
+                GameSession.Instance.ApplyReward(0, -200, 0, 10);
+                GameSession.Instance.ApplyPoliticalReward(5, 18, 11);
+                GameSession.Instance.ApplyAssemblyReward(68, 70, 77);
+                GameSession.Instance.ResolveAssemblyNomination();
+                GameSession.Instance.ApplyReward(0, -100, 0, 11);
+                GameSession.Instance.ApplyPoliticalReward(2, 17, 14);
+                GameSession.Instance.ApplyAssemblyReward(18, 18, 20);
+                GameSession.Instance.ApplyAssemblyCampaignReward(58, 92, 69);
+                GameSession.Instance.ResolveAssemblyElection();
+                GameSession.Instance.ApplyReward(0, 0, 0, 17);
+                GameSession.Instance.ApplyPoliticalReward(3, 15, 20);
+                GameSession.Instance.ApplyLegislativeReward(78, 80, 90, 30);
+                GameSession.Instance.ResolveMlaPerformance();
+                GameSession.Instance.CompleteChapter(1);
+                GameSession.Instance.CompleteChapter(2);
+                GameSession.Instance.CompleteChapter(3);
+                GameSession.Instance.CompleteChapter(4);
+                GameSession.Instance.CompleteChapter(5);
+                GameSession.Instance.CompleteChapter(6);
+                GameSession.Instance.CompleteChapter(7);
+                GameSession.Instance.CompleteChapter(8);
+                GameSession.Instance.CompleteChapter(9);
+                GameSession.Instance.CompleteChapter(10);
+                GameSession.Instance.CompleteChapter(11);
                 mission.ResetMission(false);
             }
 
@@ -423,6 +483,13 @@ namespace NetaJi.Prototype
                 requiredReputation = 95;
                 requiredProof = 89;
             }
+            else if (chapterNumber == 12 && riskyDecision)
+            {
+                requiredTrust = 100;
+                requiredMoney = 40;
+                requiredReputation = 90;
+                requiredProof = 99;
+            }
             int requiredDecision = riskyDecision ? 2 : 1;
             int requiredPower = chapterNumber == 6 && riskyDecision ? 20 : expectedPower;
             int requiredVolunteers = chapterNumber == 6 && riskyDecision ? 32 : expectedVolunteers;
@@ -457,6 +524,12 @@ namespace NetaJi.Prototype
                 requiredVolunteers = 111;
                 requiredPressure = 86;
             }
+            else if (chapterNumber == 12 && riskyDecision)
+            {
+                requiredPower = 51;
+                requiredVolunteers = 135;
+                requiredPressure = 100;
+            }
             int requiredSupport = chapterNumber == 7 && riskyDecision ? 66 : expectedSupport;
             int requiredBooth = chapterNumber == 7 && riskyDecision ? 70 : expectedBooth;
             int requiredVoteShare = chapterNumber == 7 && riskyDecision ? 58 : expectedVoteShare;
@@ -484,6 +557,11 @@ namespace NetaJi.Prototype
             int requiredMlaAllocation = chapterNumber == 11 && riskyDecision ? 15 : expectedMlaAllocation;
             int requiredMlaPerformance = chapterNumber == 11 && riskyDecision ? 73 : expectedMlaPerformance;
             bool requiredMlaTermOnTrack = chapterNumber == 11 && riskyDecision || expectedMlaTermOnTrack;
+            int requiredDistrictReach = chapterNumber == 12 && riskyDecision ? 90 : expectedDistrictReach;
+            int requiredCandidateQuality = chapterNumber == 12 && riskyDecision ? 65 : expectedCandidateQuality;
+            int requiredOrganizationDiscipline = chapterNumber == 12 && riskyDecision ? 68 : expectedOrganizationDiscipline;
+            int requiredDistrictExpansionScore = chapterNumber == 12 && riskyDecision ? 77 : expectedDistrictExpansionScore;
+            bool requiredDistrictNetworkReady = chapterNumber == 12 && riskyDecision || expectedDistrictNetworkReady;
             bool passed = mission.IsComplete
                 && progress.publicTrust == requiredTrust
                 && progress.money == requiredMoney
@@ -517,6 +595,11 @@ namespace NetaJi.Prototype
                 && progress.mlaAllocationLakhs == requiredMlaAllocation
                 && progress.mlaPerformanceScore == requiredMlaPerformance
                 && progress.mlaTermOnTrack == requiredMlaTermOnTrack
+                && progress.districtReach == requiredDistrictReach
+                && progress.candidateQuality == requiredCandidateQuality
+                && progress.organizationDiscipline == requiredOrganizationDiscipline
+                && progress.districtExpansionScore == requiredDistrictExpansionScore
+                && progress.districtNetworkReady == requiredDistrictNetworkReady
                 && (chapterNumber != 4 || progress.rescueApproach == requiredDecision)
                 && (chapterNumber != 5 || progress.hospitalApproach == requiredDecision)
                 && (chapterNumber != 6 || progress.oppositionResponse == requiredDecision)
@@ -525,13 +608,14 @@ namespace NetaJi.Prototype
                 && (chapterNumber != 9 || progress.expansionStrategy == requiredDecision)
                 && (chapterNumber != 10 || progress.assemblyCampaignStrategy == requiredDecision)
                 && (chapterNumber != 11 || progress.legislativeStrategy == requiredDecision)
+                && (chapterNumber != 12 || progress.districtStrategy == requiredDecision)
                 && (PrototypeHud.Instance == null || !PrototypeHud.Instance.IsDecisionOpen);
             string marker = chapterNumber == 1
                 ? "PROTOTYPE"
                 : riskyDecision ? $"CHAPTER_{chapterNumber}_RISKY" : $"CHAPTER_{chapterNumber}";
             Debug.Log(passed
-                ? $"{marker}_SMOKE_PASSED: trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}, proof={progress.caseProof}, power={progress.politicalPower}, team={progress.volunteers}, pressure={progress.oppositionPressure}, review={progress.governanceScore}, nomination={progress.nominationScore}, vote={progress.assemblyVoteShare}, won={progress.assemblyElectionWon}, legislative={progress.legislativeEffectiveness}, service={progress.constituencyService}, ethics={progress.ethicsRecord}, allocation={progress.mlaAllocationLakhs}, performance={progress.mlaPerformanceScore}, onTrack={progress.mlaTermOnTrack}"
-                : $"{marker}_SMOKE_FAILED: complete={mission.IsComplete}, trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}, proof={progress.caseProof}, power={progress.politicalPower}, team={progress.volunteers}, pressure={progress.oppositionPressure}, wardVote={progress.wardVoteShare}, review={progress.governanceScore}, reach={progress.assemblyReach}, unity={progress.coalitionUnity}, ready={progress.assemblyReadiness}, nomination={progress.nominationScore}, support={progress.constituencySupport}, compliance={progress.campaignCompliance}, operations={progress.electionOperations}, vote={progress.assemblyVoteShare}, won={progress.assemblyElectionWon}, legislative={progress.legislativeEffectiveness}, service={progress.constituencyService}, ethics={progress.ethicsRecord}, allocation={progress.mlaAllocationLakhs}, performance={progress.mlaPerformanceScore}, onTrack={progress.mlaTermOnTrack}");
+                ? $"{marker}_SMOKE_PASSED: trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}, proof={progress.caseProof}, power={progress.politicalPower}, team={progress.volunteers}, pressure={progress.oppositionPressure}, mla={progress.mlaPerformanceScore}, districtReach={progress.districtReach}, quality={progress.candidateQuality}, discipline={progress.organizationDiscipline}, expansion={progress.districtExpansionScore}, ready={progress.districtNetworkReady}"
+                : $"{marker}_SMOKE_FAILED: complete={mission.IsComplete}, trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}, proof={progress.caseProof}, power={progress.politicalPower}, team={progress.volunteers}, pressure={progress.oppositionPressure}, vote={progress.assemblyVoteShare}, legislative={progress.legislativeEffectiveness}, service={progress.constituencyService}, ethics={progress.ethicsRecord}, allocation={progress.mlaAllocationLakhs}, mla={progress.mlaPerformanceScore}, districtReach={progress.districtReach}, quality={progress.candidateQuality}, discipline={progress.organizationDiscipline}, expansion={progress.districtExpansionScore}, ready={progress.districtNetworkReady}");
             Application.Quit(passed ? 0 : 3);
         }
 

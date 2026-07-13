@@ -121,7 +121,9 @@ namespace NetaJi.Prototype
                     || progress.electionOperations > 0 || progress.assemblyVoteShare > 0;
                 bool showLegislature = progress.legislativeEffectiveness > 0 || progress.constituencyService > 0
                     || progress.ethicsRecord > 0 || progress.mlaAllocationLakhs != 0 || progress.mlaPerformanceScore > 0;
-                float statsHeight = showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
+                bool showDistrict = progress.districtReach > 0 || progress.candidateQuality > 0
+                    || progress.organizationDiscipline > 0 || progress.districtExpansionScore > 0;
+                float statsHeight = showDistrict ? 130f : showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
                     : showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
                 Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, statsHeight);
                 DrawPanel(statsRect, new Color(0.015f, 0.08f, 0.10f, 0.96f));
@@ -147,14 +149,14 @@ namespace NetaJi.Prototype
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + governanceY + 28f, statsRect.width - 20f, 26f),
                         $"BUDGET Rs {progress.wardBudgetLakhs}L  REVIEW {review}/100", statStyle);
                 }
-                if (showExpansion)
+                if (showExpansion && !showDistrict)
                 {
                     string nomination = progress.nominationScore > 0 ? progress.nominationScore.ToString() : "--";
                     float expansionY = showLegislature ? 66f : 122f;
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + expansionY, statsRect.width - 20f, 26f),
                         $"REACH {progress.assemblyReach}  UNITY {progress.coalitionUnity}  READY {progress.assemblyReadiness}  NOM {nomination}", statStyle);
                 }
-                if (showAssemblyElection)
+                if (showAssemblyElection && !showDistrict)
                 {
                     string vote = progress.assemblyVoteShare > 0 ? progress.assemblyVoteShare + "%" : "--";
                     float electionY = showLegislature ? 94f : 150f;
@@ -164,8 +166,15 @@ namespace NetaJi.Prototype
                 if (showLegislature)
                 {
                     string performance = progress.mlaPerformanceScore > 0 ? progress.mlaPerformanceScore.ToString() : "--";
-                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 122f, statsRect.width - 20f, 26f),
+                    float legislatureY = showDistrict ? 66f : 122f;
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + legislatureY, statsRect.width - 20f, 26f),
                         $"MLA L{progress.legislativeEffectiveness} S{progress.constituencyService} E{progress.ethicsRecord}  FUND Rs{progress.mlaAllocationLakhs}L  SCORE {performance}", statStyle);
+                }
+                if (showDistrict)
+                {
+                    string districtScore = progress.districtExpansionScore > 0 ? progress.districtExpansionScore.ToString() : "--";
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 94f, statsRect.width - 20f, 26f),
+                        $"DIST R{progress.districtReach} Q{progress.candidateQuality} D{progress.organizationDiscipline}  SCORE {districtScore}", statStyle);
                 }
             }
 
