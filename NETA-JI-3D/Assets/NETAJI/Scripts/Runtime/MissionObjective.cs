@@ -15,6 +15,9 @@ namespace NetaJi.Prototype
         [SerializeField] private int powerReward;
         [SerializeField] private int volunteerReward;
         [SerializeField] private int pressureReward;
+        [SerializeField] private int supportReward;
+        [SerializeField] private int boothReward;
+        [SerializeField] private bool resolvesWardElection;
         [SerializeField] private bool hideAfterCompletion;
         [SerializeField] private bool requiresDecision;
         [SerializeField] private string decisionKey;
@@ -30,6 +33,8 @@ namespace NetaJi.Prototype
         [SerializeField] private int secondPowerReward;
         [SerializeField] private int secondVolunteerReward;
         [SerializeField] private int secondPressureReward;
+        [SerializeField] private int secondSupportReward;
+        [SerializeField] private int secondBoothReward;
 
         private bool completed;
         private bool decisionPending;
@@ -74,7 +79,9 @@ namespace NetaJi.Prototype
             int riskyProof = 0,
             int riskyPower = 0,
             int riskyVolunteers = 0,
-            int riskyPressure = 0)
+            int riskyPressure = 0,
+            int riskySupport = 0,
+            int riskyBooth = 0)
         {
             requiresDecision = true;
             decisionKey = key;
@@ -90,6 +97,8 @@ namespace NetaJi.Prototype
             secondPowerReward = riskyPower;
             secondVolunteerReward = riskyVolunteers;
             secondPressureReward = riskyPressure;
+            secondSupportReward = riskySupport;
+            secondBoothReward = riskyBooth;
         }
 
         public void ConfigurePoliticalReward(int power, int team, int pressure)
@@ -97,6 +106,17 @@ namespace NetaJi.Prototype
             powerReward = power;
             volunteerReward = team;
             pressureReward = pressure;
+        }
+
+        public void ConfigureCampaignReward(int support, int booth)
+        {
+            supportReward = support;
+            boothReward = booth;
+        }
+
+        public void ConfigureWardElectionResult()
+        {
+            resolvesWardElection = true;
         }
 
         public void Interact(AzadController player)
@@ -123,7 +143,7 @@ namespace NetaJi.Prototype
             }
 
             CompleteInteraction(speaker, dialogue, trustReward, moneyReward, reputationReward, proofReward,
-                powerReward, volunteerReward, pressureReward);
+                powerReward, volunteerReward, pressureReward, supportReward, boothReward);
         }
 
         public void ResolveDecisionForAutomation(int option)
@@ -153,12 +173,12 @@ namespace NetaJi.Prototype
             if (option == 2)
             {
                 CompleteInteraction(speaker, secondDialogue, secondTrustReward, secondMoneyReward, secondReputationReward, secondProofReward,
-                    secondPowerReward, secondVolunteerReward, secondPressureReward);
+                    secondPowerReward, secondVolunteerReward, secondPressureReward, secondSupportReward, secondBoothReward);
             }
             else
             {
                 CompleteInteraction(speaker, dialogue, trustReward, moneyReward, reputationReward, proofReward,
-                    powerReward, volunteerReward, pressureReward);
+                    powerReward, volunteerReward, pressureReward, supportReward, boothReward);
             }
         }
 
@@ -171,13 +191,24 @@ namespace NetaJi.Prototype
             int proof,
             int power,
             int team,
-            int pressure)
+            int pressure,
+            int support,
+            int booth)
         {
             completed = true;
             PrototypeAudio.Instance?.PlayInteraction();
-            PrototypeHud.Instance?.ShowDialogue(dialogueSpeaker, dialogueText);
             GameSession.Instance?.ApplyReward(trust, money, reputation, proof);
             GameSession.Instance?.ApplyPoliticalReward(power, team, pressure);
+            GameSession.Instance?.ApplyCampaignReward(support, booth);
+            if (resolvesWardElection && GameSession.Instance != null)
+            {
+                bool won = GameSession.Instance.ResolveWardElection();
+                int share = GameSession.Instance.Progress.wardVoteShare;
+                dialogueText = won
+                    ? $"Counting complete: India Helping Party {share}% vote share ke saath ward election jeet gayi."
+                    : $"Counting complete: {share}% vote share. Is baar haar hui; organization aur public work jaari rahega.";
+            }
+            PrototypeHud.Instance?.ShowDialogue(dialogueSpeaker, dialogueText);
             MissionController.Instance.Complete(this);
 
             if (hideAfterCompletion)

@@ -112,7 +112,9 @@ namespace NetaJi.Prototype
             {
                 float width = Mathf.Min(420f, Screen.width * 0.42f);
                 bool showPolitics = progress.politicalPower > 0 || progress.volunteers > 0 || progress.oppositionPressure > 0;
-                Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, showPolitics ? 76f : 52f);
+                bool showCampaign = progress.wardSupport > 0 || progress.boothReadiness > 0 || progress.wardVoteShare > 0;
+                float statsHeight = showCampaign ? 102f : showPolitics ? 76f : 52f;
+                Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, statsHeight);
                 DrawPanel(statsRect, new Color(0.015f, 0.08f, 0.10f, 0.84f));
                 GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 8f, statsRect.width - 20f, 26f),
                     $"TRUST {progress.publicTrust}%  Rs {progress.money}  REP {progress.reputation}  PROOF {progress.caseProof}", statStyle);
@@ -120,6 +122,12 @@ namespace NetaJi.Prototype
                 {
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 38f, statsRect.width - 20f, 26f),
                         $"POWER {progress.politicalPower}  TEAM {progress.volunteers}  PRESSURE {progress.oppositionPressure}", statStyle);
+                }
+                if (showCampaign)
+                {
+                    string vote = progress.wardVoteShare > 0 ? progress.wardVoteShare + "%" : "--";
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
+                        $"WARD {progress.wardSupport}  BOOTH {progress.boothReadiness}  VOTE {vote}", statStyle);
                 }
             }
 

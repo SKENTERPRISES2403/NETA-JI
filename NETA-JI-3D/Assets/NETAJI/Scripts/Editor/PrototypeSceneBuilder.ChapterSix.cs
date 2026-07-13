@@ -244,7 +244,7 @@ namespace NetaJi.Prototype.Editor
                     "Members, symbol aur service boundaries ready hain. First opposition rumour aa gaya hai.",
                     "Response record ho gaya. Ab public charter aur ward filing complete karo."
                 });
-            mission.ConfigureChapter(6, string.Empty);
+            mission.ConfigureChapter(6, "Chapter07");
             mission.ConfigureIntro(
                 "CHAPTER 6 / SEVA SE SIYASAT",
                 "Community movement ko accountable political organization mein badalne ka din.");

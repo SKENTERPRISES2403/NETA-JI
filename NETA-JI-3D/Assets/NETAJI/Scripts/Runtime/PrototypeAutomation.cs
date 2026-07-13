@@ -14,6 +14,10 @@ namespace NetaJi.Prototype
         [SerializeField] private int expectedPower;
         [SerializeField] private int expectedVolunteers;
         [SerializeField] private int expectedPressure;
+        [SerializeField] private int expectedSupport;
+        [SerializeField] private int expectedBooth;
+        [SerializeField] private int expectedVoteShare;
+        [SerializeField] private bool expectedWardWin;
 
         public void Configure(
             int chapter,
@@ -23,7 +27,11 @@ namespace NetaJi.Prototype
             int proof = 0,
             int power = 0,
             int team = 0,
-            int pressure = 0)
+            int pressure = 0,
+            int support = 0,
+            int booth = 0,
+            int voteShare = 0,
+            bool wardWin = false)
         {
             chapterNumber = Mathf.Max(1, chapter);
             expectedTrust = trust;
@@ -33,6 +41,10 @@ namespace NetaJi.Prototype
             expectedPower = power;
             expectedVolunteers = team;
             expectedPressure = pressure;
+            expectedSupport = support;
+            expectedBooth = booth;
+            expectedVoteShare = voteShare;
+            expectedWardWin = wardWin;
         }
 
         private void Start()
@@ -42,7 +54,8 @@ namespace NetaJi.Prototype
             if (System.Array.IndexOf(arguments, smokeArgument) >= 0
                 || (chapterNumber == 4 && System.Array.IndexOf(arguments, "-riskyDecisionSmoke") >= 0)
                 || (chapterNumber == 5 && System.Array.IndexOf(arguments, "-riskyHospitalSmoke") >= 0)
-                || (chapterNumber == 6 && System.Array.IndexOf(arguments, "-riskyOppositionSmoke") >= 0))
+                || (chapterNumber == 6 && System.Array.IndexOf(arguments, "-riskyOppositionSmoke") >= 0)
+                || (chapterNumber == 7 && System.Array.IndexOf(arguments, "-riskyCampaignSmoke") >= 0))
             {
                 StartCoroutine(RunSmoke(arguments));
             }
@@ -57,7 +70,9 @@ namespace NetaJi.Prototype
                 || (chapterNumber == 5
                     && System.Array.IndexOf(arguments, "-riskyHospitalSmoke") >= 0)
                 || (chapterNumber == 6
-                    && System.Array.IndexOf(arguments, "-riskyOppositionSmoke") >= 0);
+                    && System.Array.IndexOf(arguments, "-riskyOppositionSmoke") >= 0)
+                || (chapterNumber == 7
+                    && System.Array.IndexOf(arguments, "-riskyCampaignSmoke") >= 0);
 
             yield return new WaitForSeconds(1.2f);
             MissionController mission = MissionController.Instance;
@@ -107,7 +122,7 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(4);
                 mission.ResetMission(false);
             }
-            else
+            else if (chapterNumber == 6)
             {
                 GameSession.Instance.ResetProgress();
                 GameSession.Instance.ApplyReward(85, -700, 67, 17);
@@ -116,6 +131,19 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(3);
                 GameSession.Instance.CompleteChapter(4);
                 GameSession.Instance.CompleteChapter(5);
+                mission.ResetMission(false);
+            }
+            else
+            {
+                GameSession.Instance.ResetProgress();
+                GameSession.Instance.ApplyReward(88, -400, 80, 31);
+                GameSession.Instance.ApplyPoliticalReward(18, 35, 8);
+                GameSession.Instance.CompleteChapter(1);
+                GameSession.Instance.CompleteChapter(2);
+                GameSession.Instance.CompleteChapter(3);
+                GameSession.Instance.CompleteChapter(4);
+                GameSession.Instance.CompleteChapter(5);
+                GameSession.Instance.CompleteChapter(6);
                 mission.ResetMission(false);
             }
 
@@ -179,10 +207,26 @@ namespace NetaJi.Prototype
                 requiredReputation = 77;
                 requiredProof = 26;
             }
+            else if (chapterNumber == 7 && riskyDecision)
+            {
+                requiredTrust = 100;
+                requiredMoney = 500;
+                requiredReputation = 85;
+                requiredProof = 38;
+            }
             int requiredDecision = riskyDecision ? 2 : 1;
             int requiredPower = chapterNumber == 6 && riskyDecision ? 20 : expectedPower;
             int requiredVolunteers = chapterNumber == 6 && riskyDecision ? 32 : expectedVolunteers;
             int requiredPressure = chapterNumber == 6 && riskyDecision ? 17 : expectedPressure;
+            if (chapterNumber == 7 && riskyDecision)
+            {
+                requiredPower = 30;
+                requiredVolunteers = 52;
+                requiredPressure = 25;
+            }
+            int requiredSupport = chapterNumber == 7 && riskyDecision ? 66 : expectedSupport;
+            int requiredBooth = chapterNumber == 7 && riskyDecision ? 70 : expectedBooth;
+            int requiredVoteShare = chapterNumber == 7 && riskyDecision ? 58 : expectedVoteShare;
             bool passed = mission.IsComplete
                 && progress.publicTrust == requiredTrust
                 && progress.money == requiredMoney
@@ -191,9 +235,14 @@ namespace NetaJi.Prototype
                 && progress.politicalPower == requiredPower
                 && progress.volunteers == requiredVolunteers
                 && progress.oppositionPressure == requiredPressure
+                && progress.wardSupport == requiredSupport
+                && progress.boothReadiness == requiredBooth
+                && progress.wardVoteShare == requiredVoteShare
+                && progress.wardElectionWon == expectedWardWin
                 && (chapterNumber != 4 || progress.rescueApproach == requiredDecision)
                 && (chapterNumber != 5 || progress.hospitalApproach == requiredDecision)
                 && (chapterNumber != 6 || progress.oppositionResponse == requiredDecision)
+                && (chapterNumber != 7 || progress.campaignStrategy == requiredDecision)
                 && (PrototypeHud.Instance == null || !PrototypeHud.Instance.IsDecisionOpen);
             string marker = chapterNumber == 1
                 ? "PROTOTYPE"
