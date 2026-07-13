@@ -54,6 +54,10 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Computed district-network readiness gated by MLA performance, candidate quality, discipline, and pressure
 - Twelfth playable chapter: `Zila Sangathan`, covering accountable district organization
 - Save v12 migration and independently verified open-primary/closed-appointment outcomes
+- Persistent state-campaign `REACH`, candidate-slate `INTEGRITY`, polling `OPS`, score, and seat result
+- Computed eight-seat foothold gated by district readiness, clean candidates, operations, score, and seats won
+- Thirteenth playable chapter: `Pradesh Ki Dastak`, covering a fictional multi-seat state campaign
+- Save v13 migration and independently verified phased-field/all-seat-blitz outcomes
 
 The existing browser/PWA game remains separate in the repository root. This Unity project does not depend on its capture-game code.
 
@@ -71,7 +75,7 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Store/release builds will switch to IL2CPP ARM64 after the prototype is approved
 
 The Android artifact is a debug-signed development build. Its package id is
-`com.skenterprises.netaji.prototype`, version `0.13.0` (`versionCode 13`).
+`com.skenterprises.netaji.prototype`, version `0.14.0` (`versionCode 14`).
 
 ## Generate The Scene
 

@@ -123,7 +123,9 @@ namespace NetaJi.Prototype
                     || progress.ethicsRecord > 0 || progress.mlaAllocationLakhs != 0 || progress.mlaPerformanceScore > 0;
                 bool showDistrict = progress.districtReach > 0 || progress.candidateQuality > 0
                     || progress.organizationDiscipline > 0 || progress.districtExpansionScore > 0;
-                float statsHeight = showDistrict ? 130f : showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
+                bool showStateExpansion = progress.stateCampaignReach > 0 || progress.candidateSlateIntegrity > 0
+                    || progress.stateElectionOperations > 0 || progress.stateExpansionScore > 0 || progress.stateSeatsWon > 0;
+                float statsHeight = showStateExpansion ? 158f : showDistrict ? 130f : showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
                     : showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
                 Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, statsHeight);
                 DrawPanel(statsRect, new Color(0.015f, 0.08f, 0.10f, 0.96f));
@@ -175,6 +177,12 @@ namespace NetaJi.Prototype
                     string districtScore = progress.districtExpansionScore > 0 ? progress.districtExpansionScore.ToString() : "--";
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 94f, statsRect.width - 20f, 26f),
                         $"DIST R{progress.districtReach} Q{progress.candidateQuality} D{progress.organizationDiscipline}  SCORE {districtScore}", statStyle);
+                }
+                if (showStateExpansion)
+                {
+                    string stateScore = progress.stateExpansionScore > 0 ? progress.stateExpansionScore.ToString() : "--";
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 122f, statsRect.width - 20f, 26f),
+                        $"STATE R{progress.stateCampaignReach} I{progress.candidateSlateIntegrity} OPS{progress.stateElectionOperations}  SCORE {stateScore}  SEATS {progress.stateSeatsWon}/8", statStyle);
                 }
             }
 

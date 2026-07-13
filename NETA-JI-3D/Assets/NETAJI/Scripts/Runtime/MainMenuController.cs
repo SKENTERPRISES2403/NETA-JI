@@ -20,6 +20,7 @@ namespace NetaJi.Prototype
         [SerializeField] private string chapterTenSceneName = "Chapter10";
         [SerializeField] private string chapterElevenSceneName = "Chapter11";
         [SerializeField] private string chapterTwelveSceneName = "Chapter12";
+        [SerializeField] private string chapterThirteenSceneName = "Chapter13";
 
         private Texture2D whiteTexture;
         private Texture2D primaryTexture;
@@ -107,6 +108,11 @@ namespace NetaJi.Prototype
             {
                 SceneManager.LoadScene(chapterTwelveSceneName);
             }
+            else if (Array.IndexOf(arguments, "-chapter13Smoke") >= 0
+                || Array.IndexOf(arguments, "-riskyStateExpansionSmoke") >= 0)
+            {
+                SceneManager.LoadScene(chapterThirteenSceneName);
+            }
         }
 
         private IEnumerator RunMenuSmoke(string[] arguments)
@@ -128,15 +134,18 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(9);
                 GameSession.Instance.CompleteChapter(10);
                 GameSession.Instance.CompleteChapter(11);
+                GameSession.Instance.CompleteChapter(12);
             }
             yield return new WaitForSeconds(1.2f);
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "menu-start.png"));
             yield return new WaitForSeconds(0.8f);
             chaptersOpen = true;
+            yield return new WaitForSeconds(0.35f);
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "menu-chapters.png"));
             yield return new WaitForSeconds(0.8f);
             chaptersOpen = false;
             storyOpen = true;
+            yield return new WaitForSeconds(0.35f);
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "menu-story.png"));
             yield return new WaitForSeconds(1f);
             Debug.Log("MENU_SMOKE_PASSED");
@@ -217,25 +226,29 @@ namespace NetaJi.Prototype
             GUI.Label(new Rect(panel.x + 24f, panel.y + 18f, panel.width - 48f, 46f), "AZAD KA SAFAR", subtitleStyle);
 
             const float cardGap = 10f;
-            float cardWidth = (panel.width - 48f - cardGap * 5f) / 6f;
+            const int cardColumns = 7;
+            float cardWidth = (panel.width - 48f - cardGap * (cardColumns - 1)) / cardColumns;
             float cardHeight = 70f;
             float firstX = panel.x + 24f;
             float firstY = panel.y + 62f;
-            DrawChapterCard(new Rect(firstX, firstY, cardWidth, cardHeight), 1, "GHAT SE GHAR TAK");
-            DrawChapterCard(new Rect(firstX + cardWidth + cardGap, firstY, cardWidth, cardHeight), 2, "SHAAM KI PAATHSHALA");
-            DrawChapterCard(new Rect(firstX + (cardWidth + cardGap) * 2f, firstY, cardWidth, cardHeight), 3, "SANDHYA KAHAN HAI");
-            DrawChapterCard(new Rect(firstX + (cardWidth + cardGap) * 3f, firstY, cardWidth, cardHeight), 4, "OPERATION UMEED");
-            DrawChapterCard(new Rect(firstX + (cardWidth + cardGap) * 4f, firstY, cardWidth, cardHeight), 5, "DAWA KA SACH");
-            DrawChapterCard(new Rect(firstX + (cardWidth + cardGap) * 5f, firstY, cardWidth, cardHeight), 6, "SEVA SE SIYASAT");
-
-            float secondY = firstY + cardHeight + 12f;
-            float secondX = firstX;
-            DrawChapterCard(new Rect(secondX, secondY, cardWidth, cardHeight), 7, "WARD KA FAISLA");
-            DrawChapterCard(new Rect(secondX + cardWidth + cardGap, secondY, cardWidth, cardHeight), 8, "PEHLE 100 DIN");
-            DrawChapterCard(new Rect(secondX + (cardWidth + cardGap) * 2f, secondY, cardWidth, cardHeight), 9, "VIDHANSABHA KI RAAH");
-            DrawChapterCard(new Rect(secondX + (cardWidth + cardGap) * 3f, secondY, cardWidth, cardHeight), 10, "JANATA KA MANDATE");
-            DrawChapterCard(new Rect(secondX + (cardWidth + cardGap) * 4f, secondY, cardWidth, cardHeight), 11, "JANATA KA MLA");
-            DrawChapterCard(new Rect(secondX + (cardWidth + cardGap) * 5f, secondY, cardWidth, cardHeight), 12, "ZILA SANGATHAN");
+            string[] chapterTitles =
+            {
+                "GHAT SE GHAR TAK", "SHAAM KI PAATHSHALA", "SANDHYA KAHAN HAI", "OPERATION UMEED",
+                "DAWA KA SACH", "SEVA SE SIYASAT", "WARD KA FAISLA", "PEHLE 100 DIN",
+                "VIDHANSABHA KI RAAH", "JANATA KA MANDATE", "JANATA KA MLA", "ZILA SANGATHAN",
+                "PRADESH KI DASTAK"
+            };
+            for (int index = 0; index < chapterTitles.Length; index++)
+            {
+                int column = index % cardColumns;
+                int row = index / cardColumns;
+                Rect cardRect = new Rect(
+                    firstX + column * (cardWidth + cardGap),
+                    firstY + row * (cardHeight + 12f),
+                    cardWidth,
+                    cardHeight);
+                DrawChapterCard(cardRect, index + 1, chapterTitles[index]);
+            }
 
             GUI.Label(
                 new Rect(panel.x + 24f, panel.y + 224f, panel.width - 48f, 44f),
@@ -254,9 +267,13 @@ namespace NetaJi.Prototype
 
         private void DrawChapterCard(Rect rect, int chapterNumber, string title)
         {
+            GUIStyle chapterStyle = new GUIStyle(buttonStyle)
+            {
+                fontSize = Mathf.Clamp(Mathf.RoundToInt(rect.width * 0.115f), 11, buttonStyle.fontSize)
+            };
             if (GameSession.HighestUnlockedChapter >= chapterNumber)
             {
-                if (GUI.Button(rect, $"CHAPTER {chapterNumber}\n{title}", buttonStyle))
+                if (GUI.Button(rect, $"CHAPTER {chapterNumber}\n{title}", chapterStyle))
                 {
                     LoadChapter(chapterNumber, false);
                 }
@@ -264,7 +281,9 @@ namespace NetaJi.Prototype
             }
 
             DrawPanel(rect, new Color(0.12f, 0.16f, 0.17f, 0.96f));
-            GUI.Label(rect, $"CHAPTER {chapterNumber}\nLOCKED", secondaryButtonStyle);
+            GUIStyle lockedStyle = new GUIStyle(chapterStyle);
+            lockedStyle.normal.textColor = Color.white;
+            GUI.Label(rect, $"CHAPTER {chapterNumber}\nLOCKED", lockedStyle);
         }
 
         private void DrawStoryPanel(float scale)
@@ -335,6 +354,10 @@ namespace NetaJi.Prototype
             else if (chapterNumber == 12)
             {
                 sceneName = chapterTwelveSceneName;
+            }
+            else if (chapterNumber == 13)
+            {
+                sceneName = chapterThirteenSceneName;
             }
             SceneManager.LoadScene(sceneName);
         }
