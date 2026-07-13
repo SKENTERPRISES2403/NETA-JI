@@ -11,6 +11,7 @@ namespace NetaJi.Prototype
         [SerializeField] private int trustReward;
         [SerializeField] private int moneyReward;
         [SerializeField] private int reputationReward;
+        [SerializeField] private int proofReward;
         [SerializeField] private bool hideAfterCompletion;
         [SerializeField] private bool requiresDecision;
         [SerializeField] private string decisionKey;
@@ -22,6 +23,7 @@ namespace NetaJi.Prototype
         [SerializeField] private int secondTrustReward;
         [SerializeField] private int secondMoneyReward;
         [SerializeField] private int secondReputationReward;
+        [SerializeField] private int secondProofReward;
 
         private bool completed;
         private bool decisionPending;
@@ -39,7 +41,8 @@ namespace NetaJi.Prototype
             int trust,
             int money,
             int reputation,
-            bool hideWhenDone)
+            bool hideWhenDone,
+            int proof = 0)
         {
             objectiveId = id;
             prompt = interactionPrompt;
@@ -48,6 +51,7 @@ namespace NetaJi.Prototype
             trustReward = trust;
             moneyReward = money;
             reputationReward = reputation;
+            proofReward = proof;
             hideAfterCompletion = hideWhenDone;
         }
 
@@ -60,7 +64,8 @@ namespace NetaJi.Prototype
             string riskyDialogue,
             int riskyTrust,
             int riskyMoney,
-            int riskyReputation)
+            int riskyReputation,
+            int riskyProof = 0)
         {
             requiresDecision = true;
             decisionKey = key;
@@ -72,6 +77,7 @@ namespace NetaJi.Prototype
             secondTrustReward = riskyTrust;
             secondMoneyReward = riskyMoney;
             secondReputationReward = riskyReputation;
+            secondProofReward = riskyProof;
         }
 
         public void Interact(AzadController player)
@@ -97,7 +103,7 @@ namespace NetaJi.Prototype
                 return;
             }
 
-            CompleteInteraction(speaker, dialogue, trustReward, moneyReward, reputationReward);
+            CompleteInteraction(speaker, dialogue, trustReward, moneyReward, reputationReward, proofReward);
         }
 
         public void ResolveDecisionForAutomation(int option)
@@ -126,20 +132,20 @@ namespace NetaJi.Prototype
             GameSession.Instance?.SetStoryDecision(decisionKey, option);
             if (option == 2)
             {
-                CompleteInteraction(speaker, secondDialogue, secondTrustReward, secondMoneyReward, secondReputationReward);
+                CompleteInteraction(speaker, secondDialogue, secondTrustReward, secondMoneyReward, secondReputationReward, secondProofReward);
             }
             else
             {
-                CompleteInteraction(speaker, dialogue, trustReward, moneyReward, reputationReward);
+                CompleteInteraction(speaker, dialogue, trustReward, moneyReward, reputationReward, proofReward);
             }
         }
 
-        private void CompleteInteraction(string dialogueSpeaker, string dialogueText, int trust, int money, int reputation)
+        private void CompleteInteraction(string dialogueSpeaker, string dialogueText, int trust, int money, int reputation, int proof)
         {
             completed = true;
             PrototypeAudio.Instance?.PlayInteraction();
             PrototypeHud.Instance?.ShowDialogue(dialogueSpeaker, dialogueText);
-            GameSession.Instance?.ApplyReward(trust, money, reputation);
+            GameSession.Instance?.ApplyReward(trust, money, reputation, proof);
             MissionController.Instance.Complete(this);
 
             if (hideAfterCompletion)

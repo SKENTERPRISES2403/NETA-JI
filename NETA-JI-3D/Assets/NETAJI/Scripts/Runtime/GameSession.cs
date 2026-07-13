@@ -7,20 +7,24 @@ namespace NetaJi.Prototype
     [Serializable]
     public sealed class PlayerProgress
     {
-        public int saveVersion = 4;
+        public int saveVersion = 5;
         public int publicTrust = 12;
         public int money = 850;
         public int reputation = 4;
+        public int caseProof;
         public int missionStep;
         public int chapterOneStep;
         public int chapterTwoStep;
         public int chapterThreeStep;
         public int chapterFourStep;
+        public int chapterFiveStep;
         public bool chapterOneComplete;
         public bool chapterTwoComplete;
         public bool chapterThreeComplete;
         public bool chapterFourComplete;
+        public bool chapterFiveComplete;
         public int rescueApproach;
+        public int hospitalApproach;
         public int highestUnlockedChapter = 1;
         public int lastPlayedChapter = 1;
     }
@@ -37,7 +41,7 @@ namespace NetaJi.Prototype
         public PlayerProgress Progress => progress;
         public static bool HasSave => File.Exists(GetSavePath());
         public static int HighestUnlockedChapter => GetSavedChapterState().highestUnlockedChapter;
-        public static int LastPlayedChapter => Mathf.Clamp(GetSavedChapterState().lastPlayedChapter, 1, 4);
+        public static int LastPlayedChapter => Mathf.Clamp(GetSavedChapterState().lastPlayedChapter, 1, 5);
 
         public static void DeleteSave()
         {
@@ -67,11 +71,12 @@ namespace NetaJi.Prototype
             Load();
         }
 
-        public void ApplyReward(int trust, int money, int reputation)
+        public void ApplyReward(int trust, int money, int reputation, int proof = 0)
         {
             progress.publicTrust = Mathf.Clamp(progress.publicTrust + trust, 0, 100);
             progress.money = Mathf.Max(0, progress.money + money);
             progress.reputation = Mathf.Clamp(progress.reputation + reputation, 0, 100);
+            progress.caseProof = Mathf.Clamp(progress.caseProof + proof, 0, 100);
             Save();
         }
 
@@ -85,6 +90,8 @@ namespace NetaJi.Prototype
                     return progress.chapterThreeStep;
                 case 4:
                     return progress.chapterFourStep;
+                case 5:
+                    return progress.chapterFiveStep;
                 default:
                     return progress.chapterOneStep;
             }
@@ -93,7 +100,11 @@ namespace NetaJi.Prototype
         public void SetMissionStep(int chapterNumber, int step)
         {
             int safeStep = Mathf.Max(0, step);
-            if (chapterNumber == 4)
+            if (chapterNumber == 5)
+            {
+                progress.chapterFiveStep = safeStep;
+            }
+            else if (chapterNumber == 4)
             {
                 progress.chapterFourStep = safeStep;
             }
@@ -110,7 +121,7 @@ namespace NetaJi.Prototype
                 progress.chapterOneStep = safeStep;
                 progress.missionStep = safeStep;
             }
-            progress.lastPlayedChapter = Mathf.Clamp(chapterNumber, 1, 4);
+            progress.lastPlayedChapter = Mathf.Clamp(chapterNumber, 1, 5);
             Save();
         }
 
@@ -120,15 +131,25 @@ namespace NetaJi.Prototype
             {
                 progress.rescueApproach = 0;
             }
+            else if (chapterNumber == 5)
+            {
+                progress.hospitalApproach = 0;
+            }
             SetMissionStep(chapterNumber, 0);
         }
 
         public void CompleteChapter(int chapterNumber)
         {
-            if (chapterNumber == 4)
+            if (chapterNumber == 5)
+            {
+                progress.chapterFiveComplete = true;
+                progress.lastPlayedChapter = 5;
+            }
+            else if (chapterNumber == 4)
             {
                 progress.chapterFourComplete = true;
-                progress.lastPlayedChapter = 4;
+                progress.highestUnlockedChapter = Mathf.Max(progress.highestUnlockedChapter, 5);
+                progress.lastPlayedChapter = 5;
             }
             else if (chapterNumber == 3)
             {
@@ -156,6 +177,11 @@ namespace NetaJi.Prototype
             if (key == "rescue-approach")
             {
                 progress.rescueApproach = Mathf.Clamp(option, 1, 2);
+                Save();
+            }
+            else if (key == "hospital-approach")
+            {
+                progress.hospitalApproach = Mathf.Clamp(option, 1, 2);
                 Save();
             }
         }
@@ -257,14 +283,24 @@ namespace NetaJi.Prototype
                 progress.highestUnlockedChapter = 4;
                 changed = true;
             }
+            if (progress.chapterFourStep >= 11 && !progress.chapterFourComplete)
+            {
+                progress.chapterFourComplete = true;
+                changed = true;
+            }
+            if (progress.chapterFourComplete && progress.highestUnlockedChapter < 5)
+            {
+                progress.highestUnlockedChapter = 5;
+                changed = true;
+            }
             if (progress.lastPlayedChapter < 1)
             {
                 progress.lastPlayedChapter = progress.chapterOneComplete ? 2 : 1;
                 changed = true;
             }
-            if (progress.saveVersion < 4)
+            if (progress.saveVersion < 5)
             {
-                progress.saveVersion = 4;
+                progress.saveVersion = 5;
                 changed = true;
             }
 
@@ -295,6 +331,10 @@ namespace NetaJi.Prototype
                         if (saved.chapterThreeComplete || saved.chapterThreeStep >= 11)
                         {
                             saved.highestUnlockedChapter = Mathf.Max(saved.highestUnlockedChapter, 4);
+                        }
+                        if (saved.chapterFourComplete || saved.chapterFourStep >= 11)
+                        {
+                            saved.highestUnlockedChapter = Mathf.Max(saved.highestUnlockedChapter, 5);
                         }
                         if (saved.lastPlayedChapter < 1)
                         {

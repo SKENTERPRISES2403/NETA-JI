@@ -114,7 +114,7 @@ namespace NetaJi.Prototype
                 Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, 52f);
                 DrawPanel(statsRect, new Color(0.015f, 0.08f, 0.10f, 0.84f));
                 GUI.Label(new Rect(statsRect.x + 16f, statsRect.y + 14f, statsRect.width - 32f, 28f),
-                    $"TRUST {progress.publicTrust}%     FUNDS Rs {progress.money}     REP {progress.reputation}", statStyle);
+                    $"TRUST {progress.publicTrust}%  Rs {progress.money}  REP {progress.reputation}  PROOF {progress.caseProof}", statStyle);
             }
 
             if (!string.IsNullOrWhiteSpace(interactionPrompt) && Time.unscaledTime >= dialogueUntil)

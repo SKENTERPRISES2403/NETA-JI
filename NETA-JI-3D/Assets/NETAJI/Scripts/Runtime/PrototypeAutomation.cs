@@ -10,13 +10,15 @@ namespace NetaJi.Prototype
         [SerializeField] private int expectedTrust = 35;
         [SerializeField] private int expectedMoney = 950;
         [SerializeField] private int expectedReputation = 16;
+        [SerializeField] private int expectedProof;
 
-        public void Configure(int chapter, int trust, int money, int reputation)
+        public void Configure(int chapter, int trust, int money, int reputation, int proof = 0)
         {
             chapterNumber = Mathf.Max(1, chapter);
             expectedTrust = trust;
             expectedMoney = money;
             expectedReputation = reputation;
+            expectedProof = proof;
         }
 
         private void Start()
@@ -24,7 +26,8 @@ namespace NetaJi.Prototype
             string[] arguments = System.Environment.GetCommandLineArgs();
             string smokeArgument = chapterNumber == 1 ? "-prototypeSmoke" : $"-chapter{chapterNumber}Smoke";
             if (System.Array.IndexOf(arguments, smokeArgument) >= 0
-                || (chapterNumber == 4 && System.Array.IndexOf(arguments, "-riskyDecisionSmoke") >= 0))
+                || (chapterNumber == 4 && System.Array.IndexOf(arguments, "-riskyDecisionSmoke") >= 0)
+                || (chapterNumber == 5 && System.Array.IndexOf(arguments, "-riskyHospitalSmoke") >= 0))
             {
                 StartCoroutine(RunSmoke(arguments));
             }
@@ -34,8 +37,10 @@ namespace NetaJi.Prototype
         {
             string outputDirectory = ReadArgument(arguments, "-screenshotPath") ?? Application.persistentDataPath;
             Directory.CreateDirectory(outputDirectory);
-            bool riskyDecision = chapterNumber == 4
-                && System.Array.IndexOf(arguments, "-riskyDecisionSmoke") >= 0;
+            bool riskyDecision = (chapterNumber == 4
+                    && System.Array.IndexOf(arguments, "-riskyDecisionSmoke") >= 0)
+                || (chapterNumber == 5
+                    && System.Array.IndexOf(arguments, "-riskyHospitalSmoke") >= 0);
 
             yield return new WaitForSeconds(1.2f);
             MissionController mission = MissionController.Instance;
@@ -66,7 +71,7 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(2);
                 mission.ResetMission(false);
             }
-            else
+            else if (chapterNumber == 4)
             {
                 GameSession.Instance.ResetProgress();
                 GameSession.Instance.ApplyReward(55, 50, 36);
@@ -75,10 +80,20 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(3);
                 mission.ResetMission(false);
             }
+            else
+            {
+                GameSession.Instance.ResetProgress();
+                GameSession.Instance.ApplyReward(71, -200, 52);
+                GameSession.Instance.CompleteChapter(1);
+                GameSession.Instance.CompleteChapter(2);
+                GameSession.Instance.CompleteChapter(3);
+                GameSession.Instance.CompleteChapter(4);
+                mission.ResetMission(false);
+            }
 
             string filePrefix = chapterNumber == 1
                 ? "prototype"
-                : riskyDecision ? "chapter-4-risky" : $"chapter-{chapterNumber}";
+                : riskyDecision ? $"chapter-{chapterNumber}-risky" : $"chapter-{chapterNumber}";
             string startPath = Path.Combine(outputDirectory, filePrefix + "-start.png");
             ScreenCapture.CaptureScreenshot(startPath);
             yield return new WaitForSeconds(0.8f);
@@ -122,19 +137,25 @@ namespace NetaJi.Prototype
             yield return new WaitForSeconds(0.6f);
 
             PlayerProgress progress = GameSession.Instance.Progress;
-            int requiredTrust = riskyDecision ? 76 : expectedTrust;
-            int requiredMoney = riskyDecision ? 750 : expectedMoney;
-            int requiredReputation = riskyDecision ? 50 : expectedReputation;
+            int requiredTrust = chapterNumber == 4 && riskyDecision ? 76
+                : chapterNumber == 5 && riskyDecision ? 99 : expectedTrust;
+            int requiredMoney = chapterNumber == 4 && riskyDecision ? 750
+                : chapterNumber == 5 && riskyDecision ? 250 : expectedMoney;
+            int requiredReputation = chapterNumber == 4 && riskyDecision ? 50
+                : chapterNumber == 5 && riskyDecision ? 64 : expectedReputation;
+            int requiredProof = chapterNumber == 5 && riskyDecision ? 9 : expectedProof;
             int requiredDecision = riskyDecision ? 2 : 1;
             bool passed = mission.IsComplete
                 && progress.publicTrust == requiredTrust
                 && progress.money == requiredMoney
                 && progress.reputation == requiredReputation
+                && progress.caseProof == requiredProof
                 && (chapterNumber != 4 || progress.rescueApproach == requiredDecision)
+                && (chapterNumber != 5 || progress.hospitalApproach == requiredDecision)
                 && (PrototypeHud.Instance == null || !PrototypeHud.Instance.IsDecisionOpen);
             string marker = chapterNumber == 1
                 ? "PROTOTYPE"
-                : riskyDecision ? "CHAPTER_4_RISKY" : $"CHAPTER_{chapterNumber}";
+                : riskyDecision ? $"CHAPTER_{chapterNumber}_RISKY" : $"CHAPTER_{chapterNumber}";
             Debug.Log(passed
                 ? $"{marker}_SMOKE_PASSED: trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}"
                 : $"{marker}_SMOKE_FAILED: complete={mission.IsComplete}, trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}");

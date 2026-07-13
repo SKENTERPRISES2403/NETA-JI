@@ -23,6 +23,9 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Reusable two-option decision UI with persisted story consequences
 - Fourth playable chapter: `Operation Umeed`, a non-graphic police-led rescue
 - Save v4 migration and independent safe/risky branch verification
+- Persistent `PROOF` stat for documents, evidence chains, and future opposition cases
+- Fifth playable chapter: `Dawa Ka Sach`, a fictional hospital-supply investigation
+- Save v5 migration and independently verified case-file/public-post outcomes
 
 The existing browser/PWA game remains separate in the repository root. This Unity project does not depend on its capture-game code.
 
@@ -40,7 +43,7 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Store/release builds will switch to IL2CPP ARM64 after the prototype is approved
 
 The Android artifact is a debug-signed development build. Its package id is
-`com.skenterprises.netaji.prototype`, version `0.5.0` (`versionCode 5`).
+`com.skenterprises.netaji.prototype`, version `0.6.0` (`versionCode 6`).
 
 ## Generate The Scene
 

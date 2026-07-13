@@ -246,7 +246,7 @@ namespace NetaJi.Prototype.Editor
                     "Gate aur patrol signal ready hain. Samrat ki team ke saath side office tak pahuncho.",
                     "Sandhya mil gayi hai. First aid ke baad evidence secure karna hoga."
                 });
-            mission.ConfigureChapter(4, string.Empty);
+            mission.ConfigureChapter(4, "Chapter05");
             mission.ConfigureIntro(
                 "CHAPTER 4 / OPERATION UMEED",
                 "Riverside godown. Sandhya ki safety pehle; gussa aur jaldbazi baad mein.");

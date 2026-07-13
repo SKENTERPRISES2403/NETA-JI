@@ -17,9 +17,10 @@ namespace NetaJi.Prototype.Editor
         private const string ChapterTwoScenePath = "Assets/NETAJI/Scenes/Chapter02.unity";
         private const string ChapterThreeScenePath = "Assets/NETAJI/Scenes/Chapter03.unity";
         private const string ChapterFourScenePath = "Assets/NETAJI/Scenes/Chapter04.unity";
+        private const string ChapterFiveScenePath = "Assets/NETAJI/Scenes/Chapter05.unity";
         private const string MenuScenePath = "Assets/NETAJI/Scenes/MainMenu.unity";
         private const string MaterialPath = "Assets/NETAJI/Materials";
-        private static readonly string[] BuildScenes = { MenuScenePath, ScenePath, ChapterTwoScenePath, ChapterThreeScenePath, ChapterFourScenePath };
+        private static readonly string[] BuildScenes = { MenuScenePath, ScenePath, ChapterTwoScenePath, ChapterThreeScenePath, ChapterFourScenePath, ChapterFiveScenePath };
 
         [MenuItem("NETA JI/Build Prototype Scene")]
         public static void Build()
@@ -287,6 +288,22 @@ namespace NetaJi.Prototype.Editor
                 policeKhaki,
                 foliage,
                 trunk);
+            BuildChapterFiveScene(
+                sand,
+                stone,
+                darkStone,
+                teal,
+                yellow,
+                white,
+                shirt,
+                trousers,
+                skin,
+                hair,
+                shantiDress,
+                volunteerDress,
+                policeKhaki,
+                foliage,
+                trunk);
             BuildMainMenuScene(
                 sand,
                 stone,
@@ -308,13 +325,14 @@ namespace NetaJi.Prototype.Editor
                 new EditorBuildSettingsScene(ScenePath, true),
                 new EditorBuildSettingsScene(ChapterTwoScenePath, true),
                 new EditorBuildSettingsScene(ChapterThreeScenePath, true),
-                new EditorBuildSettingsScene(ChapterFourScenePath, true)
+                new EditorBuildSettingsScene(ChapterFourScenePath, true),
+                new EditorBuildSettingsScene(ChapterFiveScenePath, true)
             };
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             Selection.activeGameObject = GameObject.Find("Azad");
-            Debug.Log($"NETA JI menu and chapter scenes generated at {MenuScenePath}, {ScenePath}, {ChapterTwoScenePath}, {ChapterThreeScenePath}, and {ChapterFourScenePath}");
+            Debug.Log($"NETA JI menu and chapter scenes generated at {MenuScenePath}, {ScenePath}, {ChapterTwoScenePath}, {ChapterThreeScenePath}, {ChapterFourScenePath}, and {ChapterFiveScenePath}");
         }
 
         private static void BuildChapterTwoScene(
@@ -648,12 +666,12 @@ namespace NetaJi.Prototype.Editor
         {
             PlayerSettings.companyName = "SK Enterprises";
             PlayerSettings.productName = "NETA JI";
-            PlayerSettings.bundleVersion = "0.5.0";
+            PlayerSettings.bundleVersion = "0.6.0";
             PlayerSettings.colorSpace = ColorSpace.Gamma;
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.skenterprises.netaji.prototype");
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
-            PlayerSettings.Android.bundleVersionCode = 5;
+            PlayerSettings.Android.bundleVersionCode = 6;
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.Mono2x);
             QualitySettings.vSyncCount = 0;
@@ -802,7 +820,8 @@ namespace NetaJi.Prototype.Editor
             int trust,
             int money,
             int reputation,
-            bool hideWhenDone)
+            bool hideWhenDone,
+            int proof = 0)
         {
             Collider existingCollider = target.GetComponent<Collider>();
             if (existingCollider == null)
@@ -819,7 +838,7 @@ namespace NetaJi.Prototype.Editor
             }
 
             MissionObjective objective = target.AddComponent<MissionObjective>();
-            objective.Configure(id, prompt, speaker, dialogue, trust, money, reputation, hideWhenDone);
+            objective.Configure(id, prompt, speaker, dialogue, trust, money, reputation, hideWhenDone, proof);
             target.AddComponent<ObjectiveBeacon>();
             return objective;
         }
