@@ -129,7 +129,10 @@ namespace NetaJi.Prototype
                     || progress.publicLeadership > 0 || progress.stateLeadershipScore > 0;
                 bool showStateElection = progress.statewideSupport > 0 || progress.statewideCampaignCompliance > 0
                     || progress.statewideElectionOperations > 0 || progress.statewideVoteShare > 0 || progress.stateAssemblySeatsWon > 0;
-                float statsHeight = showStateElection ? 214f : showStateLeadership ? 186f : showStateExpansion ? 158f : showDistrict ? 130f : showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
+                bool showChiefMinisterGovernance = progress.chiefMinisterDelivery > 0 || progress.cabinetIntegrity > 0
+                    || progress.stateFiscalDiscipline > 0 || progress.chiefMinisterGovernanceScore > 0;
+                float statsHeight = showChiefMinisterGovernance || showStateElection || showStateLeadership || showStateExpansion
+                    ? 102f : showDistrict ? 130f : showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
                     : showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
                 Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, statsHeight);
                 DrawPanel(statsRect, new Color(0.015f, 0.08f, 0.10f, 0.96f));
@@ -169,36 +172,44 @@ namespace NetaJi.Prototype
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + electionY, statsRect.width - 20f, 26f),
                         $"SUP {progress.constituencySupport}  RULES {progress.campaignCompliance}  OPS {progress.electionOperations}  VOTE {vote}", statStyle);
                 }
-                if (showLegislature)
+                if (showLegislature && !showStateExpansion)
                 {
                     string performance = progress.mlaPerformanceScore > 0 ? progress.mlaPerformanceScore.ToString() : "--";
                     float legislatureY = showDistrict ? 66f : 122f;
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + legislatureY, statsRect.width - 20f, 26f),
                         $"MLA L{progress.legislativeEffectiveness} S{progress.constituencyService} E{progress.ethicsRecord}  FUND Rs{progress.mlaAllocationLakhs}L  SCORE {performance}", statStyle);
                 }
-                if (showDistrict)
+                if (showDistrict && !showStateExpansion)
                 {
                     string districtScore = progress.districtExpansionScore > 0 ? progress.districtExpansionScore.ToString() : "--";
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 94f, statsRect.width - 20f, 26f),
                         $"DIST R{progress.districtReach} Q{progress.candidateQuality} D{progress.organizationDiscipline}  SCORE {districtScore}", statStyle);
                 }
-                if (showStateExpansion)
+                if (showStateExpansion && !showStateLeadership)
                 {
                     string stateScore = progress.stateExpansionScore > 0 ? progress.stateExpansionScore.ToString() : "--";
-                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 122f, statsRect.width - 20f, 26f),
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"STATE R{progress.stateCampaignReach} I{progress.candidateSlateIntegrity} OPS{progress.stateElectionOperations}  SCORE {stateScore}  SEATS {progress.stateSeatsWon}/8", statStyle);
                 }
-                if (showStateLeadership)
+                if (showStateLeadership && !showStateElection)
                 {
                     string leadershipScore = progress.stateLeadershipScore > 0 ? progress.stateLeadershipScore.ToString() : "--";
-                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 150f, statsRect.width - 20f, 26f),
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"LEAD P{progress.statePolicyCredibility} U{progress.stateCaucusUnity} PUB{progress.publicLeadership}  SCORE {leadershipScore}", statStyle);
                 }
-                if (showStateElection)
+                if (showStateElection && !showChiefMinisterGovernance)
                 {
                     string statewideVote = progress.statewideVoteShare > 0 ? progress.statewideVoteShare + "%" : "--";
-                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 178f, statsRect.width - 20f, 26f),
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"CM SUP{progress.statewideSupport} RULE{progress.statewideCampaignCompliance} OPS{progress.statewideElectionOperations}  VOTE {statewideVote}  SEATS {progress.stateAssemblySeatsWon}/40", statStyle);
+                }
+                if (showChiefMinisterGovernance)
+                {
+                    string review = progress.chiefMinisterGovernanceScore > 0
+                        ? progress.chiefMinisterGovernanceScore.ToString() : "--";
+                    string reviewState = progress.chiefMinisterHundredDayReviewPassed ? "PASS" : "OPEN";
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
+                        $"CM D{progress.chiefMinisterDelivery} I{progress.cabinetIntegrity} F{progress.stateFiscalDiscipline}  SCORE {review}  {reviewState}", statStyle);
                 }
             }
 

@@ -61,6 +61,11 @@ namespace NetaJi.Prototype
         [SerializeField] private int expectedStatewideVoteShare;
         [SerializeField] private int expectedStateAssemblySeatsWon;
         [SerializeField] private bool expectedChiefMinisterElected;
+        [SerializeField] private int expectedChiefMinisterDelivery;
+        [SerializeField] private int expectedCabinetIntegrity;
+        [SerializeField] private int expectedStateFiscalDiscipline;
+        [SerializeField] private int expectedChiefMinisterGovernanceScore;
+        [SerializeField] private bool expectedChiefMinisterHundredDayReviewPassed;
 
         public void Configure(
             int chapter,
@@ -117,7 +122,12 @@ namespace NetaJi.Prototype
             int statewideElectionOperations = 0,
             int statewideVoteShare = 0,
             int stateAssemblySeatsWon = 0,
-            bool chiefMinisterElected = false)
+            bool chiefMinisterElected = false,
+            int chiefMinisterDelivery = 0,
+            int cabinetIntegrity = 0,
+            int stateFiscalDiscipline = 0,
+            int chiefMinisterGovernanceScore = 0,
+            bool chiefMinisterHundredDayReviewPassed = false)
         {
             chapterNumber = Mathf.Max(1, chapter);
             expectedTrust = trust;
@@ -174,6 +184,11 @@ namespace NetaJi.Prototype
             expectedStatewideVoteShare = statewideVoteShare;
             expectedStateAssemblySeatsWon = stateAssemblySeatsWon;
             expectedChiefMinisterElected = chiefMinisterElected;
+            expectedChiefMinisterDelivery = chiefMinisterDelivery;
+            expectedCabinetIntegrity = cabinetIntegrity;
+            expectedStateFiscalDiscipline = stateFiscalDiscipline;
+            expectedChiefMinisterGovernanceScore = chiefMinisterGovernanceScore;
+            expectedChiefMinisterHundredDayReviewPassed = chiefMinisterHundredDayReviewPassed;
         }
 
         private void Start()
@@ -192,7 +207,8 @@ namespace NetaJi.Prototype
                 || (chapterNumber == 12 && System.Array.IndexOf(arguments, "-riskyDistrictSmoke") >= 0)
                 || (chapterNumber == 13 && System.Array.IndexOf(arguments, "-riskyStateExpansionSmoke") >= 0)
                 || (chapterNumber == 14 && System.Array.IndexOf(arguments, "-riskyStateLeadershipSmoke") >= 0)
-                || (chapterNumber == 15 && System.Array.IndexOf(arguments, "-riskyStateElectionSmoke") >= 0))
+                || (chapterNumber == 15 && System.Array.IndexOf(arguments, "-riskyStateElectionSmoke") >= 0)
+                || (chapterNumber == 16 && System.Array.IndexOf(arguments, "-riskyCmGovernanceSmoke") >= 0))
             {
                 StartCoroutine(RunSmoke(arguments));
             }
@@ -225,7 +241,9 @@ namespace NetaJi.Prototype
                 || (chapterNumber == 14
                     && System.Array.IndexOf(arguments, "-riskyStateLeadershipSmoke") >= 0)
                 || (chapterNumber == 15
-                    && System.Array.IndexOf(arguments, "-riskyStateElectionSmoke") >= 0);
+                    && System.Array.IndexOf(arguments, "-riskyStateElectionSmoke") >= 0)
+                || (chapterNumber == 16
+                    && System.Array.IndexOf(arguments, "-riskyCmGovernanceSmoke") >= 0);
 
             yield return new WaitForSeconds(1.2f);
             MissionController mission = MissionController.Instance;
@@ -457,9 +475,14 @@ namespace NetaJi.Prototype
                 PrepareChapterFourteenBaseline(GameSession.Instance);
                 mission.ResetMission(false);
             }
-            else
+            else if (chapterNumber == 15)
             {
                 PrepareChapterFifteenBaseline(GameSession.Instance);
+                mission.ResetMission(false);
+            }
+            else
+            {
+                PrepareChapterSixteenBaseline(GameSession.Instance);
                 mission.ResetMission(false);
             }
 
@@ -586,6 +609,13 @@ namespace NetaJi.Prototype
                 requiredReputation = 90;
                 requiredProof = 98;
             }
+            else if (chapterNumber == 16 && riskyDecision)
+            {
+                requiredTrust = 100;
+                requiredMoney = 30;
+                requiredReputation = 90;
+                requiredProof = 95;
+            }
             int requiredDecision = riskyDecision ? 2 : 1;
             int requiredPower = chapterNumber == 6 && riskyDecision ? 20 : expectedPower;
             int requiredVolunteers = chapterNumber == 6 && riskyDecision ? 32 : expectedVolunteers;
@@ -644,6 +674,12 @@ namespace NetaJi.Prototype
                 requiredVolunteers = 213;
                 requiredPressure = 96;
             }
+            else if (chapterNumber == 16 && riskyDecision)
+            {
+                requiredPower = 68;
+                requiredVolunteers = 257;
+                requiredPressure = 94;
+            }
             int requiredSupport = chapterNumber == 7 && riskyDecision ? 66 : expectedSupport;
             int requiredBooth = chapterNumber == 7 && riskyDecision ? 70 : expectedBooth;
             int requiredVoteShare = chapterNumber == 7 && riskyDecision ? 58 : expectedVoteShare;
@@ -693,6 +729,11 @@ namespace NetaJi.Prototype
             int requiredStatewideVoteShare = chapterNumber == 15 && riskyDecision ? 52 : expectedStatewideVoteShare;
             int requiredStateAssemblySeatsWon = chapterNumber == 15 && riskyDecision ? 23 : expectedStateAssemblySeatsWon;
             bool requiredChiefMinisterElected = chapterNumber == 15 && riskyDecision || expectedChiefMinisterElected;
+            int requiredChiefMinisterDelivery = chapterNumber == 16 && riskyDecision ? 100 : expectedChiefMinisterDelivery;
+            int requiredCabinetIntegrity = chapterNumber == 16 && riskyDecision ? 73 : expectedCabinetIntegrity;
+            int requiredStateFiscalDiscipline = chapterNumber == 16 && riskyDecision ? 62 : expectedStateFiscalDiscipline;
+            int requiredChiefMinisterGovernanceScore = chapterNumber == 16 && riskyDecision ? 78 : expectedChiefMinisterGovernanceScore;
+            bool requiredChiefMinisterHundredDayReviewPassed = chapterNumber == 16 && riskyDecision || expectedChiefMinisterHundredDayReviewPassed;
             bool passed = mission.IsComplete
                 && progress.publicTrust == requiredTrust
                 && progress.money == requiredMoney
@@ -748,6 +789,11 @@ namespace NetaJi.Prototype
                 && progress.statewideVoteShare == requiredStatewideVoteShare
                 && progress.stateAssemblySeatsWon == requiredStateAssemblySeatsWon
                 && progress.chiefMinisterElected == requiredChiefMinisterElected
+                && progress.chiefMinisterDelivery == requiredChiefMinisterDelivery
+                && progress.cabinetIntegrity == requiredCabinetIntegrity
+                && progress.stateFiscalDiscipline == requiredStateFiscalDiscipline
+                && progress.chiefMinisterGovernanceScore == requiredChiefMinisterGovernanceScore
+                && progress.chiefMinisterHundredDayReviewPassed == requiredChiefMinisterHundredDayReviewPassed
                 && (chapterNumber != 4 || progress.rescueApproach == requiredDecision)
                 && (chapterNumber != 5 || progress.hospitalApproach == requiredDecision)
                 && (chapterNumber != 6 || progress.oppositionResponse == requiredDecision)
@@ -760,13 +806,14 @@ namespace NetaJi.Prototype
                 && (chapterNumber != 13 || progress.stateExpansionStrategy == requiredDecision)
                 && (chapterNumber != 14 || progress.stateLeadershipStrategy == requiredDecision)
                 && (chapterNumber != 15 || progress.stateElectionStrategy == requiredDecision)
+                && (chapterNumber != 16 || progress.chiefMinisterGovernanceApproach == requiredDecision)
                 && (PrototypeHud.Instance == null || !PrototypeHud.Instance.IsDecisionOpen);
             string marker = chapterNumber == 1
                 ? "PROTOTYPE"
                 : riskyDecision ? $"CHAPTER_{chapterNumber}_RISKY" : $"CHAPTER_{chapterNumber}";
             Debug.Log(passed
-                ? $"{marker}_SMOKE_PASSED: trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}, proof={progress.caseProof}, power={progress.politicalPower}, team={progress.volunteers}, pressure={progress.oppositionPressure}, mla={progress.mlaPerformanceScore}, districtReach={progress.districtReach}, quality={progress.candidateQuality}, discipline={progress.organizationDiscipline}, expansion={progress.districtExpansionScore}, stateReach={progress.stateCampaignReach}, slate={progress.candidateSlateIntegrity}, ops={progress.stateElectionOperations}, stateScore={progress.stateExpansionScore}, seats={progress.stateSeatsWon}, policy={progress.statePolicyCredibility}, caucus={progress.stateCaucusUnity}, publicLead={progress.publicLeadership}, leadership={progress.stateLeadershipScore}, statewideSupport={progress.statewideSupport}, rules={progress.statewideCampaignCompliance}, pollOps={progress.statewideElectionOperations}, statewideVote={progress.statewideVoteShare}, assemblySeats={progress.stateAssemblySeatsWon}, cm={progress.chiefMinisterElected}"
-                : $"{marker}_SMOKE_FAILED: complete={mission.IsComplete}, trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}, proof={progress.caseProof}, power={progress.politicalPower}, team={progress.volunteers}, pressure={progress.oppositionPressure}, vote={progress.assemblyVoteShare}, legislative={progress.legislativeEffectiveness}, service={progress.constituencyService}, ethics={progress.ethicsRecord}, allocation={progress.mlaAllocationLakhs}, mla={progress.mlaPerformanceScore}, districtReach={progress.districtReach}, quality={progress.candidateQuality}, discipline={progress.organizationDiscipline}, expansion={progress.districtExpansionScore}, stateReach={progress.stateCampaignReach}, slate={progress.candidateSlateIntegrity}, ops={progress.stateElectionOperations}, stateScore={progress.stateExpansionScore}, seats={progress.stateSeatsWon}, policy={progress.statePolicyCredibility}, caucus={progress.stateCaucusUnity}, publicLead={progress.publicLeadership}, leadership={progress.stateLeadershipScore}, statewideSupport={progress.statewideSupport}, rules={progress.statewideCampaignCompliance}, pollOps={progress.statewideElectionOperations}, statewideVote={progress.statewideVoteShare}, assemblySeats={progress.stateAssemblySeatsWon}, cm={progress.chiefMinisterElected}");
+                ? $"{marker}_SMOKE_PASSED: trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}, proof={progress.caseProof}, power={progress.politicalPower}, team={progress.volunteers}, pressure={progress.oppositionPressure}, mla={progress.mlaPerformanceScore}, districtReach={progress.districtReach}, quality={progress.candidateQuality}, discipline={progress.organizationDiscipline}, expansion={progress.districtExpansionScore}, stateReach={progress.stateCampaignReach}, slate={progress.candidateSlateIntegrity}, ops={progress.stateElectionOperations}, stateScore={progress.stateExpansionScore}, seats={progress.stateSeatsWon}, policy={progress.statePolicyCredibility}, caucus={progress.stateCaucusUnity}, publicLead={progress.publicLeadership}, leadership={progress.stateLeadershipScore}, statewideSupport={progress.statewideSupport}, rules={progress.statewideCampaignCompliance}, pollOps={progress.statewideElectionOperations}, statewideVote={progress.statewideVoteShare}, assemblySeats={progress.stateAssemblySeatsWon}, cm={progress.chiefMinisterElected}, cmDelivery={progress.chiefMinisterDelivery}, cabinet={progress.cabinetIntegrity}, fiscal={progress.stateFiscalDiscipline}, cmScore={progress.chiefMinisterGovernanceScore}, cmReview={progress.chiefMinisterHundredDayReviewPassed}"
+                : $"{marker}_SMOKE_FAILED: complete={mission.IsComplete}, trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}, proof={progress.caseProof}, power={progress.politicalPower}, team={progress.volunteers}, pressure={progress.oppositionPressure}, vote={progress.assemblyVoteShare}, legislative={progress.legislativeEffectiveness}, service={progress.constituencyService}, ethics={progress.ethicsRecord}, allocation={progress.mlaAllocationLakhs}, mla={progress.mlaPerformanceScore}, districtReach={progress.districtReach}, quality={progress.candidateQuality}, discipline={progress.organizationDiscipline}, expansion={progress.districtExpansionScore}, stateReach={progress.stateCampaignReach}, slate={progress.candidateSlateIntegrity}, ops={progress.stateElectionOperations}, stateScore={progress.stateExpansionScore}, seats={progress.stateSeatsWon}, policy={progress.statePolicyCredibility}, caucus={progress.stateCaucusUnity}, publicLead={progress.publicLeadership}, leadership={progress.stateLeadershipScore}, statewideSupport={progress.statewideSupport}, rules={progress.statewideCampaignCompliance}, pollOps={progress.statewideElectionOperations}, statewideVote={progress.statewideVoteShare}, assemblySeats={progress.stateAssemblySeatsWon}, cm={progress.chiefMinisterElected}, cmDelivery={progress.chiefMinisterDelivery}, cabinet={progress.cabinetIntegrity}, fiscal={progress.stateFiscalDiscipline}, cmScore={progress.chiefMinisterGovernanceScore}, cmReview={progress.chiefMinisterHundredDayReviewPassed}");
             Application.Quit(passed ? 0 : 3);
         }
 
@@ -830,6 +877,17 @@ namespace NetaJi.Prototype
             session.ResolveStateLeadership();
             session.SetStoryDecision("state-leadership-strategy", 1);
             session.CompleteChapter(14);
+        }
+
+        private static void PrepareChapterSixteenBaseline(GameSession session)
+        {
+            PrepareChapterFifteenBaseline(session);
+            session.ApplyReward(0, 20, 0, 0);
+            session.ApplyPoliticalReward(3, 28, -4);
+            session.ApplyStateElectionReward(78, 100, 90);
+            session.ResolveStateElection();
+            session.SetStoryDecision("state-election-strategy", 1);
+            session.CompleteChapter(15);
         }
 
         private static string ReadArgument(string[] arguments, string name)
