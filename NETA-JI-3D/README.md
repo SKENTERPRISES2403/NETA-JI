@@ -71,6 +71,10 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Sixteenth playable chapter: `CM Ke Pehle 100 Din`, covering accountable fictional state government
 - Save v16 migration and independently verified open-dashboard/headline-drive outcomes
 - Compact late-game HUD and adaptive 4x4 chapter menu for mobile landscape
+- Persistent state `HEALTH`, `LEARNING`, `SAFETY`, `LIVELIHOOD`, and computed full-term review
+- Full-term review gated by all four minimum outcomes, the CM audit, public evidence, and pressure
+- Seventeenth playable chapter: `Badlav Ke Paanch Saal`, covering measured multi-year reform
+- Save v17 migration and independently verified phased-reform/mega-announcement outcomes
 
 The existing browser/PWA game remains separate in the repository root. This Unity project does not depend on its capture-game code.
 
@@ -88,7 +92,7 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Store/release builds will switch to IL2CPP ARM64 after the prototype is approved
 
 The Android artifact is a debug-signed development build. Its package id is
-`com.skenterprises.netaji.prototype`, version `0.17.0` (`versionCode 17`).
+`com.skenterprises.netaji.prototype`, version `0.18.0` (`versionCode 18`).
 
 ## Generate The Scene
 

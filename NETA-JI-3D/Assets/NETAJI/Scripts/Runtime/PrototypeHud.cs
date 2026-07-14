@@ -131,7 +131,9 @@ namespace NetaJi.Prototype
                     || progress.statewideElectionOperations > 0 || progress.statewideVoteShare > 0 || progress.stateAssemblySeatsWon > 0;
                 bool showChiefMinisterGovernance = progress.chiefMinisterDelivery > 0 || progress.cabinetIntegrity > 0
                     || progress.stateFiscalDiscipline > 0 || progress.chiefMinisterGovernanceScore > 0;
-                float statsHeight = showChiefMinisterGovernance || showStateElection || showStateLeadership || showStateExpansion
+                bool showStateTerm = progress.stateHealthOutcome > 0 || progress.stateLearningOutcome > 0
+                    || progress.stateSafetyOutcome > 0 || progress.stateLivelihoodOutcome > 0 || progress.stateTermScore > 0;
+                float statsHeight = showStateTerm || showChiefMinisterGovernance || showStateElection || showStateLeadership || showStateExpansion
                     ? 102f : showDistrict ? 130f : showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
                     : showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
                 Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, statsHeight);
@@ -203,13 +205,20 @@ namespace NetaJi.Prototype
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"CM SUP{progress.statewideSupport} RULE{progress.statewideCampaignCompliance} OPS{progress.statewideElectionOperations}  VOTE {statewideVote}  SEATS {progress.stateAssemblySeatsWon}/40", statStyle);
                 }
-                if (showChiefMinisterGovernance)
+                if (showChiefMinisterGovernance && !showStateTerm)
                 {
                     string review = progress.chiefMinisterGovernanceScore > 0
                         ? progress.chiefMinisterGovernanceScore.ToString() : "--";
                     string reviewState = progress.chiefMinisterHundredDayReviewPassed ? "PASS" : "OPEN";
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"CM D{progress.chiefMinisterDelivery} I{progress.cabinetIntegrity} F{progress.stateFiscalDiscipline}  SCORE {review}  {reviewState}", statStyle);
+                }
+                if (showStateTerm)
+                {
+                    string termScore = progress.stateTermScore > 0 ? progress.stateTermScore.ToString() : "--";
+                    string termState = progress.stateTermReviewPassed ? "PASS" : "OPEN";
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
+                        $"TERM H{progress.stateHealthOutcome} L{progress.stateLearningOutcome} S{progress.stateSafetyOutcome} J{progress.stateLivelihoodOutcome}  SCORE {termScore}  {termState}", statStyle);
                 }
             }
 
