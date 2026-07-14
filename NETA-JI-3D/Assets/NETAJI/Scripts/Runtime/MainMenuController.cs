@@ -21,6 +21,7 @@ namespace NetaJi.Prototype
         [SerializeField] private string chapterElevenSceneName = "Chapter11";
         [SerializeField] private string chapterTwelveSceneName = "Chapter12";
         [SerializeField] private string chapterThirteenSceneName = "Chapter13";
+        [SerializeField] private string chapterFourteenSceneName = "Chapter14";
 
         private Texture2D whiteTexture;
         private Texture2D primaryTexture;
@@ -113,6 +114,11 @@ namespace NetaJi.Prototype
             {
                 SceneManager.LoadScene(chapterThirteenSceneName);
             }
+            else if (Array.IndexOf(arguments, "-chapter14Smoke") >= 0
+                || Array.IndexOf(arguments, "-riskyStateLeadershipSmoke") >= 0)
+            {
+                SceneManager.LoadScene(chapterFourteenSceneName);
+            }
         }
 
         private IEnumerator RunMenuSmoke(string[] arguments)
@@ -135,6 +141,7 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(10);
                 GameSession.Instance.CompleteChapter(11);
                 GameSession.Instance.CompleteChapter(12);
+                GameSession.Instance.CompleteChapter(13);
             }
             yield return new WaitForSeconds(1.2f);
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "menu-start.png"));
@@ -236,7 +243,7 @@ namespace NetaJi.Prototype
                 "GHAT SE GHAR TAK", "SHAAM KI PAATHSHALA", "SANDHYA KAHAN HAI", "OPERATION UMEED",
                 "DAWA KA SACH", "SEVA SE SIYASAT", "WARD KA FAISLA", "PEHLE 100 DIN",
                 "VIDHANSABHA KI RAAH", "JANATA KA MANDATE", "JANATA KA MLA", "ZILA SANGATHAN",
-                "PRADESH KI DASTAK"
+                "PRADESH KI DASTAK", "PRADESH KA NETRUTVA"
             };
             for (int index = 0; index < chapterTitles.Length; index++)
             {
@@ -358,6 +365,10 @@ namespace NetaJi.Prototype
             else if (chapterNumber == 13)
             {
                 sceneName = chapterThirteenSceneName;
+            }
+            else if (chapterNumber == 14)
+            {
+                sceneName = chapterFourteenSceneName;
             }
             SceneManager.LoadScene(sceneName);
         }

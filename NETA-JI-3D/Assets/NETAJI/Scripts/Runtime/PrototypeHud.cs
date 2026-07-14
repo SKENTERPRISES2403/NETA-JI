@@ -125,7 +125,9 @@ namespace NetaJi.Prototype
                     || progress.organizationDiscipline > 0 || progress.districtExpansionScore > 0;
                 bool showStateExpansion = progress.stateCampaignReach > 0 || progress.candidateSlateIntegrity > 0
                     || progress.stateElectionOperations > 0 || progress.stateExpansionScore > 0 || progress.stateSeatsWon > 0;
-                float statsHeight = showStateExpansion ? 158f : showDistrict ? 130f : showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
+                bool showStateLeadership = progress.statePolicyCredibility > 0 || progress.stateCaucusUnity > 0
+                    || progress.publicLeadership > 0 || progress.stateLeadershipScore > 0;
+                float statsHeight = showStateLeadership ? 186f : showStateExpansion ? 158f : showDistrict ? 130f : showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
                     : showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
                 Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, statsHeight);
                 DrawPanel(statsRect, new Color(0.015f, 0.08f, 0.10f, 0.96f));
@@ -183,6 +185,12 @@ namespace NetaJi.Prototype
                     string stateScore = progress.stateExpansionScore > 0 ? progress.stateExpansionScore.ToString() : "--";
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 122f, statsRect.width - 20f, 26f),
                         $"STATE R{progress.stateCampaignReach} I{progress.candidateSlateIntegrity} OPS{progress.stateElectionOperations}  SCORE {stateScore}  SEATS {progress.stateSeatsWon}/8", statStyle);
+                }
+                if (showStateLeadership)
+                {
+                    string leadershipScore = progress.stateLeadershipScore > 0 ? progress.stateLeadershipScore.ToString() : "--";
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 150f, statsRect.width - 20f, 26f),
+                        $"LEAD P{progress.statePolicyCredibility} U{progress.stateCaucusUnity} PUB{progress.publicLeadership}  SCORE {leadershipScore}", statStyle);
                 }
             }
 
