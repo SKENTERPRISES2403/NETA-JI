@@ -30,13 +30,14 @@ The first playable space is a compact Prayagraj/Daraganj-inspired ghat district.
 - Runtime log verifies procedural audio initialization without errors
 - Mobile screenshots verify route hints, chapter overlays, and readable world signage
 - Menu automation verifies title/story views and the menu-to-game smoke bypass
-- Legacy `missionStep` and save-v2 through save-v13 profiles migrate into fourteen-chapter save progress
+- Legacy `missionStep` and save-v2 through save-v14 profiles migrate into fifteen-chapter save progress
 - Chapter 9 automation verifies safe and risky constituency-expansion routes plus computed MLA nomination
 - Chapter 10 automation verifies both assembly-campaign routes and the computed seat result
 - Chapter 11 automation verifies public-allocation branches and the computed MLA performance review
 - Chapter 12 automation verifies candidate-selection branches and the computed district-network review
 - Chapter 13 automation verifies multi-seat strategy branches and the computed state-foothold result
 - Chapter 14 automation verifies caucus-selection branches and the computed state-leadership review
+- Chapter 15 automation verifies statewide campaign branches and the computed forty-seat CM mandate
 - Android development APK builds successfully for ARMv7 with min SDK 26 and target SDK 36
 - APK package manifest and v2 debug signature verified
 - Physical Android install and touch-feel testing still require a connected phone

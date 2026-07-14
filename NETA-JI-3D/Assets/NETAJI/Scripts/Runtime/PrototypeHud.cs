@@ -127,7 +127,9 @@ namespace NetaJi.Prototype
                     || progress.stateElectionOperations > 0 || progress.stateExpansionScore > 0 || progress.stateSeatsWon > 0;
                 bool showStateLeadership = progress.statePolicyCredibility > 0 || progress.stateCaucusUnity > 0
                     || progress.publicLeadership > 0 || progress.stateLeadershipScore > 0;
-                float statsHeight = showStateLeadership ? 186f : showStateExpansion ? 158f : showDistrict ? 130f : showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
+                bool showStateElection = progress.statewideSupport > 0 || progress.statewideCampaignCompliance > 0
+                    || progress.statewideElectionOperations > 0 || progress.statewideVoteShare > 0 || progress.stateAssemblySeatsWon > 0;
+                float statsHeight = showStateElection ? 214f : showStateLeadership ? 186f : showStateExpansion ? 158f : showDistrict ? 130f : showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
                     : showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
                 Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, statsHeight);
                 DrawPanel(statsRect, new Color(0.015f, 0.08f, 0.10f, 0.96f));
@@ -191,6 +193,12 @@ namespace NetaJi.Prototype
                     string leadershipScore = progress.stateLeadershipScore > 0 ? progress.stateLeadershipScore.ToString() : "--";
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 150f, statsRect.width - 20f, 26f),
                         $"LEAD P{progress.statePolicyCredibility} U{progress.stateCaucusUnity} PUB{progress.publicLeadership}  SCORE {leadershipScore}", statStyle);
+                }
+                if (showStateElection)
+                {
+                    string statewideVote = progress.statewideVoteShare > 0 ? progress.statewideVoteShare + "%" : "--";
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 178f, statsRect.width - 20f, 26f),
+                        $"CM SUP{progress.statewideSupport} RULE{progress.statewideCampaignCompliance} OPS{progress.statewideElectionOperations}  VOTE {statewideVote}  SEATS {progress.stateAssemblySeatsWon}/40", statStyle);
                 }
             }
 

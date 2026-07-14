@@ -22,6 +22,7 @@ namespace NetaJi.Prototype
         [SerializeField] private string chapterTwelveSceneName = "Chapter12";
         [SerializeField] private string chapterThirteenSceneName = "Chapter13";
         [SerializeField] private string chapterFourteenSceneName = "Chapter14";
+        [SerializeField] private string chapterFifteenSceneName = "Chapter15";
 
         private Texture2D whiteTexture;
         private Texture2D primaryTexture;
@@ -119,6 +120,11 @@ namespace NetaJi.Prototype
             {
                 SceneManager.LoadScene(chapterFourteenSceneName);
             }
+            else if (Array.IndexOf(arguments, "-chapter15Smoke") >= 0
+                || Array.IndexOf(arguments, "-riskyStateElectionSmoke") >= 0)
+            {
+                SceneManager.LoadScene(chapterFifteenSceneName);
+            }
         }
 
         private IEnumerator RunMenuSmoke(string[] arguments)
@@ -142,6 +148,7 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(11);
                 GameSession.Instance.CompleteChapter(12);
                 GameSession.Instance.CompleteChapter(13);
+                GameSession.Instance.CompleteChapter(14);
             }
             yield return new WaitForSeconds(1.2f);
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "menu-start.png"));
@@ -232,33 +239,36 @@ namespace NetaJi.Prototype
             DrawPanel(panel, new Color(0.01f, 0.055f, 0.065f, 0.98f));
             GUI.Label(new Rect(panel.x + 24f, panel.y + 18f, panel.width - 48f, 46f), "AZAD KA SAFAR", subtitleStyle);
 
-            const float cardGap = 10f;
-            const int cardColumns = 7;
-            float cardWidth = (panel.width - 48f - cardGap * (cardColumns - 1)) / cardColumns;
-            float cardHeight = 70f;
-            float firstX = panel.x + 24f;
-            float firstY = panel.y + 62f;
             string[] chapterTitles =
             {
                 "GHAT SE GHAR TAK", "SHAAM KI PAATHSHALA", "SANDHYA KAHAN HAI", "OPERATION UMEED",
                 "DAWA KA SACH", "SEVA SE SIYASAT", "WARD KA FAISLA", "PEHLE 100 DIN",
                 "VIDHANSABHA KI RAAH", "JANATA KA MANDATE", "JANATA KA MLA", "ZILA SANGATHAN",
-                "PRADESH KI DASTAK", "PRADESH KA NETRUTVA"
+                "PRADESH KI DASTAK", "PRADESH KA NETRUTVA", "PRADESH KA JANADESH"
             };
+            float cardGap = 10f;
+            int cardColumns = chapterTitles.Length > 14 ? 5 : 7;
+            float cardHeight = chapterTitles.Length > 14 ? 55f : 70f;
+            float rowGap = chapterTitles.Length > 14 ? 8f : 12f;
+            float cardWidth = (panel.width - 48f - cardGap * (cardColumns - 1)) / cardColumns;
+            float firstX = panel.x + 24f;
+            float firstY = panel.y + 62f;
             for (int index = 0; index < chapterTitles.Length; index++)
             {
                 int column = index % cardColumns;
                 int row = index / cardColumns;
                 Rect cardRect = new Rect(
                     firstX + column * (cardWidth + cardGap),
-                    firstY + row * (cardHeight + 12f),
+                    firstY + row * (cardHeight + rowGap),
                     cardWidth,
                     cardHeight);
                 DrawChapterCard(cardRect, index + 1, chapterTitles[index]);
             }
 
+            int cardRows = Mathf.CeilToInt(chapterTitles.Length / (float)cardColumns);
+            float infoY = firstY + cardRows * (cardHeight + rowGap) + 2f;
             GUI.Label(
-                new Rect(panel.x + 24f, panel.y + 224f, panel.width - 48f, 44f),
+                new Rect(panel.x + 24f, infoY, panel.width - 48f, 36f),
                 "Har chapter ke decisions aur seva rewards same local profile mein save hote hain.",
                 bodyStyle);
             if (GUI.Button(new Rect(panel.x + 24f, panel.y + panel.height - 62f, 190f, 42f), "AZAD KI KAHANI", secondaryButtonStyle))
@@ -369,6 +379,10 @@ namespace NetaJi.Prototype
             else if (chapterNumber == 14)
             {
                 sceneName = chapterFourteenSceneName;
+            }
+            else if (chapterNumber == 15)
+            {
+                sceneName = chapterFifteenSceneName;
             }
             SceneManager.LoadScene(sceneName);
         }
