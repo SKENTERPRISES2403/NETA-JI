@@ -27,6 +27,7 @@ namespace NetaJi.Prototype
         [SerializeField] private string chapterSeventeenSceneName = "Chapter17";
         [SerializeField] private string chapterEighteenSceneName = "Chapter18";
         [SerializeField] private string chapterNineteenSceneName = "Chapter19";
+        [SerializeField] private string chapterTwentySceneName = "Chapter20";
 
         private Texture2D whiteTexture;
         private Texture2D primaryTexture;
@@ -149,6 +150,11 @@ namespace NetaJi.Prototype
             {
                 SceneManager.LoadScene(chapterNineteenSceneName);
             }
+            else if (Array.IndexOf(arguments, "-chapter20Smoke") >= 0
+                || Array.IndexOf(arguments, "-riskyOppositionTermSmoke") >= 0)
+            {
+                SceneManager.LoadScene(chapterTwentySceneName);
+            }
         }
 
         private IEnumerator RunMenuSmoke(string[] arguments)
@@ -177,6 +183,7 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(16);
                 GameSession.Instance.CompleteChapter(17);
                 GameSession.Instance.CompleteChapter(18);
+                GameSession.Instance.CompleteChapter(19);
             }
             yield return new WaitForSeconds(1.2f);
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "menu-start.png"));
@@ -261,8 +268,8 @@ namespace NetaJi.Prototype
 
         private void DrawChapterPanel()
         {
-            float width = Mathf.Min(826f, Screen.width - 18f);
-            float height = Mathf.Min(360f, Screen.height - 18f);
+            float width = Mathf.Min(1020f, Screen.width - 18f);
+            float height = Mathf.Min(520f, Screen.height - 18f);
             Rect panel = new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
             DrawPanel(panel, new Color(0.01f, 0.055f, 0.065f, 0.98f));
             GUI.Label(new Rect(panel.x + 24f, panel.y + 18f, panel.width - 48f, 46f), "AZAD KA SAFAR", subtitleStyle);
@@ -274,13 +281,13 @@ namespace NetaJi.Prototype
                 "VIDHANSABHA KI RAAH", "JANATA KA MANDATE", "JANATA KA MLA", "ZILA SANGATHAN",
                 "PRADESH KI DASTAK", "PRADESH KA NETRUTVA", "PRADESH KA JANADESH",
                 "CM KE PEHLE 100 DIN", "BADLAV KE PAANCH SAAL", "DESH BHAR KA SAATH",
-                "RASHTRIYA CHUNAV"
+                "RASHTRIYA CHUNAV", "HAAR KE BAAD HIMMAT"
             };
             float cardGap = 10f;
             bool compactGrid = chapterTitles.Length > 15;
             int cardColumns = chapterTitles.Length > 16 ? 5 : compactGrid ? 4 : chapterTitles.Length > 14 ? 5 : 7;
-            float cardHeight = compactGrid ? 48f : chapterTitles.Length > 14 ? 55f : 70f;
-            float rowGap = compactGrid ? 6f : chapterTitles.Length > 14 ? 8f : 12f;
+            float cardHeight = compactGrid ? (panel.height >= 470f ? 64f : 48f) : chapterTitles.Length > 14 ? 55f : 70f;
+            float rowGap = compactGrid ? (panel.height >= 470f ? 8f : 6f) : chapterTitles.Length > 14 ? 8f : 12f;
             float cardWidth = (panel.width - 48f - cardGap * (cardColumns - 1)) / cardColumns;
             float firstX = panel.x + 24f;
             float firstY = panel.y + (compactGrid ? 56f : 62f);
@@ -317,11 +324,14 @@ namespace NetaJi.Prototype
         {
             GUIStyle chapterStyle = new GUIStyle(buttonStyle)
             {
-                fontSize = Mathf.Clamp(Mathf.RoundToInt(rect.width * 0.115f), 11, buttonStyle.fontSize)
+                fontSize = Mathf.Clamp(
+                    Mathf.RoundToInt(Mathf.Min(rect.width * 0.08f, rect.height * 0.25f)),
+                    11,
+                    Mathf.Min(16, buttonStyle.fontSize))
             };
             if (GameSession.HighestUnlockedChapter >= chapterNumber)
             {
-                if (GUI.Button(rect, $"CHAPTER {chapterNumber}\n{title}", chapterStyle))
+                if (GUI.Button(rect, $"CH {chapterNumber:00}\n{title}", chapterStyle))
                 {
                     LoadChapter(chapterNumber, false);
                 }
@@ -430,6 +440,10 @@ namespace NetaJi.Prototype
             else if (chapterNumber == 19)
             {
                 sceneName = chapterNineteenSceneName;
+            }
+            else if (chapterNumber == 20)
+            {
+                sceneName = chapterTwentySceneName;
             }
             SceneManager.LoadScene(sceneName);
         }

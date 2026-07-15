@@ -137,7 +137,9 @@ namespace NetaJi.Prototype
                     || progress.nationalPolicyCredibility > 0 || progress.nationalReadinessScore > 0 || progress.nationalRegionsAligned > 0;
                 bool showFirstNationalElection = progress.nationalCampaignSupport > 0 || progress.nationalCampaignCompliance > 0
                     || progress.nationalElectionOperations > 0 || progress.firstNationalVoteShare > 0 || progress.firstNationalElectionContested;
-                float statsHeight = showFirstNationalElection || showNationalExpansion || showStateTerm || showChiefMinisterGovernance || showStateElection || showStateLeadership || showStateExpansion
+                bool showNationalComeback = progress.oppositionServiceRecord > 0 || progress.nationalAllianceRenewal > 0
+                    || progress.nationalPolicyCorrection > 0 || progress.nationalComebackScore > 0;
+                float statsHeight = showNationalComeback || showFirstNationalElection || showNationalExpansion || showStateTerm || showChiefMinisterGovernance || showStateElection || showStateLeadership || showStateExpansion
                     ? 102f : showDistrict ? 130f : showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
                     : showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
                 Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, statsHeight);
@@ -232,7 +234,7 @@ namespace NetaJi.Prototype
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"NAT R{progress.nationalOrganizationReach} A{progress.federalAllianceTrust} P{progress.nationalPolicyCredibility}  SCORE {nationalScore}  REG {progress.nationalRegionsAligned}  {readiness}", statStyle);
                 }
-                if (showFirstNationalElection)
+                if (showFirstNationalElection && !showNationalComeback)
                 {
                     string vote = progress.firstNationalVoteShare > 0 ? progress.firstNationalVoteShare + "%" : "--";
                     string result = progress.firstNationalElectionContested
@@ -240,6 +242,13 @@ namespace NetaJi.Prototype
                         : "OPEN";
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"NAT S{progress.nationalCampaignSupport} R{progress.nationalCampaignCompliance} O{progress.nationalElectionOperations}  V{vote}  SEAT {progress.firstNationalSeatsWon}/100  {result}", statStyle);
+                }
+                if (showNationalComeback)
+                {
+                    string score = progress.nationalComebackScore > 0 ? progress.nationalComebackScore.ToString() : "--";
+                    string ready = progress.nationalComebackReady ? "READY" : "OPEN";
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
+                        $"OPP S{progress.oppositionServiceRecord} A{progress.nationalAllianceRenewal} P{progress.nationalPolicyCorrection}  SCORE {score}  {ready}", statStyle);
                 }
             }
 

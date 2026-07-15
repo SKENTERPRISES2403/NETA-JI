@@ -84,6 +84,11 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - First national election outcome computed from readiness, alliance trust, campaign quality, public record, and pressure
 - Nineteenth playable chapter: `Pehla Rashtriya Faisla`, ending in an accepted first-election defeat and responsible opposition
 - Save v19 migration and independently verified issue-first/spectacle-convoy outcomes
+- Persistent opposition `SERVICE`, alliance `RENEWAL`, policy `CORRECTION`, and computed comeback-readiness state
+- Five-year comeback review gated by responsible service, renewed regional trust, policy alternatives, prior readiness, and pressure
+- Twentieth playable chapter: `Haar Ke Baad Himmat`, covering accountable opposition after electoral defeat
+- Save v20 migration and independently verified issue-by-issue/constant-confrontation outcomes
+- Responsive twenty-card chapter menu verified without title clipping at desktop and mobile-landscape constraints
 
 The existing browser/PWA game remains separate in the repository root. This Unity project does not depend on its capture-game code.
 
@@ -101,7 +106,7 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Store/release builds will switch to IL2CPP ARM64 after the prototype is approved
 
 The Android artifact is a debug-signed development build. Its package id is
-`com.skenterprises.netaji.prototype`, version `0.20.0` (`versionCode 20`).
+`com.skenterprises.netaji.prototype`, version `0.21.0` (`versionCode 21`).
 
 ## Generate The Scene
 
