@@ -145,7 +145,10 @@ namespace NetaJi.Prototype
                 bool showPrimeMinisterGovernance = progress.primeMinisterDelivery > 0
                     || progress.unionCabinetIntegrity > 0 || progress.nationalFiscalDiscipline > 0
                     || progress.institutionalTrust > 0 || progress.primeMinisterHundredDayScore > 0;
-                float statsHeight = showPrimeMinisterGovernance || showSecondNationalElection || showNationalComeback || showFirstNationalElection || showNationalExpansion || showStateTerm || showChiefMinisterGovernance || showStateElection || showStateLeadership || showStateExpansion
+                bool showNationalDevelopment = progress.nationalHealthIndex > 0 || progress.nationalLearningIndex > 0
+                    || progress.nationalSafetyJusticeIndex > 0 || progress.nationalLivelihoodIndex > 0
+                    || progress.nationalDevelopmentScore > 0;
+                float statsHeight = showNationalDevelopment || showPrimeMinisterGovernance || showSecondNationalElection || showNationalComeback || showFirstNationalElection || showNationalExpansion || showStateTerm || showChiefMinisterGovernance || showStateElection || showStateLeadership || showStateExpansion
                     ? 102f : showDistrict ? 130f : showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
                     : showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
                 Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, statsHeight);
@@ -265,12 +268,19 @@ namespace NetaJi.Prototype
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"NAT2 S{progress.secondNationalCampaignSupport} R{progress.secondNationalCampaignCompliance} O{progress.secondNationalElectionOperations}  V{vote}  SEAT {progress.secondNationalSeatsWon}/100  {result}", statStyle);
                 }
-                if (showPrimeMinisterGovernance)
+                if (showPrimeMinisterGovernance && !showNationalDevelopment)
                 {
                     string score = progress.primeMinisterHundredDayScore > 0 ? progress.primeMinisterHundredDayScore.ToString() : "--";
                     string review = progress.primeMinisterHundredDayReviewPassed ? "PASSED" : "OPEN";
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"PM100 D{progress.primeMinisterDelivery} C{progress.unionCabinetIntegrity} F{progress.nationalFiscalDiscipline} I{progress.institutionalTrust}  SCORE {score}  {review}", statStyle);
+                }
+                if (showNationalDevelopment)
+                {
+                    string score = progress.nationalDevelopmentScore > 0 ? progress.nationalDevelopmentScore.ToString() : "--";
+                    string review = progress.nationalDevelopmentReviewPassed ? "PASSED" : "OPEN";
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
+                        $"DEV H{progress.nationalHealthIndex} L{progress.nationalLearningIndex} S{progress.nationalSafetyJusticeIndex} J{progress.nationalLivelihoodIndex}  SCORE {score}  {review}", statStyle);
                 }
             }
 

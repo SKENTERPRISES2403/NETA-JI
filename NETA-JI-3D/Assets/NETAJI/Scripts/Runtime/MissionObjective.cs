@@ -81,6 +81,11 @@ namespace NetaJi.Prototype
         [SerializeField] private int nationalFiscalDisciplineReward;
         [SerializeField] private int institutionalTrustReward;
         [SerializeField] private bool resolvesPrimeMinisterHundredDayReview;
+        [SerializeField] private int nationalHealthIndexReward;
+        [SerializeField] private int nationalLearningIndexReward;
+        [SerializeField] private int nationalSafetyJusticeIndexReward;
+        [SerializeField] private int nationalLivelihoodIndexReward;
+        [SerializeField] private bool resolvesNationalDevelopmentReview;
         [SerializeField] private bool hideAfterCompletion;
         [SerializeField] private bool requiresDecision;
         [SerializeField] private string decisionKey;
@@ -146,6 +151,10 @@ namespace NetaJi.Prototype
         [SerializeField] private int secondUnionCabinetIntegrityReward;
         [SerializeField] private int secondNationalFiscalDisciplineReward;
         [SerializeField] private int secondInstitutionalTrustReward;
+        [SerializeField] private int secondNationalHealthIndexReward;
+        [SerializeField] private int secondNationalLearningIndexReward;
+        [SerializeField] private int secondNationalSafetyJusticeIndexReward;
+        [SerializeField] private int secondNationalLivelihoodIndexReward;
 
         private bool completed;
         private bool decisionPending;
@@ -509,6 +518,27 @@ namespace NetaJi.Prototype
             resolvesPrimeMinisterHundredDayReview = true;
         }
 
+        public void ConfigureNationalDevelopmentReward(int health, int learning, int safetyJustice, int livelihood)
+        {
+            nationalHealthIndexReward = health;
+            nationalLearningIndexReward = learning;
+            nationalSafetyJusticeIndexReward = safetyJustice;
+            nationalLivelihoodIndexReward = livelihood;
+        }
+
+        public void ConfigureNationalDevelopmentDecisionRewards(int health, int learning, int safetyJustice, int livelihood)
+        {
+            secondNationalHealthIndexReward = health;
+            secondNationalLearningIndexReward = learning;
+            secondNationalSafetyJusticeIndexReward = safetyJustice;
+            secondNationalLivelihoodIndexReward = livelihood;
+        }
+
+        public void ConfigureNationalDevelopmentReview()
+        {
+            resolvesNationalDevelopmentReview = true;
+        }
+
         public void Interact(AzadController player)
         {
             if (!CanInteract)
@@ -548,7 +578,8 @@ namespace NetaJi.Prototype
                 nationalCampaignSupportReward, nationalCampaignComplianceReward, nationalElectionOperationsReward,
                 oppositionServiceReward, nationalAllianceRenewalReward, nationalPolicyCorrectionReward,
                 comebackCampaignSupportReward, comebackCampaignComplianceReward, comebackElectionOperationsReward,
-                primeMinisterDeliveryReward, unionCabinetIntegrityReward, nationalFiscalDisciplineReward, institutionalTrustReward);
+                primeMinisterDeliveryReward, unionCabinetIntegrityReward, nationalFiscalDisciplineReward, institutionalTrustReward,
+                nationalHealthIndexReward, nationalLearningIndexReward, nationalSafetyJusticeIndexReward, nationalLivelihoodIndexReward);
         }
 
         public void ResolveDecisionForAutomation(int option)
@@ -593,7 +624,8 @@ namespace NetaJi.Prototype
                     secondNationalCampaignSupportReward, secondNationalCampaignComplianceReward, secondNationalElectionOperationsReward,
                     secondOppositionServiceReward, secondNationalAllianceRenewalReward, secondNationalPolicyCorrectionReward,
                     secondComebackCampaignSupportReward, secondComebackCampaignComplianceReward, secondComebackElectionOperationsReward,
-                    secondPrimeMinisterDeliveryReward, secondUnionCabinetIntegrityReward, secondNationalFiscalDisciplineReward, secondInstitutionalTrustReward);
+                    secondPrimeMinisterDeliveryReward, secondUnionCabinetIntegrityReward, secondNationalFiscalDisciplineReward, secondInstitutionalTrustReward,
+                    secondNationalHealthIndexReward, secondNationalLearningIndexReward, secondNationalSafetyJusticeIndexReward, secondNationalLivelihoodIndexReward);
             }
             else
             {
@@ -613,7 +645,8 @@ namespace NetaJi.Prototype
                     nationalCampaignSupportReward, nationalCampaignComplianceReward, nationalElectionOperationsReward,
                     oppositionServiceReward, nationalAllianceRenewalReward, nationalPolicyCorrectionReward,
                     comebackCampaignSupportReward, comebackCampaignComplianceReward, comebackElectionOperationsReward,
-                    primeMinisterDeliveryReward, unionCabinetIntegrityReward, nationalFiscalDisciplineReward, institutionalTrustReward);
+                    primeMinisterDeliveryReward, unionCabinetIntegrityReward, nationalFiscalDisciplineReward, institutionalTrustReward,
+                    nationalHealthIndexReward, nationalLearningIndexReward, nationalSafetyJusticeIndexReward, nationalLivelihoodIndexReward);
             }
         }
 
@@ -676,7 +709,11 @@ namespace NetaJi.Prototype
             int primeMinisterDelivery,
             int unionCabinetIntegrity,
             int nationalFiscalDiscipline,
-            int institutionalTrust)
+            int institutionalTrust,
+            int nationalHealth,
+            int nationalLearning,
+            int nationalSafetyJustice,
+            int nationalLivelihood)
         {
             completed = true;
             PrototypeAudio.Instance?.PlayInteraction();
@@ -702,6 +739,8 @@ namespace NetaJi.Prototype
                 secondCampaignSupport, secondCampaignCompliance, secondElectionOperations);
             GameSession.Instance?.ApplyPrimeMinisterGovernanceReward(
                 primeMinisterDelivery, unionCabinetIntegrity, nationalFiscalDiscipline, institutionalTrust);
+            GameSession.Instance?.ApplyNationalDevelopmentReward(
+                nationalHealth, nationalLearning, nationalSafetyJustice, nationalLivelihood);
             if (resolvesWardElection && GameSession.Instance != null)
             {
                 bool won = GameSession.Instance.ResolveWardElection();
@@ -829,6 +868,14 @@ namespace NetaJi.Prototype
                 dialogueText = passed
                     ? $"Independent PM 100-day review {progress.primeMinisterHundredDayScore}/100. Delivery {progress.primeMinisterDelivery}, cabinet integrity {progress.unionCabinetIntegrity}, fiscal discipline {progress.nationalFiscalDiscipline}, institutional trust {progress.institutionalTrust}. National reform term approved."
                     : $"Independent PM 100-day review {progress.primeMinisterHundredDayScore}/100. Review hold par hai; delivery, cabinet, fiscal discipline and institutions 65+ aur overall score 75+ mandatory hain.";
+            }
+            if (resolvesNationalDevelopmentReview && GameSession.Instance != null)
+            {
+                bool passed = GameSession.Instance.ResolveNationalDevelopmentReview();
+                PlayerProgress progress = GameSession.Instance.Progress;
+                dialogueText = passed
+                    ? $"Independent national development review {progress.nationalDevelopmentScore}/100. Health {progress.nationalHealthIndex}, learning {progress.nationalLearningIndex}, safety and justice {progress.nationalSafetyJusticeIndex}, livelihood {progress.nationalLivelihoodIndex}. Measurable transformation term passed."
+                    : $"Independent national development review {progress.nationalDevelopmentScore}/100. Review hold par hai; all four outcomes 68+ aur evidence-led total score 82+ mandatory hain.";
             }
             PrototypeHud.Instance?.ShowDialogue(dialogueSpeaker, dialogueText);
             MissionController.Instance.Complete(this);

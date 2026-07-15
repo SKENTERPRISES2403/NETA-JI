@@ -30,6 +30,7 @@ namespace NetaJi.Prototype
         [SerializeField] private string chapterTwentySceneName = "Chapter20";
         [SerializeField] private string chapterTwentyOneSceneName = "Chapter21";
         [SerializeField] private string chapterTwentyTwoSceneName = "Chapter22";
+        [SerializeField] private string chapterTwentyThreeSceneName = "Chapter23";
 
         private Texture2D whiteTexture;
         private Texture2D primaryTexture;
@@ -167,6 +168,11 @@ namespace NetaJi.Prototype
             {
                 SceneManager.LoadScene(chapterTwentyTwoSceneName);
             }
+            else if (Array.IndexOf(arguments, "-chapter23Smoke") >= 0
+                || Array.IndexOf(arguments, "-riskyNationalDevelopmentSmoke") >= 0)
+            {
+                SceneManager.LoadScene(chapterTwentyThreeSceneName);
+            }
         }
 
         private IEnumerator RunMenuSmoke(string[] arguments)
@@ -198,6 +204,7 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(19);
                 GameSession.Instance.CompleteChapter(20);
                 GameSession.Instance.CompleteChapter(21);
+                GameSession.Instance.CompleteChapter(22);
             }
             yield return new WaitForSeconds(1.2f);
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "menu-start.png"));
@@ -295,7 +302,8 @@ namespace NetaJi.Prototype
                 "VIDHANSABHA KI RAAH", "JANATA KA MANDATE", "JANATA KA MLA", "ZILA SANGATHAN",
                 "PRADESH KI DASTAK", "PRADESH KA NETRUTVA", "PRADESH KA JANADESH",
                 "CM KE PEHLE 100 DIN", "BADLAV KE PAANCH SAAL", "DESH BHAR KA SAATH",
-                "RASHTRIYA CHUNAV", "HAAR KE BAAD HIMMAT", "PM KA JANADESH", "PM KE PEHLE 100 DIN"
+                "RASHTRIYA CHUNAV", "HAAR KE BAAD HIMMAT", "PM KA JANADESH", "PM KE PEHLE 100 DIN",
+                "DESH KA BADLAV"
             };
             float cardGap = 10f;
             bool compactGrid = chapterTitles.Length > 15;
@@ -474,6 +482,10 @@ namespace NetaJi.Prototype
             else if (chapterNumber == 22)
             {
                 sceneName = chapterTwentyTwoSceneName;
+            }
+            else if (chapterNumber == 23)
+            {
+                sceneName = chapterTwentyThreeSceneName;
             }
             SceneManager.LoadScene(sceneName);
         }
