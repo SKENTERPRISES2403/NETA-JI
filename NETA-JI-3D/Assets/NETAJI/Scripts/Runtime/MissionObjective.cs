@@ -72,6 +72,10 @@ namespace NetaJi.Prototype
         [SerializeField] private int nationalAllianceRenewalReward;
         [SerializeField] private int nationalPolicyCorrectionReward;
         [SerializeField] private bool resolvesNationalComeback;
+        [SerializeField] private int comebackCampaignSupportReward;
+        [SerializeField] private int comebackCampaignComplianceReward;
+        [SerializeField] private int comebackElectionOperationsReward;
+        [SerializeField] private bool resolvesSecondNationalElection;
         [SerializeField] private bool hideAfterCompletion;
         [SerializeField] private bool requiresDecision;
         [SerializeField] private string decisionKey;
@@ -130,6 +134,9 @@ namespace NetaJi.Prototype
         [SerializeField] private int secondOppositionServiceReward;
         [SerializeField] private int secondNationalAllianceRenewalReward;
         [SerializeField] private int secondNationalPolicyCorrectionReward;
+        [SerializeField] private int secondComebackCampaignSupportReward;
+        [SerializeField] private int secondComebackCampaignComplianceReward;
+        [SerializeField] private int secondComebackElectionOperationsReward;
 
         private bool completed;
         private bool decisionPending;
@@ -217,7 +224,10 @@ namespace NetaJi.Prototype
             int riskyNationalElectionOperations = 0,
             int riskyOppositionService = 0,
             int riskyNationalAllianceRenewal = 0,
-            int riskyNationalPolicyCorrection = 0)
+            int riskyNationalPolicyCorrection = 0,
+            int riskySecondNationalCampaignSupport = 0,
+            int riskySecondNationalCampaignCompliance = 0,
+            int riskySecondNationalElectionOperations = 0)
         {
             requiresDecision = true;
             decisionKey = key;
@@ -276,6 +286,9 @@ namespace NetaJi.Prototype
             secondOppositionServiceReward = riskyOppositionService;
             secondNationalAllianceRenewalReward = riskyNationalAllianceRenewal;
             secondNationalPolicyCorrectionReward = riskyNationalPolicyCorrection;
+            secondComebackCampaignSupportReward = riskySecondNationalCampaignSupport;
+            secondComebackCampaignComplianceReward = riskySecondNationalCampaignCompliance;
+            secondComebackElectionOperationsReward = riskySecondNationalElectionOperations;
         }
 
         public void ConfigurePoliticalReward(int power, int team, int pressure)
@@ -454,6 +467,18 @@ namespace NetaJi.Prototype
             resolvesNationalComeback = true;
         }
 
+        public void ConfigureSecondNationalCampaignReward(int support, int compliance, int operations)
+        {
+            comebackCampaignSupportReward = support;
+            comebackCampaignComplianceReward = compliance;
+            comebackElectionOperationsReward = operations;
+        }
+
+        public void ConfigureSecondNationalElection()
+        {
+            resolvesSecondNationalElection = true;
+        }
+
         public void Interact(AzadController player)
         {
             if (!CanInteract)
@@ -491,7 +516,8 @@ namespace NetaJi.Prototype
                 stateHealthOutcomeReward, stateLearningOutcomeReward, stateSafetyOutcomeReward, stateLivelihoodOutcomeReward,
                 nationalOrganizationReachReward, federalAllianceTrustReward, nationalPolicyCredibilityReward,
                 nationalCampaignSupportReward, nationalCampaignComplianceReward, nationalElectionOperationsReward,
-                oppositionServiceReward, nationalAllianceRenewalReward, nationalPolicyCorrectionReward);
+                oppositionServiceReward, nationalAllianceRenewalReward, nationalPolicyCorrectionReward,
+                comebackCampaignSupportReward, comebackCampaignComplianceReward, comebackElectionOperationsReward);
         }
 
         public void ResolveDecisionForAutomation(int option)
@@ -534,7 +560,8 @@ namespace NetaJi.Prototype
                     secondStateHealthOutcomeReward, secondStateLearningOutcomeReward, secondStateSafetyOutcomeReward, secondStateLivelihoodOutcomeReward,
                     secondNationalOrganizationReachReward, secondFederalAllianceTrustReward, secondNationalPolicyCredibilityReward,
                     secondNationalCampaignSupportReward, secondNationalCampaignComplianceReward, secondNationalElectionOperationsReward,
-                    secondOppositionServiceReward, secondNationalAllianceRenewalReward, secondNationalPolicyCorrectionReward);
+                    secondOppositionServiceReward, secondNationalAllianceRenewalReward, secondNationalPolicyCorrectionReward,
+                    secondComebackCampaignSupportReward, secondComebackCampaignComplianceReward, secondComebackElectionOperationsReward);
             }
             else
             {
@@ -552,7 +579,8 @@ namespace NetaJi.Prototype
                     stateHealthOutcomeReward, stateLearningOutcomeReward, stateSafetyOutcomeReward, stateLivelihoodOutcomeReward,
                     nationalOrganizationReachReward, federalAllianceTrustReward, nationalPolicyCredibilityReward,
                     nationalCampaignSupportReward, nationalCampaignComplianceReward, nationalElectionOperationsReward,
-                    oppositionServiceReward, nationalAllianceRenewalReward, nationalPolicyCorrectionReward);
+                    oppositionServiceReward, nationalAllianceRenewalReward, nationalPolicyCorrectionReward,
+                    comebackCampaignSupportReward, comebackCampaignComplianceReward, comebackElectionOperationsReward);
             }
         }
 
@@ -608,7 +636,10 @@ namespace NetaJi.Prototype
             int nationalElectionOperations,
             int oppositionService,
             int nationalAllianceRenewal,
-            int nationalPolicyCorrection)
+            int nationalPolicyCorrection,
+            int secondCampaignSupport,
+            int secondCampaignCompliance,
+            int secondElectionOperations)
         {
             completed = true;
             PrototypeAudio.Instance?.PlayInteraction();
@@ -630,6 +661,8 @@ namespace NetaJi.Prototype
                 nationalCampaignSupport, nationalCampaignCompliance, nationalElectionOperations);
             GameSession.Instance?.ApplyOppositionTermReward(
                 oppositionService, nationalAllianceRenewal, nationalPolicyCorrection);
+            GameSession.Instance?.ApplySecondNationalCampaignReward(
+                secondCampaignSupport, secondCampaignCompliance, secondElectionOperations);
             if (resolvesWardElection && GameSession.Instance != null)
             {
                 bool won = GameSession.Instance.ResolveWardElection();
@@ -741,6 +774,14 @@ namespace NetaJi.Prototype
                 dialogueText = ready
                     ? $"Five-year opposition review {progress.nationalComebackScore}/100. Service {progress.oppositionServiceRecord}, alliance renewal {progress.nationalAllianceRenewal}, policy correction {progress.nationalPolicyCorrection}. Second national campaign approved."
                     : $"Five-year opposition review {progress.nationalComebackScore}/100. Comeback hold par hai; alliance and policy 60+ aur score 74+ mandatory hain.";
+            }
+            if (resolvesSecondNationalElection && GameSession.Instance != null)
+            {
+                bool elected = GameSession.Instance.ResolveSecondNationalElection();
+                PlayerProgress progress = GameSession.Instance.Progress;
+                dialogueText = elected
+                    ? $"Second fictional national count: {progress.secondNationalVoteShare}% vote aur {progress.secondNationalSeatsWon}/100 seats. 51-seat majority earned; elected alliance ne Azad ko Prime Minister-designate chuna."
+                    : $"Second fictional national count: {progress.secondNationalVoteShare}% vote aur {progress.secondNationalSeatsWon}/100 seats. PM mandate hold par hai; comeback readiness, clean rules, 50% vote and 51-seat majority mandatory hain.";
             }
             PrototypeHud.Instance?.ShowDialogue(dialogueSpeaker, dialogueText);
             MissionController.Instance.Complete(this);

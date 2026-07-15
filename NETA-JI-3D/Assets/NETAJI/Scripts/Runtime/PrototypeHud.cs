@@ -139,7 +139,10 @@ namespace NetaJi.Prototype
                     || progress.nationalElectionOperations > 0 || progress.firstNationalVoteShare > 0 || progress.firstNationalElectionContested;
                 bool showNationalComeback = progress.oppositionServiceRecord > 0 || progress.nationalAllianceRenewal > 0
                     || progress.nationalPolicyCorrection > 0 || progress.nationalComebackScore > 0;
-                float statsHeight = showNationalComeback || showFirstNationalElection || showNationalExpansion || showStateTerm || showChiefMinisterGovernance || showStateElection || showStateLeadership || showStateExpansion
+                bool showSecondNationalElection = progress.secondNationalCampaignSupport > 0
+                    || progress.secondNationalCampaignCompliance > 0 || progress.secondNationalElectionOperations > 0
+                    || progress.secondNationalVoteShare > 0 || progress.secondNationalElectionContested;
+                float statsHeight = showSecondNationalElection || showNationalComeback || showFirstNationalElection || showNationalExpansion || showStateTerm || showChiefMinisterGovernance || showStateElection || showStateLeadership || showStateExpansion
                     ? 102f : showDistrict ? 130f : showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
                     : showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
                 Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, statsHeight);
@@ -243,12 +246,21 @@ namespace NetaJi.Prototype
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"NAT S{progress.nationalCampaignSupport} R{progress.nationalCampaignCompliance} O{progress.nationalElectionOperations}  V{vote}  SEAT {progress.firstNationalSeatsWon}/100  {result}", statStyle);
                 }
-                if (showNationalComeback)
+                if (showNationalComeback && !showSecondNationalElection)
                 {
                     string score = progress.nationalComebackScore > 0 ? progress.nationalComebackScore.ToString() : "--";
                     string ready = progress.nationalComebackReady ? "READY" : "OPEN";
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"OPP S{progress.oppositionServiceRecord} A{progress.nationalAllianceRenewal} P{progress.nationalPolicyCorrection}  SCORE {score}  {ready}", statStyle);
+                }
+                if (showSecondNationalElection)
+                {
+                    string vote = progress.secondNationalVoteShare > 0 ? progress.secondNationalVoteShare + "%" : "--";
+                    string result = progress.secondNationalElectionContested
+                        ? progress.primeMinisterElected ? "PM" : "OPPOSITION"
+                        : "OPEN";
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
+                        $"NAT2 S{progress.secondNationalCampaignSupport} R{progress.secondNationalCampaignCompliance} O{progress.secondNationalElectionOperations}  V{vote}  SEAT {progress.secondNationalSeatsWon}/100  {result}", statStyle);
                 }
             }
 
@@ -272,14 +284,14 @@ namespace NetaJi.Prototype
             if (Time.unscaledTime < bannerUntil && !IsDecisionOpen)
             {
                 float width = Mathf.Min(560f, Screen.width - 44f);
-                Rect bannerRect = new Rect((Screen.width - width) * 0.5f, Screen.height * 0.18f, width, 104f);
+                Rect bannerRect = new Rect((Screen.width - width) * 0.5f, Screen.height * 0.15f, width, 128f);
                 DrawPanel(bannerRect, new Color(0.93f, 0.61f, 0.10f, 0.96f));
                 GUIStyle darkTitle = new GUIStyle(titleStyle) { alignment = TextAnchor.MiddleCenter };
                 darkTitle.normal.textColor = new Color(0.03f, 0.11f, 0.12f);
                 GUIStyle darkBody = new GUIStyle(bodyStyle) { alignment = TextAnchor.MiddleCenter };
                 darkBody.normal.textColor = new Color(0.03f, 0.11f, 0.12f);
-                GUI.Label(new Rect(bannerRect.x + 12f, bannerRect.y + 16f, bannerRect.width - 24f, 34f), bannerTitle, darkTitle);
-                GUI.Label(new Rect(bannerRect.x + 12f, bannerRect.y + 53f, bannerRect.width - 24f, 36f), bannerSubtitle, darkBody);
+                GUI.Label(new Rect(bannerRect.x + 12f, bannerRect.y + 14f, bannerRect.width - 24f, 34f), bannerTitle, darkTitle);
+                GUI.Label(new Rect(bannerRect.x + 12f, bannerRect.y + 48f, bannerRect.width - 24f, 66f), bannerSubtitle, darkBody);
             }
 
             if (showChapterActions && Time.unscaledTime >= dialogueUntil && Time.unscaledTime >= bannerUntil)

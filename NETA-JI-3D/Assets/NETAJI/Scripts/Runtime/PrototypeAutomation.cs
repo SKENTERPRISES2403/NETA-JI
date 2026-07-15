@@ -90,6 +90,13 @@ namespace NetaJi.Prototype
         [SerializeField] private int expectedNationalPolicyCorrection;
         [SerializeField] private int expectedNationalComebackScore;
         [SerializeField] private bool expectedNationalComebackReady;
+        [SerializeField] private int expectedSecondNationalCampaignSupport;
+        [SerializeField] private int expectedSecondNationalCampaignCompliance;
+        [SerializeField] private int expectedSecondNationalElectionOperations;
+        [SerializeField] private int expectedSecondNationalVoteShare;
+        [SerializeField] private int expectedSecondNationalSeatsWon;
+        [SerializeField] private bool expectedSecondNationalElectionContested;
+        [SerializeField] private bool expectedPrimeMinisterElected;
 
         public void Configure(
             int chapter,
@@ -175,7 +182,14 @@ namespace NetaJi.Prototype
             int nationalAllianceRenewal = 0,
             int nationalPolicyCorrection = 0,
             int nationalComebackScore = 0,
-            bool nationalComebackReady = false)
+            bool nationalComebackReady = false,
+            int secondNationalCampaignSupport = 0,
+            int secondNationalCampaignCompliance = 0,
+            int secondNationalElectionOperations = 0,
+            int secondNationalVoteShare = 0,
+            int secondNationalSeatsWon = 0,
+            bool secondNationalElectionContested = false,
+            bool primeMinisterElected = false)
         {
             chapterNumber = Mathf.Max(1, chapter);
             expectedTrust = trust;
@@ -261,6 +275,13 @@ namespace NetaJi.Prototype
             expectedNationalPolicyCorrection = nationalPolicyCorrection;
             expectedNationalComebackScore = nationalComebackScore;
             expectedNationalComebackReady = nationalComebackReady;
+            expectedSecondNationalCampaignSupport = secondNationalCampaignSupport;
+            expectedSecondNationalCampaignCompliance = secondNationalCampaignCompliance;
+            expectedSecondNationalElectionOperations = secondNationalElectionOperations;
+            expectedSecondNationalVoteShare = secondNationalVoteShare;
+            expectedSecondNationalSeatsWon = secondNationalSeatsWon;
+            expectedSecondNationalElectionContested = secondNationalElectionContested;
+            expectedPrimeMinisterElected = primeMinisterElected;
         }
 
         private void Start()
@@ -284,7 +305,8 @@ namespace NetaJi.Prototype
                 || (chapterNumber == 17 && System.Array.IndexOf(arguments, "-riskyStateReformSmoke") >= 0)
                 || (chapterNumber == 18 && System.Array.IndexOf(arguments, "-riskyNationalExpansionSmoke") >= 0)
                 || (chapterNumber == 19 && System.Array.IndexOf(arguments, "-riskyFirstNationalElectionSmoke") >= 0)
-                || (chapterNumber == 20 && System.Array.IndexOf(arguments, "-riskyOppositionTermSmoke") >= 0))
+                || (chapterNumber == 20 && System.Array.IndexOf(arguments, "-riskyOppositionTermSmoke") >= 0)
+                || (chapterNumber == 21 && System.Array.IndexOf(arguments, "-riskySecondNationalElectionSmoke") >= 0))
             {
                 StartCoroutine(RunSmoke(arguments));
             }
@@ -327,7 +349,9 @@ namespace NetaJi.Prototype
                 || (chapterNumber == 19
                     && System.Array.IndexOf(arguments, "-riskyFirstNationalElectionSmoke") >= 0)
                 || (chapterNumber == 20
-                    && System.Array.IndexOf(arguments, "-riskyOppositionTermSmoke") >= 0);
+                    && System.Array.IndexOf(arguments, "-riskyOppositionTermSmoke") >= 0)
+                || (chapterNumber == 21
+                    && System.Array.IndexOf(arguments, "-riskySecondNationalElectionSmoke") >= 0);
 
             yield return new WaitForSeconds(1.2f);
             MissionController mission = MissionController.Instance;
@@ -584,9 +608,14 @@ namespace NetaJi.Prototype
                 PrepareChapterNineteenBaseline(GameSession.Instance);
                 mission.ResetMission(false);
             }
-            else
+            else if (chapterNumber == 20)
             {
                 PrepareChapterTwentyBaseline(GameSession.Instance);
+                mission.ResetMission(false);
+            }
+            else
+            {
+                PrepareChapterTwentyOneBaseline(GameSession.Instance);
                 mission.ResetMission(false);
             }
 
@@ -748,6 +777,13 @@ namespace NetaJi.Prototype
                 requiredReputation = 90;
                 requiredProof = 95;
             }
+            else if (chapterNumber == 21 && riskyDecision)
+            {
+                requiredTrust = 100;
+                requiredMoney = 0;
+                requiredReputation = 92;
+                requiredProof = 96;
+            }
             int requiredDecision = riskyDecision ? 2 : 1;
             int requiredPower = chapterNumber == 6 && riskyDecision ? 20 : expectedPower;
             int requiredVolunteers = chapterNumber == 6 && riskyDecision ? 32 : expectedVolunteers;
@@ -836,6 +872,12 @@ namespace NetaJi.Prototype
                 requiredVolunteers = 486;
                 requiredPressure = 97;
             }
+            else if (chapterNumber == 21 && riskyDecision)
+            {
+                requiredPower = 83;
+                requiredVolunteers = 530;
+                requiredPressure = 96;
+            }
             int requiredSupport = chapterNumber == 7 && riskyDecision ? 66 : expectedSupport;
             int requiredBooth = chapterNumber == 7 && riskyDecision ? 70 : expectedBooth;
             int requiredVoteShare = chapterNumber == 7 && riskyDecision ? 58 : expectedVoteShare;
@@ -914,6 +956,13 @@ namespace NetaJi.Prototype
             int requiredNationalPolicyCorrection = chapterNumber == 20 && riskyDecision ? 74 : expectedNationalPolicyCorrection;
             int requiredNationalComebackScore = chapterNumber == 20 && riskyDecision ? 75 : expectedNationalComebackScore;
             bool requiredNationalComebackReady = chapterNumber == 20 && riskyDecision || expectedNationalComebackReady;
+            int requiredSecondNationalCampaignSupport = chapterNumber == 21 && riskyDecision ? 88 : expectedSecondNationalCampaignSupport;
+            int requiredSecondNationalCampaignCompliance = chapterNumber == 21 && riskyDecision ? 64 : expectedSecondNationalCampaignCompliance;
+            int requiredSecondNationalElectionOperations = chapterNumber == 21 && riskyDecision ? 64 : expectedSecondNationalElectionOperations;
+            int requiredSecondNationalVoteShare = chapterNumber == 21 && riskyDecision ? 52 : expectedSecondNationalVoteShare;
+            int requiredSecondNationalSeatsWon = chapterNumber == 21 && riskyDecision ? 51 : expectedSecondNationalSeatsWon;
+            bool requiredSecondNationalElectionContested = chapterNumber == 21 && riskyDecision || expectedSecondNationalElectionContested;
+            bool requiredPrimeMinisterElected = chapterNumber == 21 && riskyDecision || expectedPrimeMinisterElected;
             bool passed = mission.IsComplete
                 && progress.publicTrust == requiredTrust
                 && progress.money == requiredMoney
@@ -998,6 +1047,13 @@ namespace NetaJi.Prototype
                 && progress.nationalPolicyCorrection == requiredNationalPolicyCorrection
                 && progress.nationalComebackScore == requiredNationalComebackScore
                 && progress.nationalComebackReady == requiredNationalComebackReady
+                && progress.secondNationalCampaignSupport == requiredSecondNationalCampaignSupport
+                && progress.secondNationalCampaignCompliance == requiredSecondNationalCampaignCompliance
+                && progress.secondNationalElectionOperations == requiredSecondNationalElectionOperations
+                && progress.secondNationalVoteShare == requiredSecondNationalVoteShare
+                && progress.secondNationalSeatsWon == requiredSecondNationalSeatsWon
+                && progress.secondNationalElectionContested == requiredSecondNationalElectionContested
+                && progress.primeMinisterElected == requiredPrimeMinisterElected
                 && (chapterNumber != 4 || progress.rescueApproach == requiredDecision)
                 && (chapterNumber != 5 || progress.hospitalApproach == requiredDecision)
                 && (chapterNumber != 6 || progress.oppositionResponse == requiredDecision)
@@ -1015,13 +1071,14 @@ namespace NetaJi.Prototype
                 && (chapterNumber != 18 || progress.nationalExpansionApproach == requiredDecision)
                 && (chapterNumber != 19 || progress.firstNationalCampaignApproach == requiredDecision)
                 && (chapterNumber != 20 || progress.oppositionTermApproach == requiredDecision)
+                && (chapterNumber != 21 || progress.secondNationalCampaignApproach == requiredDecision)
                 && (PrototypeHud.Instance == null || !PrototypeHud.Instance.IsDecisionOpen);
             string marker = chapterNumber == 1
                 ? "PROTOTYPE"
                 : riskyDecision ? $"CHAPTER_{chapterNumber}_RISKY" : $"CHAPTER_{chapterNumber}";
             Debug.Log(passed
-                ? $"{marker}_SMOKE_PASSED: trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}, proof={progress.caseProof}, power={progress.politicalPower}, team={progress.volunteers}, pressure={progress.oppositionPressure}, mla={progress.mlaPerformanceScore}, districtReach={progress.districtReach}, quality={progress.candidateQuality}, discipline={progress.organizationDiscipline}, expansion={progress.districtExpansionScore}, stateReach={progress.stateCampaignReach}, slate={progress.candidateSlateIntegrity}, ops={progress.stateElectionOperations}, stateScore={progress.stateExpansionScore}, seats={progress.stateSeatsWon}, policy={progress.statePolicyCredibility}, caucus={progress.stateCaucusUnity}, publicLead={progress.publicLeadership}, leadership={progress.stateLeadershipScore}, statewideSupport={progress.statewideSupport}, rules={progress.statewideCampaignCompliance}, pollOps={progress.statewideElectionOperations}, statewideVote={progress.statewideVoteShare}, assemblySeats={progress.stateAssemblySeatsWon}, cm={progress.chiefMinisterElected}, cmDelivery={progress.chiefMinisterDelivery}, cabinet={progress.cabinetIntegrity}, fiscal={progress.stateFiscalDiscipline}, cmScore={progress.chiefMinisterGovernanceScore}, cmReview={progress.chiefMinisterHundredDayReviewPassed}, health={progress.stateHealthOutcome}, learning={progress.stateLearningOutcome}, safety={progress.stateSafetyOutcome}, livelihood={progress.stateLivelihoodOutcome}, termScore={progress.stateTermScore}, termReview={progress.stateTermReviewPassed}, nationalReach={progress.nationalOrganizationReach}, alliance={progress.federalAllianceTrust}, nationalPolicy={progress.nationalPolicyCredibility}, nationalScore={progress.nationalReadinessScore}, regions={progress.nationalRegionsAligned}, nationalReady={progress.nationalExpansionReady}, nationalSupport={progress.nationalCampaignSupport}, nationalRules={progress.nationalCampaignCompliance}, nationalOps={progress.nationalElectionOperations}, firstNationalVote={progress.firstNationalVoteShare}, firstNationalSeats={progress.firstNationalSeatsWon}, contested={progress.firstNationalElectionContested}, firstNationalWin={progress.firstNationalElectionWon}, oppositionService={progress.oppositionServiceRecord}, allianceRenewal={progress.nationalAllianceRenewal}, policyCorrection={progress.nationalPolicyCorrection}, comebackScore={progress.nationalComebackScore}, comebackReady={progress.nationalComebackReady}"
-                : $"{marker}_SMOKE_FAILED: complete={mission.IsComplete}, trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}, proof={progress.caseProof}, power={progress.politicalPower}, team={progress.volunteers}, pressure={progress.oppositionPressure}, vote={progress.assemblyVoteShare}, legislative={progress.legislativeEffectiveness}, service={progress.constituencyService}, ethics={progress.ethicsRecord}, allocation={progress.mlaAllocationLakhs}, mla={progress.mlaPerformanceScore}, districtReach={progress.districtReach}, quality={progress.candidateQuality}, discipline={progress.organizationDiscipline}, expansion={progress.districtExpansionScore}, stateReach={progress.stateCampaignReach}, slate={progress.candidateSlateIntegrity}, ops={progress.stateElectionOperations}, stateScore={progress.stateExpansionScore}, seats={progress.stateSeatsWon}, policy={progress.statePolicyCredibility}, caucus={progress.stateCaucusUnity}, publicLead={progress.publicLeadership}, leadership={progress.stateLeadershipScore}, statewideSupport={progress.statewideSupport}, rules={progress.statewideCampaignCompliance}, pollOps={progress.statewideElectionOperations}, statewideVote={progress.statewideVoteShare}, assemblySeats={progress.stateAssemblySeatsWon}, cm={progress.chiefMinisterElected}, cmDelivery={progress.chiefMinisterDelivery}, cabinet={progress.cabinetIntegrity}, fiscal={progress.stateFiscalDiscipline}, cmScore={progress.chiefMinisterGovernanceScore}, cmReview={progress.chiefMinisterHundredDayReviewPassed}, health={progress.stateHealthOutcome}, learning={progress.stateLearningOutcome}, safety={progress.stateSafetyOutcome}, livelihood={progress.stateLivelihoodOutcome}, termScore={progress.stateTermScore}, termReview={progress.stateTermReviewPassed}, nationalReach={progress.nationalOrganizationReach}, alliance={progress.federalAllianceTrust}, nationalPolicy={progress.nationalPolicyCredibility}, nationalScore={progress.nationalReadinessScore}, regions={progress.nationalRegionsAligned}, nationalReady={progress.nationalExpansionReady}, nationalSupport={progress.nationalCampaignSupport}, nationalRules={progress.nationalCampaignCompliance}, nationalOps={progress.nationalElectionOperations}, firstNationalVote={progress.firstNationalVoteShare}, firstNationalSeats={progress.firstNationalSeatsWon}, contested={progress.firstNationalElectionContested}, firstNationalWin={progress.firstNationalElectionWon}, oppositionService={progress.oppositionServiceRecord}, allianceRenewal={progress.nationalAllianceRenewal}, policyCorrection={progress.nationalPolicyCorrection}, comebackScore={progress.nationalComebackScore}, comebackReady={progress.nationalComebackReady}");
+                ? $"{marker}_SMOKE_PASSED: trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}, proof={progress.caseProof}, power={progress.politicalPower}, team={progress.volunteers}, pressure={progress.oppositionPressure}, mla={progress.mlaPerformanceScore}, districtReach={progress.districtReach}, quality={progress.candidateQuality}, discipline={progress.organizationDiscipline}, expansion={progress.districtExpansionScore}, stateReach={progress.stateCampaignReach}, slate={progress.candidateSlateIntegrity}, ops={progress.stateElectionOperations}, stateScore={progress.stateExpansionScore}, seats={progress.stateSeatsWon}, policy={progress.statePolicyCredibility}, caucus={progress.stateCaucusUnity}, publicLead={progress.publicLeadership}, leadership={progress.stateLeadershipScore}, statewideSupport={progress.statewideSupport}, rules={progress.statewideCampaignCompliance}, pollOps={progress.statewideElectionOperations}, statewideVote={progress.statewideVoteShare}, assemblySeats={progress.stateAssemblySeatsWon}, cm={progress.chiefMinisterElected}, cmDelivery={progress.chiefMinisterDelivery}, cabinet={progress.cabinetIntegrity}, fiscal={progress.stateFiscalDiscipline}, cmScore={progress.chiefMinisterGovernanceScore}, cmReview={progress.chiefMinisterHundredDayReviewPassed}, health={progress.stateHealthOutcome}, learning={progress.stateLearningOutcome}, safety={progress.stateSafetyOutcome}, livelihood={progress.stateLivelihoodOutcome}, termScore={progress.stateTermScore}, termReview={progress.stateTermReviewPassed}, nationalReach={progress.nationalOrganizationReach}, alliance={progress.federalAllianceTrust}, nationalPolicy={progress.nationalPolicyCredibility}, nationalScore={progress.nationalReadinessScore}, regions={progress.nationalRegionsAligned}, nationalReady={progress.nationalExpansionReady}, nationalSupport={progress.nationalCampaignSupport}, nationalRules={progress.nationalCampaignCompliance}, nationalOps={progress.nationalElectionOperations}, firstNationalVote={progress.firstNationalVoteShare}, firstNationalSeats={progress.firstNationalSeatsWon}, contested={progress.firstNationalElectionContested}, firstNationalWin={progress.firstNationalElectionWon}, oppositionService={progress.oppositionServiceRecord}, allianceRenewal={progress.nationalAllianceRenewal}, policyCorrection={progress.nationalPolicyCorrection}, comebackScore={progress.nationalComebackScore}, comebackReady={progress.nationalComebackReady}, secondSupport={progress.secondNationalCampaignSupport}, secondRules={progress.secondNationalCampaignCompliance}, secondOps={progress.secondNationalElectionOperations}, secondVote={progress.secondNationalVoteShare}, secondSeats={progress.secondNationalSeatsWon}, secondContested={progress.secondNationalElectionContested}, pm={progress.primeMinisterElected}"
+                : $"{marker}_SMOKE_FAILED: complete={mission.IsComplete}, trust={progress.publicTrust}, money={progress.money}, reputation={progress.reputation}, proof={progress.caseProof}, power={progress.politicalPower}, team={progress.volunteers}, pressure={progress.oppositionPressure}, vote={progress.assemblyVoteShare}, legislative={progress.legislativeEffectiveness}, service={progress.constituencyService}, ethics={progress.ethicsRecord}, allocation={progress.mlaAllocationLakhs}, mla={progress.mlaPerformanceScore}, districtReach={progress.districtReach}, quality={progress.candidateQuality}, discipline={progress.organizationDiscipline}, expansion={progress.districtExpansionScore}, stateReach={progress.stateCampaignReach}, slate={progress.candidateSlateIntegrity}, ops={progress.stateElectionOperations}, stateScore={progress.stateExpansionScore}, seats={progress.stateSeatsWon}, policy={progress.statePolicyCredibility}, caucus={progress.stateCaucusUnity}, publicLead={progress.publicLeadership}, leadership={progress.stateLeadershipScore}, statewideSupport={progress.statewideSupport}, rules={progress.statewideCampaignCompliance}, pollOps={progress.statewideElectionOperations}, statewideVote={progress.statewideVoteShare}, assemblySeats={progress.stateAssemblySeatsWon}, cm={progress.chiefMinisterElected}, cmDelivery={progress.chiefMinisterDelivery}, cabinet={progress.cabinetIntegrity}, fiscal={progress.stateFiscalDiscipline}, cmScore={progress.chiefMinisterGovernanceScore}, cmReview={progress.chiefMinisterHundredDayReviewPassed}, health={progress.stateHealthOutcome}, learning={progress.stateLearningOutcome}, safety={progress.stateSafetyOutcome}, livelihood={progress.stateLivelihoodOutcome}, termScore={progress.stateTermScore}, termReview={progress.stateTermReviewPassed}, nationalReach={progress.nationalOrganizationReach}, alliance={progress.federalAllianceTrust}, nationalPolicy={progress.nationalPolicyCredibility}, nationalScore={progress.nationalReadinessScore}, regions={progress.nationalRegionsAligned}, nationalReady={progress.nationalExpansionReady}, nationalSupport={progress.nationalCampaignSupport}, nationalRules={progress.nationalCampaignCompliance}, nationalOps={progress.nationalElectionOperations}, firstNationalVote={progress.firstNationalVoteShare}, firstNationalSeats={progress.firstNationalSeatsWon}, contested={progress.firstNationalElectionContested}, firstNationalWin={progress.firstNationalElectionWon}, oppositionService={progress.oppositionServiceRecord}, allianceRenewal={progress.nationalAllianceRenewal}, policyCorrection={progress.nationalPolicyCorrection}, comebackScore={progress.nationalComebackScore}, comebackReady={progress.nationalComebackReady}, secondSupport={progress.secondNationalCampaignSupport}, secondRules={progress.secondNationalCampaignCompliance}, secondOps={progress.secondNationalElectionOperations}, secondVote={progress.secondNationalVoteShare}, secondSeats={progress.secondNationalSeatsWon}, secondContested={progress.secondNationalElectionContested}, pm={progress.primeMinisterElected}");
             Application.Quit(passed ? 0 : 3);
         }
 
@@ -1138,6 +1195,17 @@ namespace NetaJi.Prototype
             session.ResolveFirstNationalElection();
             session.SetStoryDecision("first-national-campaign-approach", 1);
             session.CompleteChapter(19);
+        }
+
+        private static void PrepareChapterTwentyOneBaseline(GameSession session)
+        {
+            PrepareChapterTwentyBaseline(session);
+            session.ApplyReward(0, 0, 0, 6);
+            session.ApplyPoliticalReward(3, 50, -5);
+            session.ApplyOppositionTermReward(94, 92, 92);
+            session.ResolveNationalComeback();
+            session.SetStoryDecision("opposition-term-approach", 1);
+            session.CompleteChapter(20);
         }
 
         private static string ReadArgument(string[] arguments, string name)

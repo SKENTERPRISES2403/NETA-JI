@@ -28,6 +28,7 @@ namespace NetaJi.Prototype
         [SerializeField] private string chapterEighteenSceneName = "Chapter18";
         [SerializeField] private string chapterNineteenSceneName = "Chapter19";
         [SerializeField] private string chapterTwentySceneName = "Chapter20";
+        [SerializeField] private string chapterTwentyOneSceneName = "Chapter21";
 
         private Texture2D whiteTexture;
         private Texture2D primaryTexture;
@@ -155,6 +156,11 @@ namespace NetaJi.Prototype
             {
                 SceneManager.LoadScene(chapterTwentySceneName);
             }
+            else if (Array.IndexOf(arguments, "-chapter21Smoke") >= 0
+                || Array.IndexOf(arguments, "-riskySecondNationalElectionSmoke") >= 0)
+            {
+                SceneManager.LoadScene(chapterTwentyOneSceneName);
+            }
         }
 
         private IEnumerator RunMenuSmoke(string[] arguments)
@@ -184,6 +190,7 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(17);
                 GameSession.Instance.CompleteChapter(18);
                 GameSession.Instance.CompleteChapter(19);
+                GameSession.Instance.CompleteChapter(20);
             }
             yield return new WaitForSeconds(1.2f);
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "menu-start.png"));
@@ -281,13 +288,21 @@ namespace NetaJi.Prototype
                 "VIDHANSABHA KI RAAH", "JANATA KA MANDATE", "JANATA KA MLA", "ZILA SANGATHAN",
                 "PRADESH KI DASTAK", "PRADESH KA NETRUTVA", "PRADESH KA JANADESH",
                 "CM KE PEHLE 100 DIN", "BADLAV KE PAANCH SAAL", "DESH BHAR KA SAATH",
-                "RASHTRIYA CHUNAV", "HAAR KE BAAD HIMMAT"
+                "RASHTRIYA CHUNAV", "HAAR KE BAAD HIMMAT", "PM KA JANADESH"
             };
             float cardGap = 10f;
             bool compactGrid = chapterTitles.Length > 15;
-            int cardColumns = chapterTitles.Length > 16 ? 5 : compactGrid ? 4 : chapterTitles.Length > 14 ? 5 : 7;
-            float cardHeight = compactGrid ? (panel.height >= 470f ? 64f : 48f) : chapterTitles.Length > 14 ? 55f : 70f;
-            float rowGap = compactGrid ? (panel.height >= 470f ? 8f : 6f) : chapterTitles.Length > 14 ? 8f : 12f;
+            int cardColumns = chapterTitles.Length == 21 ? 7 : chapterTitles.Length > 16 ? 5 : compactGrid ? 4 : chapterTitles.Length > 14 ? 5 : 7;
+            float cardHeight = compactGrid
+                ? chapterTitles.Length > 20
+                    ? panel.height >= 470f ? 72f : 64f
+                    : panel.height >= 470f ? 64f : 48f
+                : chapterTitles.Length > 14 ? 55f : 70f;
+            float rowGap = compactGrid
+                ? chapterTitles.Length > 20
+                    ? panel.height >= 470f ? 8f : 6f
+                    : panel.height >= 470f ? 8f : 6f
+                : chapterTitles.Length > 14 ? 8f : 12f;
             float cardWidth = (panel.width - 48f - cardGap * (cardColumns - 1)) / cardColumns;
             float firstX = panel.x + 24f;
             float firstY = panel.y + (compactGrid ? 56f : 62f);
@@ -444,6 +459,10 @@ namespace NetaJi.Prototype
             else if (chapterNumber == 20)
             {
                 sceneName = chapterTwentySceneName;
+            }
+            else if (chapterNumber == 21)
+            {
+                sceneName = chapterTwentyOneSceneName;
             }
             SceneManager.LoadScene(sceneName);
         }
