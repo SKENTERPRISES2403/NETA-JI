@@ -75,6 +75,11 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Full-term review gated by all four minimum outcomes, the CM audit, public evidence, and pressure
 - Seventeenth playable chapter: `Badlav Ke Paanch Saal`, covering measured multi-year reform
 - Save v17 migration and independently verified phased-reform/mega-announcement outcomes
+- Persistent national `REACH`, federal alliance `TRUST`, policy `CREDIBILITY`, aligned regions, and computed readiness
+- National readiness gated by the passed state term, alliance and policy minimums, fourteen aligned fictional regions, public record, and pressure
+- Eighteenth playable chapter: `Desh Bhar Ka Saath`, covering a fictional accountable national federation
+- Save v18 migration and independently verified patient-federation/centralized-headline outcomes
+- Eighteen-card compact chapter menu and national federation campus verified at mobile landscape size
 
 The existing browser/PWA game remains separate in the repository root. This Unity project does not depend on its capture-game code.
 
@@ -92,7 +97,7 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Store/release builds will switch to IL2CPP ARM64 after the prototype is approved
 
 The Android artifact is a debug-signed development build. Its package id is
-`com.skenterprises.netaji.prototype`, version `0.18.0` (`versionCode 18`).
+`com.skenterprises.netaji.prototype`, version `0.19.0` (`versionCode 19`).
 
 ## Generate The Scene
 

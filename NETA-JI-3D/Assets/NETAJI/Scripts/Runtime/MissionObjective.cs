@@ -60,6 +60,10 @@ namespace NetaJi.Prototype
         [SerializeField] private int stateSafetyOutcomeReward;
         [SerializeField] private int stateLivelihoodOutcomeReward;
         [SerializeField] private bool resolvesStateTermReview;
+        [SerializeField] private int nationalOrganizationReachReward;
+        [SerializeField] private int federalAllianceTrustReward;
+        [SerializeField] private int nationalPolicyCredibilityReward;
+        [SerializeField] private bool resolvesNationalExpansion;
         [SerializeField] private bool hideAfterCompletion;
         [SerializeField] private bool requiresDecision;
         [SerializeField] private string decisionKey;
@@ -109,6 +113,9 @@ namespace NetaJi.Prototype
         [SerializeField] private int secondStateLearningOutcomeReward;
         [SerializeField] private int secondStateSafetyOutcomeReward;
         [SerializeField] private int secondStateLivelihoodOutcomeReward;
+        [SerializeField] private int secondNationalOrganizationReachReward;
+        [SerializeField] private int secondFederalAllianceTrustReward;
+        [SerializeField] private int secondNationalPolicyCredibilityReward;
 
         private bool completed;
         private bool decisionPending;
@@ -187,7 +194,10 @@ namespace NetaJi.Prototype
             int riskyStateHealthOutcome = 0,
             int riskyStateLearningOutcome = 0,
             int riskyStateSafetyOutcome = 0,
-            int riskyStateLivelihoodOutcome = 0)
+            int riskyStateLivelihoodOutcome = 0,
+            int riskyNationalOrganizationReach = 0,
+            int riskyFederalAllianceTrust = 0,
+            int riskyNationalPolicyCredibility = 0)
         {
             requiresDecision = true;
             decisionKey = key;
@@ -237,6 +247,9 @@ namespace NetaJi.Prototype
             secondStateLearningOutcomeReward = riskyStateLearningOutcome;
             secondStateSafetyOutcomeReward = riskyStateSafetyOutcome;
             secondStateLivelihoodOutcomeReward = riskyStateLivelihoodOutcome;
+            secondNationalOrganizationReachReward = riskyNationalOrganizationReach;
+            secondFederalAllianceTrustReward = riskyFederalAllianceTrust;
+            secondNationalPolicyCredibilityReward = riskyNationalPolicyCredibility;
         }
 
         public void ConfigurePoliticalReward(int power, int team, int pressure)
@@ -379,6 +392,18 @@ namespace NetaJi.Prototype
             resolvesStateTermReview = true;
         }
 
+        public void ConfigureNationalExpansionReward(int reach, int allianceTrust, int policyCredibility)
+        {
+            nationalOrganizationReachReward = reach;
+            federalAllianceTrustReward = allianceTrust;
+            nationalPolicyCredibilityReward = policyCredibility;
+        }
+
+        public void ConfigureNationalExpansion()
+        {
+            resolvesNationalExpansion = true;
+        }
+
         public void Interact(AzadController player)
         {
             if (!CanInteract)
@@ -413,7 +438,8 @@ namespace NetaJi.Prototype
                 statePolicyCredibilityReward, stateCaucusUnityReward, publicLeadershipReward,
                 statewideSupportReward, statewideCampaignComplianceReward, statewideElectionOperationsReward,
                 chiefMinisterDeliveryReward, cabinetIntegrityReward, stateFiscalDisciplineReward,
-                stateHealthOutcomeReward, stateLearningOutcomeReward, stateSafetyOutcomeReward, stateLivelihoodOutcomeReward);
+                stateHealthOutcomeReward, stateLearningOutcomeReward, stateSafetyOutcomeReward, stateLivelihoodOutcomeReward,
+                nationalOrganizationReachReward, federalAllianceTrustReward, nationalPolicyCredibilityReward);
         }
 
         public void ResolveDecisionForAutomation(int option)
@@ -453,7 +479,8 @@ namespace NetaJi.Prototype
                     secondStatePolicyCredibilityReward, secondStateCaucusUnityReward, secondPublicLeadershipReward,
                     secondStatewideSupportReward, secondStatewideCampaignComplianceReward, secondStatewideElectionOperationsReward,
                     secondChiefMinisterDeliveryReward, secondCabinetIntegrityReward, secondStateFiscalDisciplineReward,
-                    secondStateHealthOutcomeReward, secondStateLearningOutcomeReward, secondStateSafetyOutcomeReward, secondStateLivelihoodOutcomeReward);
+                    secondStateHealthOutcomeReward, secondStateLearningOutcomeReward, secondStateSafetyOutcomeReward, secondStateLivelihoodOutcomeReward,
+                    secondNationalOrganizationReachReward, secondFederalAllianceTrustReward, secondNationalPolicyCredibilityReward);
             }
             else
             {
@@ -468,7 +495,8 @@ namespace NetaJi.Prototype
                     statePolicyCredibilityReward, stateCaucusUnityReward, publicLeadershipReward,
                     statewideSupportReward, statewideCampaignComplianceReward, statewideElectionOperationsReward,
                     chiefMinisterDeliveryReward, cabinetIntegrityReward, stateFiscalDisciplineReward,
-                    stateHealthOutcomeReward, stateLearningOutcomeReward, stateSafetyOutcomeReward, stateLivelihoodOutcomeReward);
+                    stateHealthOutcomeReward, stateLearningOutcomeReward, stateSafetyOutcomeReward, stateLivelihoodOutcomeReward,
+                    nationalOrganizationReachReward, federalAllianceTrustReward, nationalPolicyCredibilityReward);
             }
         }
 
@@ -515,7 +543,10 @@ namespace NetaJi.Prototype
             int stateHealthOutcome,
             int stateLearningOutcome,
             int stateSafetyOutcome,
-            int stateLivelihoodOutcome)
+            int stateLivelihoodOutcome,
+            int nationalOrganizationReach,
+            int federalAllianceTrust,
+            int nationalPolicyCredibility)
         {
             completed = true;
             PrototypeAudio.Instance?.PlayInteraction();
@@ -532,6 +563,7 @@ namespace NetaJi.Prototype
             GameSession.Instance?.ApplyStateElectionReward(statewideSupport, statewideCampaignCompliance, statewideElectionOperations);
             GameSession.Instance?.ApplyChiefMinisterGovernanceReward(chiefMinisterDelivery, cabinetIntegrity, stateFiscalDiscipline);
             GameSession.Instance?.ApplyStateTermReward(stateHealthOutcome, stateLearningOutcome, stateSafetyOutcome, stateLivelihoodOutcome);
+            GameSession.Instance?.ApplyNationalExpansionReward(nationalOrganizationReach, federalAllianceTrust, nationalPolicyCredibility);
             if (resolvesWardElection && GameSession.Instance != null)
             {
                 bool won = GameSession.Instance.ResolveWardElection();
@@ -619,6 +651,14 @@ namespace NetaJi.Prototype
                 dialogueText = passed
                     ? $"Independent five-year state review {progress.stateTermScore}/100. Health {progress.stateHealthOutcome}, learning {progress.stateLearningOutcome}, safety {progress.stateSafetyOutcome}, livelihood {progress.stateLivelihoodOutcome}. Full term public audit passed."
                     : $"Independent five-year state review {progress.stateTermScore}/100. Review hold par hai; health, learning, safety and livelihood 60+ aur total score 78+ mandatory hain.";
+            }
+            if (resolvesNationalExpansion && GameSession.Instance != null)
+            {
+                bool ready = GameSession.Instance.ResolveNationalExpansion();
+                PlayerProgress progress = GameSession.Instance.Progress;
+                dialogueText = ready
+                    ? $"National federation review {progress.nationalReadinessScore}/100. Reach {progress.nationalOrganizationReach}, alliance trust {progress.federalAllianceTrust}, policy {progress.nationalPolicyCredibility}; {progress.nationalRegionsAligned} fictional regional chapters aligned. National convention approved."
+                    : $"National federation review {progress.nationalReadinessScore}/100 with {progress.nationalRegionsAligned} aligned chapters. Expansion hold par hai; alliance and policy 60+, score 76+ aur fourteen chapters mandatory hain.";
             }
             PrototypeHud.Instance?.ShowDialogue(dialogueSpeaker, dialogueText);
             MissionController.Instance.Complete(this);
