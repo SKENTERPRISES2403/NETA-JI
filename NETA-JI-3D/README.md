@@ -94,6 +94,11 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Twenty-first playable chapter: `PM Ka Janadesh`, covering an earned fictional second national election
 - Save v21 migration and independently verified listening-coalition/massive-wave outcomes
 - Responsive twenty-one-card chapter menu verified in a balanced 7x3 desktop grid and mobile-landscape constraints
+- Persistent Prime Minister `DELIVERY`, Union Cabinet `INTEGRITY`, national `FISCAL` discipline, institutional `TRUST`, and computed 100-day review
+- PM review gated by the earned national majority, four minimum governance standards, independent audit, public record, and pressure
+- Twenty-second playable chapter: `Pradhan Mantri Ke Pehle 100 Din`, covering accountable fictional national government
+- Save v22 migration and independently verified open-federal-cabinet/central-command outcomes
+- Responsive twenty-two-card chapter menu verified in a balanced 6x4 desktop grid and mobile-landscape constraints
 
 The existing browser/PWA game remains separate in the repository root. This Unity project does not depend on its capture-game code.
 
@@ -111,7 +116,7 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Store/release builds will switch to IL2CPP ARM64 after the prototype is approved
 
 The Android artifact is a debug-signed development build. Its package id is
-`com.skenterprises.netaji.prototype`, version `0.22.0` (`versionCode 22`).
+`com.skenterprises.netaji.prototype`, version `0.23.0` (`versionCode 23`).
 
 ## Generate The Scene
 
