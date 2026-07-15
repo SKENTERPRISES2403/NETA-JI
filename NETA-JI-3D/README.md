@@ -80,6 +80,10 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Eighteenth playable chapter: `Desh Bhar Ka Saath`, covering a fictional accountable national federation
 - Save v18 migration and independently verified patient-federation/centralized-headline outcomes
 - Eighteen-card compact chapter menu and national federation campus verified at mobile landscape size
+- Persistent national-campaign `SUPPORT`, campaign `RULES`, polling `OPS`, vote share, and fictional 100-seat result
+- First national election outcome computed from readiness, alliance trust, campaign quality, public record, and pressure
+- Nineteenth playable chapter: `Pehla Rashtriya Faisla`, ending in an accepted first-election defeat and responsible opposition
+- Save v19 migration and independently verified issue-first/spectacle-convoy outcomes
 
 The existing browser/PWA game remains separate in the repository root. This Unity project does not depend on its capture-game code.
 
@@ -97,7 +101,7 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Store/release builds will switch to IL2CPP ARM64 after the prototype is approved
 
 The Android artifact is a debug-signed development build. Its package id is
-`com.skenterprises.netaji.prototype`, version `0.19.0` (`versionCode 19`).
+`com.skenterprises.netaji.prototype`, version `0.20.0` (`versionCode 20`).
 
 ## Generate The Scene
 

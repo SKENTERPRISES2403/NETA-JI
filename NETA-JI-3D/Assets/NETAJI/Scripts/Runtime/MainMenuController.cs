@@ -26,6 +26,7 @@ namespace NetaJi.Prototype
         [SerializeField] private string chapterSixteenSceneName = "Chapter16";
         [SerializeField] private string chapterSeventeenSceneName = "Chapter17";
         [SerializeField] private string chapterEighteenSceneName = "Chapter18";
+        [SerializeField] private string chapterNineteenSceneName = "Chapter19";
 
         private Texture2D whiteTexture;
         private Texture2D primaryTexture;
@@ -143,6 +144,11 @@ namespace NetaJi.Prototype
             {
                 SceneManager.LoadScene(chapterEighteenSceneName);
             }
+            else if (Array.IndexOf(arguments, "-chapter19Smoke") >= 0
+                || Array.IndexOf(arguments, "-riskyFirstNationalElectionSmoke") >= 0)
+            {
+                SceneManager.LoadScene(chapterNineteenSceneName);
+            }
         }
 
         private IEnumerator RunMenuSmoke(string[] arguments)
@@ -170,6 +176,7 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(15);
                 GameSession.Instance.CompleteChapter(16);
                 GameSession.Instance.CompleteChapter(17);
+                GameSession.Instance.CompleteChapter(18);
             }
             yield return new WaitForSeconds(1.2f);
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "menu-start.png"));
@@ -266,7 +273,8 @@ namespace NetaJi.Prototype
                 "DAWA KA SACH", "SEVA SE SIYASAT", "WARD KA FAISLA", "PEHLE 100 DIN",
                 "VIDHANSABHA KI RAAH", "JANATA KA MANDATE", "JANATA KA MLA", "ZILA SANGATHAN",
                 "PRADESH KI DASTAK", "PRADESH KA NETRUTVA", "PRADESH KA JANADESH",
-                "CM KE PEHLE 100 DIN", "BADLAV KE PAANCH SAAL", "DESH BHAR KA SAATH"
+                "CM KE PEHLE 100 DIN", "BADLAV KE PAANCH SAAL", "DESH BHAR KA SAATH",
+                "RASHTRIYA CHUNAV"
             };
             float cardGap = 10f;
             bool compactGrid = chapterTitles.Length > 15;
@@ -418,6 +426,10 @@ namespace NetaJi.Prototype
             else if (chapterNumber == 18)
             {
                 sceneName = chapterEighteenSceneName;
+            }
+            else if (chapterNumber == 19)
+            {
+                sceneName = chapterNineteenSceneName;
             }
             SceneManager.LoadScene(sceneName);
         }

@@ -64,6 +64,10 @@ namespace NetaJi.Prototype
         [SerializeField] private int federalAllianceTrustReward;
         [SerializeField] private int nationalPolicyCredibilityReward;
         [SerializeField] private bool resolvesNationalExpansion;
+        [SerializeField] private int nationalCampaignSupportReward;
+        [SerializeField] private int nationalCampaignComplianceReward;
+        [SerializeField] private int nationalElectionOperationsReward;
+        [SerializeField] private bool resolvesFirstNationalElection;
         [SerializeField] private bool hideAfterCompletion;
         [SerializeField] private bool requiresDecision;
         [SerializeField] private string decisionKey;
@@ -116,6 +120,9 @@ namespace NetaJi.Prototype
         [SerializeField] private int secondNationalOrganizationReachReward;
         [SerializeField] private int secondFederalAllianceTrustReward;
         [SerializeField] private int secondNationalPolicyCredibilityReward;
+        [SerializeField] private int secondNationalCampaignSupportReward;
+        [SerializeField] private int secondNationalCampaignComplianceReward;
+        [SerializeField] private int secondNationalElectionOperationsReward;
 
         private bool completed;
         private bool decisionPending;
@@ -197,7 +204,10 @@ namespace NetaJi.Prototype
             int riskyStateLivelihoodOutcome = 0,
             int riskyNationalOrganizationReach = 0,
             int riskyFederalAllianceTrust = 0,
-            int riskyNationalPolicyCredibility = 0)
+            int riskyNationalPolicyCredibility = 0,
+            int riskyNationalCampaignSupport = 0,
+            int riskyNationalCampaignCompliance = 0,
+            int riskyNationalElectionOperations = 0)
         {
             requiresDecision = true;
             decisionKey = key;
@@ -250,6 +260,9 @@ namespace NetaJi.Prototype
             secondNationalOrganizationReachReward = riskyNationalOrganizationReach;
             secondFederalAllianceTrustReward = riskyFederalAllianceTrust;
             secondNationalPolicyCredibilityReward = riskyNationalPolicyCredibility;
+            secondNationalCampaignSupportReward = riskyNationalCampaignSupport;
+            secondNationalCampaignComplianceReward = riskyNationalCampaignCompliance;
+            secondNationalElectionOperationsReward = riskyNationalElectionOperations;
         }
 
         public void ConfigurePoliticalReward(int power, int team, int pressure)
@@ -404,6 +417,18 @@ namespace NetaJi.Prototype
             resolvesNationalExpansion = true;
         }
 
+        public void ConfigureFirstNationalCampaignReward(int support, int compliance, int operations)
+        {
+            nationalCampaignSupportReward = support;
+            nationalCampaignComplianceReward = compliance;
+            nationalElectionOperationsReward = operations;
+        }
+
+        public void ConfigureFirstNationalElection()
+        {
+            resolvesFirstNationalElection = true;
+        }
+
         public void Interact(AzadController player)
         {
             if (!CanInteract)
@@ -439,7 +464,8 @@ namespace NetaJi.Prototype
                 statewideSupportReward, statewideCampaignComplianceReward, statewideElectionOperationsReward,
                 chiefMinisterDeliveryReward, cabinetIntegrityReward, stateFiscalDisciplineReward,
                 stateHealthOutcomeReward, stateLearningOutcomeReward, stateSafetyOutcomeReward, stateLivelihoodOutcomeReward,
-                nationalOrganizationReachReward, federalAllianceTrustReward, nationalPolicyCredibilityReward);
+                nationalOrganizationReachReward, federalAllianceTrustReward, nationalPolicyCredibilityReward,
+                nationalCampaignSupportReward, nationalCampaignComplianceReward, nationalElectionOperationsReward);
         }
 
         public void ResolveDecisionForAutomation(int option)
@@ -480,7 +506,8 @@ namespace NetaJi.Prototype
                     secondStatewideSupportReward, secondStatewideCampaignComplianceReward, secondStatewideElectionOperationsReward,
                     secondChiefMinisterDeliveryReward, secondCabinetIntegrityReward, secondStateFiscalDisciplineReward,
                     secondStateHealthOutcomeReward, secondStateLearningOutcomeReward, secondStateSafetyOutcomeReward, secondStateLivelihoodOutcomeReward,
-                    secondNationalOrganizationReachReward, secondFederalAllianceTrustReward, secondNationalPolicyCredibilityReward);
+                    secondNationalOrganizationReachReward, secondFederalAllianceTrustReward, secondNationalPolicyCredibilityReward,
+                    secondNationalCampaignSupportReward, secondNationalCampaignComplianceReward, secondNationalElectionOperationsReward);
             }
             else
             {
@@ -496,7 +523,8 @@ namespace NetaJi.Prototype
                     statewideSupportReward, statewideCampaignComplianceReward, statewideElectionOperationsReward,
                     chiefMinisterDeliveryReward, cabinetIntegrityReward, stateFiscalDisciplineReward,
                     stateHealthOutcomeReward, stateLearningOutcomeReward, stateSafetyOutcomeReward, stateLivelihoodOutcomeReward,
-                    nationalOrganizationReachReward, federalAllianceTrustReward, nationalPolicyCredibilityReward);
+                    nationalOrganizationReachReward, federalAllianceTrustReward, nationalPolicyCredibilityReward,
+                    nationalCampaignSupportReward, nationalCampaignComplianceReward, nationalElectionOperationsReward);
             }
         }
 
@@ -546,7 +574,10 @@ namespace NetaJi.Prototype
             int stateLivelihoodOutcome,
             int nationalOrganizationReach,
             int federalAllianceTrust,
-            int nationalPolicyCredibility)
+            int nationalPolicyCredibility,
+            int nationalCampaignSupport,
+            int nationalCampaignCompliance,
+            int nationalElectionOperations)
         {
             completed = true;
             PrototypeAudio.Instance?.PlayInteraction();
@@ -564,6 +595,8 @@ namespace NetaJi.Prototype
             GameSession.Instance?.ApplyChiefMinisterGovernanceReward(chiefMinisterDelivery, cabinetIntegrity, stateFiscalDiscipline);
             GameSession.Instance?.ApplyStateTermReward(stateHealthOutcome, stateLearningOutcome, stateSafetyOutcome, stateLivelihoodOutcome);
             GameSession.Instance?.ApplyNationalExpansionReward(nationalOrganizationReach, federalAllianceTrust, nationalPolicyCredibility);
+            GameSession.Instance?.ApplyFirstNationalCampaignReward(
+                nationalCampaignSupport, nationalCampaignCompliance, nationalElectionOperations);
             if (resolvesWardElection && GameSession.Instance != null)
             {
                 bool won = GameSession.Instance.ResolveWardElection();
@@ -659,6 +692,14 @@ namespace NetaJi.Prototype
                 dialogueText = ready
                     ? $"National federation review {progress.nationalReadinessScore}/100. Reach {progress.nationalOrganizationReach}, alliance trust {progress.federalAllianceTrust}, policy {progress.nationalPolicyCredibility}; {progress.nationalRegionsAligned} fictional regional chapters aligned. National convention approved."
                     : $"National federation review {progress.nationalReadinessScore}/100 with {progress.nationalRegionsAligned} aligned chapters. Expansion hold par hai; alliance and policy 60+, score 76+ aur fourteen chapters mandatory hain.";
+            }
+            if (resolvesFirstNationalElection && GameSession.Instance != null)
+            {
+                bool won = GameSession.Instance.ResolveFirstNationalElection();
+                PlayerProgress progress = GameSession.Instance.Progress;
+                dialogueText = won
+                    ? $"Fictional national count: {progress.firstNationalVoteShare}% vote aur {progress.firstNationalSeatsWon}/100 seats. 51-seat majority earned."
+                    : $"Fictional national count: {progress.firstNationalVoteShare}% vote aur {progress.firstNationalSeatsWon}/100 seats. Pehla national mandate nahi mila. Azad result sweekar karta hai; public service aur accountable opposition jaari rahegi.";
             }
             PrototypeHud.Instance?.ShowDialogue(dialogueSpeaker, dialogueText);
             MissionController.Instance.Complete(this);

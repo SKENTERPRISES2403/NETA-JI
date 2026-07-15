@@ -31,9 +31,10 @@ namespace NetaJi.Prototype.Editor
         private const string ChapterSixteenScenePath = "Assets/NETAJI/Scenes/Chapter16.unity";
         private const string ChapterSeventeenScenePath = "Assets/NETAJI/Scenes/Chapter17.unity";
         private const string ChapterEighteenScenePath = "Assets/NETAJI/Scenes/Chapter18.unity";
+        private const string ChapterNineteenScenePath = "Assets/NETAJI/Scenes/Chapter19.unity";
         private const string MenuScenePath = "Assets/NETAJI/Scenes/MainMenu.unity";
         private const string MaterialPath = "Assets/NETAJI/Materials";
-        private static readonly string[] BuildScenes = { MenuScenePath, ScenePath, ChapterTwoScenePath, ChapterThreeScenePath, ChapterFourScenePath, ChapterFiveScenePath, ChapterSixScenePath, ChapterSevenScenePath, ChapterEightScenePath, ChapterNineScenePath, ChapterTenScenePath, ChapterElevenScenePath, ChapterTwelveScenePath, ChapterThirteenScenePath, ChapterFourteenScenePath, ChapterFifteenScenePath, ChapterSixteenScenePath, ChapterSeventeenScenePath, ChapterEighteenScenePath };
+        private static readonly string[] BuildScenes = { MenuScenePath, ScenePath, ChapterTwoScenePath, ChapterThreeScenePath, ChapterFourScenePath, ChapterFiveScenePath, ChapterSixScenePath, ChapterSevenScenePath, ChapterEightScenePath, ChapterNineScenePath, ChapterTenScenePath, ChapterElevenScenePath, ChapterTwelveScenePath, ChapterThirteenScenePath, ChapterFourteenScenePath, ChapterFifteenScenePath, ChapterSixteenScenePath, ChapterSeventeenScenePath, ChapterEighteenScenePath, ChapterNineteenScenePath };
 
         [MenuItem("NETA JI/Build Prototype Scene")]
         public static void Build()
@@ -525,6 +526,22 @@ namespace NetaJi.Prototype.Editor
                 policeKhaki,
                 foliage,
                 trunk);
+            BuildChapterNineteenScene(
+                sand,
+                stone,
+                darkStone,
+                teal,
+                yellow,
+                white,
+                shirt,
+                trousers,
+                skin,
+                hair,
+                shantiDress,
+                volunteerDress,
+                policeKhaki,
+                foliage,
+                trunk);
             BuildMainMenuScene(
                 sand,
                 stone,
@@ -560,13 +577,14 @@ namespace NetaJi.Prototype.Editor
                 new EditorBuildSettingsScene(ChapterFifteenScenePath, true),
                 new EditorBuildSettingsScene(ChapterSixteenScenePath, true),
                 new EditorBuildSettingsScene(ChapterSeventeenScenePath, true),
-                new EditorBuildSettingsScene(ChapterEighteenScenePath, true)
+                new EditorBuildSettingsScene(ChapterEighteenScenePath, true),
+                new EditorBuildSettingsScene(ChapterNineteenScenePath, true)
             };
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             Selection.activeGameObject = GameObject.Find("Azad");
-            Debug.Log($"NETA JI menu and chapter scenes generated through {ChapterEighteenScenePath}");
+            Debug.Log($"NETA JI menu and chapter scenes generated through {ChapterNineteenScenePath}");
         }
 
         private static void BuildChapterTwoScene(
@@ -900,12 +918,12 @@ namespace NetaJi.Prototype.Editor
         {
             PlayerSettings.companyName = "SK Enterprises";
             PlayerSettings.productName = "NETA JI";
-            PlayerSettings.bundleVersion = "0.19.0";
+            PlayerSettings.bundleVersion = "0.20.0";
             PlayerSettings.colorSpace = ColorSpace.Gamma;
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.skenterprises.netaji.prototype");
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
-            PlayerSettings.Android.bundleVersionCode = 19;
+            PlayerSettings.Android.bundleVersionCode = 20;
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.Mono2x);
             QualitySettings.vSyncCount = 0;

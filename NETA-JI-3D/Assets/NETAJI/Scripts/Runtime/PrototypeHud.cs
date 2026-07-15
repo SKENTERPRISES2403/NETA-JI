@@ -135,7 +135,9 @@ namespace NetaJi.Prototype
                     || progress.stateSafetyOutcome > 0 || progress.stateLivelihoodOutcome > 0 || progress.stateTermScore > 0;
                 bool showNationalExpansion = progress.nationalOrganizationReach > 0 || progress.federalAllianceTrust > 0
                     || progress.nationalPolicyCredibility > 0 || progress.nationalReadinessScore > 0 || progress.nationalRegionsAligned > 0;
-                float statsHeight = showNationalExpansion || showStateTerm || showChiefMinisterGovernance || showStateElection || showStateLeadership || showStateExpansion
+                bool showFirstNationalElection = progress.nationalCampaignSupport > 0 || progress.nationalCampaignCompliance > 0
+                    || progress.nationalElectionOperations > 0 || progress.firstNationalVoteShare > 0 || progress.firstNationalElectionContested;
+                float statsHeight = showFirstNationalElection || showNationalExpansion || showStateTerm || showChiefMinisterGovernance || showStateElection || showStateLeadership || showStateExpansion
                     ? 102f : showDistrict ? 130f : showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
                     : showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
                 Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, statsHeight);
@@ -222,13 +224,22 @@ namespace NetaJi.Prototype
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"TERM H{progress.stateHealthOutcome} L{progress.stateLearningOutcome} S{progress.stateSafetyOutcome} J{progress.stateLivelihoodOutcome}  SCORE {termScore}  {termState}", statStyle);
                 }
-                if (showNationalExpansion)
+                if (showNationalExpansion && !showFirstNationalElection)
                 {
                     string nationalScore = progress.nationalReadinessScore > 0
                         ? progress.nationalReadinessScore.ToString() : "--";
                     string readiness = progress.nationalExpansionReady ? "READY" : "OPEN";
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"NAT R{progress.nationalOrganizationReach} A{progress.federalAllianceTrust} P{progress.nationalPolicyCredibility}  SCORE {nationalScore}  REG {progress.nationalRegionsAligned}  {readiness}", statStyle);
+                }
+                if (showFirstNationalElection)
+                {
+                    string vote = progress.firstNationalVoteShare > 0 ? progress.firstNationalVoteShare + "%" : "--";
+                    string result = progress.firstNationalElectionContested
+                        ? progress.firstNationalElectionWon ? "WON" : "OPPOSITION"
+                        : "OPEN";
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
+                        $"NAT S{progress.nationalCampaignSupport} R{progress.nationalCampaignCompliance} O{progress.nationalElectionOperations}  V{vote}  SEAT {progress.firstNationalSeatsWon}/100  {result}", statStyle);
                 }
             }
 
