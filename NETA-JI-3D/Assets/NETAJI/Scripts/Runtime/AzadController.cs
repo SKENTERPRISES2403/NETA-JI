@@ -50,7 +50,8 @@ namespace NetaJi.Prototype
             controlsEnabled = value;
             planarVelocity = Vector3.zero;
             focusedInteractable = null;
-            PrototypeHud.Instance?.SetInteractionPrompt(string.Empty);
+            MissionPresentation.SetInteractionPrompt(string.Empty);
+            FreeRoamMapHud.Instance?.SetInteractionPrompt(string.Empty);
         }
 
         public void SetVisible(bool value)
@@ -96,10 +97,10 @@ namespace NetaJi.Prototype
             {
                 return;
             }
-            if (PrototypeHud.Instance != null && PrototypeHud.Instance.IsDecisionOpen)
+            if (MissionPresentation.IsDecisionOpen)
             {
                 planarVelocity = Vector3.zero;
-                PrototypeHud.Instance.SetInteractionPrompt(string.Empty);
+                MissionPresentation.SetInteractionPrompt(string.Empty);
                 return;
             }
 
@@ -176,8 +177,15 @@ namespace NetaJi.Prototype
             }
 
             focusedInteractable = best;
-            PrototypeHud.Instance?.SetInteractionPrompt(best?.Prompt ?? string.Empty);
-            FreeRoamMapHud.Instance?.SetInteractionPrompt(best?.Prompt ?? string.Empty);
+            if (MissionPresentation.IsActive)
+            {
+                MissionPresentation.SetInteractionPrompt(best?.Prompt ?? string.Empty);
+                FreeRoamMapHud.Instance?.SetInteractionPrompt(string.Empty);
+            }
+            else
+            {
+                FreeRoamMapHud.Instance?.SetInteractionPrompt(best?.Prompt ?? string.Empty);
+            }
         }
     }
 }

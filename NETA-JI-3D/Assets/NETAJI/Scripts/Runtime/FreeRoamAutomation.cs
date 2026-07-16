@@ -11,19 +11,12 @@ namespace NetaJi.Prototype
             string[] arguments = System.Environment.GetCommandLineArgs();
             if (System.Array.IndexOf(arguments, "-storyHubSmoke") >= 0)
             {
-                if (StoryHubFlow.AutomationStage == 0)
-                {
-                    StartCoroutine(RunStoryHubLaunchSmoke(arguments));
-                }
-                else if (StoryHubFlow.AutomationStage == 2)
-                {
-                    StartCoroutine(RunStoryHubReturnSmoke(arguments));
-                }
-                else
-                {
-                    Debug.LogError($"STORY_HUB_SMOKE_FAILED: unexpected stage {StoryHubFlow.AutomationStage} in FreeRoam.");
-                    Application.Quit(5);
-                }
+                StartCoroutine(RunOpenWorldChapterOneSmoke(arguments, true));
+                return;
+            }
+            if (System.Array.IndexOf(arguments, "-openWorldChapterOneSmoke") >= 0)
+            {
+                StartCoroutine(RunOpenWorldChapterOneSmoke(arguments, false));
                 return;
             }
             if (System.Array.IndexOf(arguments, "-freeRoamSmoke") >= 0)
@@ -177,6 +170,130 @@ namespace NetaJi.Prototype
                     + $"audio={audio.IsLocationAware}, ambient={ambientDistance:F1}m, "
                     + $"car={distance:F1}m/{carSpeed:F1}kph, scooter={scooterDistance:F1}m/{scooterSpeed:F1}kph.");
             Application.Quit(passed ? 0 : 3);
+        }
+
+        private IEnumerator RunOpenWorldChapterOneSmoke(string[] arguments, bool storyHubAlias)
+        {
+            string outputDirectory = ReadArgument(arguments, "-screenshotPath") ?? Application.persistentDataPath;
+            Directory.CreateDirectory(outputDirectory);
+            GameSession.Instance?.ResetProgress();
+            yield return new WaitForSeconds(1.5f);
+
+            AzadController player = FindFirstObjectByType<AzadController>();
+            StoryHubController storyHub = FindFirstObjectByType<StoryHubController>();
+            OpenWorldMissionDirector director = FindFirstObjectByType<OpenWorldMissionDirector>();
+            ThirdPersonCamera orbitCamera = FindFirstObjectByType<ThirdPersonCamera>();
+            FreeRoamMapHud map = FindFirstObjectByType<FreeRoamMapHud>();
+            if (player == null || storyHub == null || director == null || orbitCamera == null || map == null || GameSession.Instance == null)
+            {
+                Debug.LogError(
+                    $"OPEN_WORLD_CHAPTER_ONE_SMOKE_FAILED: player={player != null}, hub={storyHub != null}, "
+                    + $"director={director != null}, camera={orbitCamera != null}, map={map != null}, save={GameSession.Instance != null}.");
+                Application.Quit(6);
+                yield break;
+            }
+
+            player.Teleport(storyHub.transform.position + new Vector3(0f, 0f, -3.2f), Quaternion.identity);
+            orbitCamera.SetTarget(player.transform, new Vector3(0f, 1.45f, 0f), 6.2f, true);
+            storyHub.OpenForAutomation(player);
+            yield return new WaitForSeconds(0.35f);
+            ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "open-world-chapter01-confirm.png"));
+            bool confirmationReady = storyHub.ConfirmationOpen && storyHub.ActiveChapter == 1;
+            yield return new WaitForSeconds(0.35f);
+            storyHub.StartMissionForAutomation();
+            yield return new WaitForSeconds(0.8f);
+
+            MissionController mission = director.ActiveMission;
+            string activeScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            bool startedInWorld = confirmationReady && director.MissionActive && mission != null && activeScene == "FreeRoam";
+            ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "open-world-chapter01-start.png"));
+            if (!startedInWorld)
+            {
+                Debug.LogError(
+                    $"OPEN_WORLD_CHAPTER_ONE_SMOKE_FAILED: confirmation={confirmationReady}, active={director.MissionActive}, "
+                    + $"mission={mission != null}, scene={activeScene}.");
+                Application.Quit(6);
+                yield break;
+            }
+
+            map.SetFullMapOpen(true);
+            yield return new WaitForSeconds(0.35f);
+            ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "open-world-chapter01-map-route.png"));
+            yield return new WaitForSeconds(0.35f);
+            map.SetFullMapOpen(false);
+            yield return new WaitForSeconds(3.1f);
+
+            int completedSteps = 0;
+            while (!mission.IsComplete && completedSteps < 12)
+            {
+                MissionObjective objective = mission.CurrentObjectiveItem;
+                if (objective == null)
+                {
+                    break;
+                }
+
+                player.Teleport(objective.transform.position + new Vector3(0f, 0f, -1.35f), Quaternion.identity);
+                orbitCamera.SetTarget(player.transform, new Vector3(0f, 1.45f, 0f), 6.2f, true);
+                yield return new WaitForSeconds(0.35f);
+                if (completedSteps == 1)
+                {
+                    orbitCamera.SetOrbit(90f, 28f, true);
+                    yield return new WaitForSeconds(0.25f);
+                    ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "open-world-chapter01-ghat.png"));
+                }
+                else if (completedSteps == 5)
+                {
+                    ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "open-world-chapter01-allahpur.png"));
+                }
+                else if (completedSteps == 7)
+                {
+                    ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "open-world-chapter01-records.png"));
+                }
+
+                objective.Interact(player);
+                completedSteps++;
+                yield return new WaitForSeconds(0.35f);
+            }
+
+            PlayerProgress progress = GameSession.Instance.Progress;
+            bool completed = mission.IsComplete
+                && completedSteps == 9
+                && progress.chapterOneComplete
+                && progress.publicTrust == 35
+                && progress.money == 950
+                && progress.reputation == 16
+                && storyHub.ActiveChapter == 2
+                && storyHub.CompletedChapters == 1
+                && UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "FreeRoam";
+            yield return new WaitForSeconds(8.4f);
+            ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "open-world-chapter01-complete.png"));
+            yield return new WaitForSeconds(0.45f);
+
+            director.ExitCompletedMission();
+            yield return new WaitForSeconds(0.6f);
+            bool returnedToHub = completed
+                && !director.MissionActive
+                && Vector3.Distance(player.transform.position, storyHub.ReturnSpawn) < 1.5f;
+            storyHub.OpenForAutomation(player);
+            yield return new WaitForSeconds(0.35f);
+            bool chapterTwoReady = returnedToHub
+                && storyHub.ConfirmationOpen
+                && storyHub.ActiveChapter == 2
+                && storyHub.CompletedChapters == 1;
+            ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "open-world-chapter02-ready.png"));
+            yield return new WaitForSeconds(0.35f);
+            storyHub.CancelForAutomation();
+
+            bool passed = chapterTwoReady;
+            string passMessage = storyHubAlias
+                ? "STORY_HUB_SMOKE_PASSED: Chapter 1 ran inside connected Prayagraj, saved completion, returned to Helpers Hand, and advanced to Chapter 2."
+                : $"OPEN_WORLD_CHAPTER_ONE_SMOKE_PASSED: steps={completedSteps}, trust={progress.publicTrust}, funds={progress.money}, rep={progress.reputation}, scene=FreeRoam, next=Chapter02.";
+            Debug.Log(passed
+                ? passMessage
+                : $"OPEN_WORLD_CHAPTER_ONE_SMOKE_FAILED: steps={completedSteps}, complete={completed}, returned={returnedToHub}, "
+                    + $"next={chapterTwoReady}, trust={progress.publicTrust}, funds={progress.money}, rep={progress.reputation}.");
+            StoryHubFlow.AutomationStage = 0;
+            Application.Quit(passed ? 0 : 6);
         }
 
         private IEnumerator RunStoryHubLaunchSmoke(string[] arguments)

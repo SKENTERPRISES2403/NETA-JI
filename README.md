@@ -63,17 +63,19 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - Live top-left minimap plus a full-screen labelled city map that tracks the player
 - Enter, drive, and exit car and scooter vehicles with mobile/keyboard controls and speed HUD
 - Save-aware Helpers Hand story hub launches the next incomplete chapter, returns Azad to Prayagraj after completion, and advances the visible 24-chapter progress
+- Chapter 1 now runs as a nine-step route inside the connected Prayagraj world across Helpers Hand, Daraganj ghats, Allahpur, and the civic records district without a scene reload
+- Shared mission presentation keeps dialogue, decisions, stats, route distance, and a pulsing objective marker readable on the live minimap/full city map
 - Chapter 10 political outfit is consistent across front, back, left, and right views
 - Safe and risky branches with computed public-support, governance, election, development, and global-cooperation outcomes
 - Final Chapter 24 earns the fictional Vishwa Guru outcome through fair trade, open science, defensive peace, and humanitarian-climate leadership rather than conquest
 - Adaptive presentation selects mobile-appropriate MSAA, shadows, anisotropic filtering, and a 60 FPS target from device capability
-- Unity version `0.29.0`, Android `versionCode 29`, min SDK 26, target SDK 36
+- Unity version `0.30.0`, Android `versionCode 30`, min SDK 26, target SDK 36
 - Clean demo APK contains ARM64 and ARMv7 IL2CPP libraries, has no development-build flag, and passes Android v2 signature verification
 - Windows release automation covers the menu, all seven prologue shots, ghat/market/civic free-roam views, ambient traffic, adaptive presentation, location-aware audio, vehicles/map, the hub-to-Chapter-1-to-hub progression loop, outfit views, and both Chapter 24 routes at compact 844x390 landscape presentation
 - Current art is a procedural low-poly prototype, not final GTA-level production art
 - Physical Android install, thermals, touch feel, and device-specific performance still require a connected phone
 
-See [NETA-JI-3D/Docs/prototype-1.md](NETA-JI-3D/Docs/prototype-1.md), [NETA-JI-3D/Docs/open-world-027.md](NETA-JI-3D/Docs/open-world-027.md), [NETA-JI-3D/Docs/story-hub-028.md](NETA-JI-3D/Docs/story-hub-028.md), [NETA-JI-3D/Docs/world-polish-029.md](NETA-JI-3D/Docs/world-polish-029.md), and [NETA-JI-3D/Docs/chapter-24.md](NETA-JI-3D/Docs/chapter-24.md).
+See [NETA-JI-3D/Docs/prototype-1.md](NETA-JI-3D/Docs/prototype-1.md), [NETA-JI-3D/Docs/open-world-027.md](NETA-JI-3D/Docs/open-world-027.md), [NETA-JI-3D/Docs/story-hub-028.md](NETA-JI-3D/Docs/story-hub-028.md), [NETA-JI-3D/Docs/world-polish-029.md](NETA-JI-3D/Docs/world-polish-029.md), [NETA-JI-3D/Docs/shared-world-chapter-030.md](NETA-JI-3D/Docs/shared-world-chapter-030.md), and [NETA-JI-3D/Docs/chapter-24.md](NETA-JI-3D/Docs/chapter-24.md).
 
 ## Run Locally
 

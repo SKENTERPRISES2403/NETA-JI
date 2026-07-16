@@ -18,6 +18,7 @@ namespace NetaJi.Prototype
         private Texture2D roadTexture;
         private Texture2D panelTexture;
         private Texture2D poiTexture;
+        private Texture2D missionTexture;
         private Texture2D playerArrow;
         private bool fullMapOpen;
         private string interactionPrompt = string.Empty;
@@ -27,6 +28,10 @@ namespace NetaJi.Prototype
         private int storyCompleted;
         private string storyTitle = string.Empty;
         private bool storyCampaignComplete;
+        private Transform missionTarget;
+        private string missionTargetLabel = string.Empty;
+
+        public bool IsFullMapOpen => fullMapOpen;
 
         public void SetInteractionPrompt(string value)
         {
@@ -59,6 +64,18 @@ namespace NetaJi.Prototype
             storyCampaignComplete = campaignComplete;
         }
 
+        public void SetMissionTarget(Transform target, string label)
+        {
+            missionTarget = target;
+            missionTargetLabel = label ?? string.Empty;
+        }
+
+        public void ClearMissionTarget()
+        {
+            missionTarget = null;
+            missionTargetLabel = string.Empty;
+        }
+
         public void Configure(
             Transform target,
             Vector2 minimum,
@@ -81,6 +98,7 @@ namespace NetaJi.Prototype
             roadTexture = MakeTexture(new Color(0.24f, 0.28f, 0.29f, 1f));
             panelTexture = MakeTexture(new Color(0.01f, 0.055f, 0.065f, 0.96f));
             poiTexture = MakeTexture(new Color(0.95f, 0.66f, 0.12f, 1f));
+            missionTexture = MakeTexture(new Color(0.02f, 0.82f, 0.73f, 1f));
             playerArrow = MakeArrowTexture();
         }
 
@@ -138,7 +156,7 @@ namespace NetaJi.Prototype
                 DrawVehicleStatus();
             }
 
-            if (!string.IsNullOrWhiteSpace(storyTitle))
+            if (!MissionPresentation.IsActive && !string.IsNullOrWhiteSpace(storyTitle))
             {
                 DrawStoryStatus();
             }
@@ -182,7 +200,8 @@ namespace NetaJi.Prototype
         {
             float width = Mathf.Clamp(Screen.width * 0.17f, 132f, 190f);
             float height = Mathf.Clamp(Screen.height * 0.16f, 58f, 82f);
-            Rect panel = new Rect(Screen.width - width - 18f, 16f, width, height);
+            float y = MissionPresentation.IsActive ? 164f : 16f;
+            Rect panel = new Rect(Screen.width - width - 18f, y, width, height);
             GUI.DrawTexture(panel, panelTexture);
             GUIStyle speedStyle = new GUIStyle(GUI.skin.label)
             {
@@ -267,6 +286,11 @@ namespace NetaJi.Prototype
             List<Rect> occupiedLabels = new List<Rect>();
             for (int i = 0; i < count; i++)
             {
+                if (missionTarget != null && string.Equals(poiNames[i], "Story Mission"))
+                {
+                    continue;
+                }
+
                 Vector2 point = WorldToMap(mapRect, poiPositions[i]);
                 float size = showLabels ? 12f : 7f;
                 GUI.DrawTexture(new Rect(point.x - size * 0.5f, point.y - size * 0.5f, size, size), poiTexture);
@@ -301,6 +325,38 @@ namespace NetaJi.Prototype
                     labelRect.y = Mathf.Clamp(labelRect.y, mapRect.y + 4f, mapRect.yMax - labelHeight - 4f);
                     occupiedLabels.Add(labelRect);
                     GUI.Label(labelRect, poiNames[i], poiStyle);
+                }
+            }
+
+            if (missionTarget != null)
+            {
+                Vector2 missionPoint = WorldToMap(mapRect, missionTarget.position);
+                float pulse = 1f + Mathf.Sin(Time.unscaledTime * 5f) * 0.18f;
+                float size = (showLabels ? 22f : 13f) * pulse;
+                GUI.DrawTexture(
+                    new Rect(missionPoint.x - size * 0.5f, missionPoint.y - size * 0.5f, size, size),
+                    missionTexture);
+                if (showLabels && !string.IsNullOrWhiteSpace(missionTargetLabel))
+                {
+                    float labelWidth = Mathf.Clamp(mapRect.width * 0.40f, 164f, 220f);
+                    float labelHeight = 44f;
+                    float labelX = missionPoint.x > mapRect.center.x
+                        ? missionPoint.x - labelWidth - 12f
+                        : missionPoint.x + 12f;
+                    Rect label = new Rect(
+                        Mathf.Clamp(labelX, mapRect.x + 6f, mapRect.xMax - labelWidth - 6f),
+                        Mathf.Clamp(missionPoint.y - labelHeight - 12f, mapRect.y + 6f, mapRect.yMax - labelHeight - 6f),
+                        labelWidth,
+                        labelHeight);
+                    GUI.DrawTexture(label, panelTexture);
+                    GUIStyle missionStyle = new GUIStyle(poiStyle)
+                    {
+                        alignment = TextAnchor.MiddleCenter,
+                        fontSize = Mathf.Max(11, poiStyle.fontSize - 1),
+                        wordWrap = true
+                    };
+                    missionStyle.normal.textColor = Color.white;
+                    GUI.Label(label, "MISSION  /  " + missionTargetLabel, missionStyle);
                 }
             }
 

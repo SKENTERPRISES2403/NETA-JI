@@ -387,14 +387,30 @@ namespace NetaJi.Prototype.Editor
                     "Daraganj Ghats", "Allahabad Univ.", "High Court", "Azad Park",
                     "Allahpur", "Loknath Market", "Sangam Mall", "Seva Hospital", "Story Mission"
                 });
-            CreateStoryMissionMarker(world.transform, controller, teal, yellow, darkStone);
+            StoryHubController storyHub = CreateStoryMissionMarker(world.transform, controller, teal, yellow, darkStone);
+            GameObject chapterOneRoot = CreateOpenWorldChapterOneMission(
+                world.transform,
+                teal,
+                yellow,
+                darkStone,
+                shirt,
+                trousers,
+                skin,
+                hair,
+                shantiDress,
+                sandhyaDress,
+                policeKhaki,
+                volunteerDress,
+                marketRed);
+            OpenWorldMissionDirector missionDirector = systems.AddComponent<OpenWorldMissionDirector>();
+            missionDirector.Configure(controller, storyHub, chapterOneRoot);
             CreateOpenWorldLighting();
 
             EditorSceneManager.MarkSceneDirty(freeRoamScene);
             EditorSceneManager.SaveScene(freeRoamScene, FreeRoamScenePath);
         }
 
-        private static void CreateStoryMissionMarker(
+        private static StoryHubController CreateStoryMissionMarker(
             Transform parent, AzadController player, Material teal, Material yellow, Material darkStone)
         {
             GameObject marker = new GameObject("Helpers Hand Story Mission");
@@ -418,10 +434,188 @@ namespace NetaJi.Prototype.Editor
             CreatePrimitiveChild("Mission Direction Base", PrimitiveType.Cube, marker.transform,
                 new Vector3(0f, 0.32f, 0f), new Vector3(2.8f, 0.18f, 0.42f), darkStone);
             CreateWorldLabel("Story Mission Sign", "STORY MISSION", new Vector3(34f, 4.85f, -182f),
-                Vector3.zero, yellow, parent, 0.028f);
+                Vector3.zero, yellow, marker.transform, 0.028f);
 
             StoryHubController hub = marker.AddComponent<StoryHubController>();
             hub.Configure(player, new Vector3(34f, 0f, -188f), Vector3.zero);
+            return hub;
+        }
+
+        private static GameObject CreateOpenWorldChapterOneMission(
+            Transform parent,
+            Material teal,
+            Material yellow,
+            Material darkStone,
+            Material shirt,
+            Material trousers,
+            Material skin,
+            Material hair,
+            Material shantiDress,
+            Material sandhyaDress,
+            Material policeKhaki,
+            Material volunteerDress,
+            Material litter)
+        {
+            GameObject root = new GameObject("Open World Chapter 01 - Ravivaar Ki Seva");
+            root.transform.SetParent(parent);
+            root.AddComponent<OpenWorldMissionHud>();
+            MissionController mission = root.AddComponent<MissionController>();
+            List<MissionObjective> objectives = new List<MissionObjective>();
+            List<string> labels = new List<string>();
+
+            GameObject shanti = ParentPerson(CreatePerson(
+                "Mission Shanti", new Vector3(42f, 0f, -181f),
+                shantiDress, darkStone, skin, hair, false), root.transform);
+            AddScarf(shanti.transform, shantiDress);
+            objectives.Add(AddObjective(
+                shanti,
+                "talk-shanti",
+                "Shanti se seva route samjhein",
+                "Shanti",
+                "Azad, Daraganj ke teen spots par kachra jama hai. Main gloves aur bags de rahi hoon; tum ghat route dekh lo.",
+                1,
+                0,
+                0,
+                false));
+            labels.Add("Helpers Hand par Shanti se safai route samjhein");
+
+            MissionObjective litterOne = CreateLitterObjective(
+                "Open World Litter Cluster A",
+                new Vector3(120.5f, 0.05f, -145f),
+                litter,
+                "clean-a",
+                "Pehla ghat spot saaf karein",
+                "Azad",
+                "Plastic alag rakho, wet waste alag. Safai photo ke liye nahi, roz ki aadat ke liye honi chahiye.");
+            litterOne.transform.SetParent(root.transform, true);
+            objectives.Add(litterOne);
+            labels.Add("Daraganj ghat ka pehla litter spot saaf karein");
+
+            MissionObjective litterTwo = CreateLitterObjective(
+                "Open World Litter Cluster B",
+                new Vector3(120.5f, 0.05f, -38f),
+                litter,
+                "clean-b",
+                "Doosra ghat spot saaf karein",
+                "Local Volunteer",
+                "Azad bhaiya, yahan dustbin jaldi bhar jaata hai. Kal replacement ki written application bhi denge.");
+            litterTwo.transform.SetParent(root.transform, true);
+            objectives.Add(litterTwo);
+            labels.Add("Daraganj promenade ka doosra litter spot saaf karein");
+
+            MissionObjective litterThree = CreateLitterObjective(
+                "Open World Litter Cluster C",
+                new Vector3(120.5f, 0.05f, 78f),
+                litter,
+                "clean-c",
+                "Teesra ghat spot saaf karein",
+                "Azad",
+                "Aakhri bag bhi ho gaya. Ab stall owners ke saath weekly safai rota banana hoga.");
+            litterThree.transform.SetParent(root.transform, true);
+            objectives.Add(litterThree);
+            labels.Add("Ghat route ka aakhri litter spot saaf karein");
+
+            GameObject coordinator = ParentPerson(CreatePerson(
+                "Mission Volunteer Coordinator", new Vector3(111f, 0f, 132f),
+                volunteerDress, darkStone, skin, hair, false), root.transform);
+            CreatePrimitiveChild("Helpers Hand Badge", PrimitiveType.Cube, coordinator.transform,
+                new Vector3(0f, 1.25f, 0.48f), new Vector3(0.20f, 0.20f, 0.04f), teal);
+            objectives.Add(AddObjective(
+                coordinator,
+                "report-complete",
+                "Volunteer coordinator ko report dein",
+                "Volunteer Coordinator",
+                "Route complete hai, Azad bhaiya. Agle Sunday do galiyan aur jodenge. Chhota kaam hai, lekin log saath aa rahe hain.",
+                7,
+                -50,
+                3,
+                false));
+            labels.Add("Daraganj ke volunteer coordinator ko update dein");
+
+            GameObject sandhya = ParentPerson(CreatePerson(
+                "Mission Sandhya", new Vector3(-152f, 0f, -162f),
+                sandhyaDress, darkStone, skin, hair, false), root.transform);
+            AddPigtails(sandhya.transform, hair);
+            sandhya.transform.localScale = Vector3.one * 0.72f;
+            objectives.Add(AddObjective(
+                sandhya,
+                "talk-sandhya",
+                "Sandhya se baat karein",
+                "Sandhya",
+                "Papa, Mumma ne ghar ki diary bahar mez par rakhi hai. Maine Helpers Hand ke bachchon ke liye copies bhi nikaal di hain.",
+                1,
+                0,
+                1,
+                false));
+            labels.Add("Allahpur ghar par Sandhya se milen");
+
+            CreateBox("Mission Home Ledger Table", new Vector3(-148.5f, 0.44f, -162f),
+                new Vector3(1.5f, 0.82f, 1.0f), darkStone, root.transform);
+            GameObject ledger = CreateBox("Mission Household Ledger", new Vector3(-148.5f, 0.92f, -162f),
+                new Vector3(0.48f, 0.10f, 0.62f), yellow, root.transform);
+            objectives.Add(AddObjective(
+                ledger,
+                "read-ledger",
+                "Ghar ki diary dekhein",
+                "Shanti ka Note",
+                "Aaj ki tuition fees Rs 250. Rs 150 ghar ke liye, Rs 100 NGO photocopies ke liye. Hisaab saaf rahega toh hausla bhi saaf rahega.",
+                0,
+                250,
+                0,
+                false));
+            labels.Add("Shanti ki household diary padhein");
+
+            GameObject samrat = ParentPerson(CreatePerson(
+                "Mission Constable Samrat", new Vector3(35f, 0f, 130f),
+                policeKhaki, darkStone, skin, hair, false), root.transform);
+            AddPoliceDetails(samrat.transform, policeKhaki, darkStone);
+            objectives.Add(AddObjective(
+                samrat,
+                "talk-samrat",
+                "Constable Samrat se baat karein",
+                "Constable Samrat",
+                "Azad, amma ki pension file ka verification sahi hai. Main record entry nikalwa deta hoon; tum NGO se application aaj jama kara do.",
+                3,
+                0,
+                2,
+                false));
+            labels.Add("Public Records Office par Samrat se file verify karayein");
+
+            CreateBox("Mission Helpers Hand Desk", new Vector3(40f, 0.46f, -181f),
+                new Vector3(2.2f, 0.86f, 1.2f), teal, root.transform);
+            GameObject pensionFolder = CreateBox("Mission Pension Folder", new Vector3(40f, 0.96f, -181f),
+                new Vector3(0.52f, 0.08f, 0.68f), yellow, root.transform);
+            objectives.Add(AddObjective(
+                pensionFolder,
+                "submit-pension-file",
+                "Pension file Helpers Hand me jama karein",
+                "Azad",
+                "Verification lag gaya. Ab receipt amma ko deni hai aur saat din baad status check karna hai. Madad tab poori hoti hai jab kaam daftar se bahar aa jaye.",
+                5,
+                -100,
+                3,
+                false));
+            labels.Add("Helpers Hand desk par pension application jama karein");
+
+            mission.Configure(
+                "Ravivaar Ki Seva: Prayagraj Route",
+                objectives,
+                labels,
+                "CHAPTER 1 COMPLETE",
+                "Daraganj safai, Allahpur ghar aur pension file: Azad ka Sunday poora hua.");
+            mission.ConfigureMilestones(
+                new List<int> { 5, 7 },
+                new List<string> { "GHAT ROUTE COMPLETE", "COMMUNITY CASE" },
+                new List<string>
+                {
+                    "Safai report ho gayi. Ab Allahpur ghar par Sandhya intezar kar rahi hai.",
+                    "Household diary dekh li. Ab Public Records Office par Samrat se milna hai."
+                });
+            mission.ConfigureChapter(1, "Chapter02");
+            mission.ConfigureIntro(
+                "AZAD / 31 / SOCIAL WORKER",
+                "Helpers Hand se shuru hua Sunday route ab poore Prayagraj me chalega.");
+            return root;
         }
 
         private static void CreateOpenWorldGround(

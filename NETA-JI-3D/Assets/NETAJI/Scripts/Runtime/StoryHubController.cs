@@ -42,6 +42,7 @@ namespace NetaJi.Prototype
         private Texture2D secondaryTexture;
         private bool confirmationOpen;
         private bool loading;
+        private bool missionLocked;
         private int activeChapter = 1;
         private int completedChapters;
         private bool campaignComplete;
@@ -49,7 +50,7 @@ namespace NetaJi.Prototype
         public string Prompt => campaignComplete
             ? "Final chapter aur Vishwa Guru review dobara dekhein"
             : $"CH {activeChapter:00}  {StoryChapterCatalog.GetTitle(activeChapter)}";
-        public bool CanInteract => !confirmationOpen && !loading;
+        public bool CanInteract => !confirmationOpen && !loading && !missionLocked;
         public bool ConfirmationOpen => confirmationOpen;
         public int ActiveChapter => activeChapter;
         public int CompletedChapters => completedChapters;
@@ -142,6 +143,20 @@ namespace NetaJi.Prototype
             BeginMission();
         }
 
+        public void SetMissionLocked(bool value)
+        {
+            missionLocked = value;
+            foreach (Renderer markerRenderer in GetComponentsInChildren<Renderer>(true))
+            {
+                markerRenderer.enabled = !value;
+            }
+        }
+
+        public void RefreshFromProgress()
+        {
+            RefreshStatus();
+        }
+
         private void RefreshStatus()
         {
             PlayerProgress progress = GameSession.Instance?.Progress;
@@ -186,9 +201,15 @@ namespace NetaJi.Prototype
                 return;
             }
 
-            loading = true;
             confirmationOpen = false;
             GameSession.Instance?.SetLastPlayedChapter(activeChapter);
+            if (OpenWorldMissionDirector.Instance?.TryStartChapter(activeChapter) == true)
+            {
+                player?.SetControlEnabled(true);
+                return;
+            }
+
+            loading = true;
             SceneManager.LoadScene(StoryChapterCatalog.GetSceneName(activeChapter));
         }
 

@@ -65,6 +65,19 @@ namespace NetaJi.Prototype
             Instance = this;
         }
 
+        private void OnEnable()
+        {
+            Instance = this;
+        }
+
+        private void OnDisable()
+        {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+        }
+
         private void Start()
         {
             currentIndex = Mathf.Clamp(GameSession.Instance?.GetMissionStep(chapterNumber) ?? 0, 0, objectives.Count);
@@ -74,15 +87,15 @@ namespace NetaJi.Prototype
                 objectives[i]?.RestoreAsCompleted();
             }
 
-            PrototypeHud.Instance?.RefreshMission();
+            MissionPresentation.RefreshMission();
             if (IsComplete)
             {
-                PrototypeHud.Instance?.ShowChapterActions(nextChapterScene);
+                MissionPresentation.ShowChapterActions(nextChapterScene);
                 return;
             }
             if (currentIndex == 0)
             {
-                PrototypeHud.Instance?.ShowBanner(introTitle, introMessage);
+                MissionPresentation.ShowBanner(introTitle, introMessage);
             }
         }
 
@@ -100,14 +113,14 @@ namespace NetaJi.Prototype
 
             currentIndex++;
             GameSession.Instance?.SetMissionStep(chapterNumber, currentIndex);
-            PrototypeHud.Instance?.RefreshMission();
+            MissionPresentation.RefreshMission();
 
             if (IsComplete)
             {
                 GameSession.Instance?.CompleteChapter(chapterNumber);
                 PrototypeAudio.Instance?.PlayCompletion();
-                PrototypeHud.Instance?.ShowBanner(completionTitle, completionMessage);
-                PrototypeHud.Instance?.ShowChapterActions(nextChapterScene);
+                MissionPresentation.ShowBanner(completionTitle, completionMessage);
+                MissionPresentation.ShowChapterActions(nextChapterScene);
                 return;
             }
 
@@ -121,7 +134,7 @@ namespace NetaJi.Prototype
                 string title = i < milestoneTitles.Count ? milestoneTitles[i] : "MISSION UPDATE";
                 string message = i < milestoneMessages.Count ? milestoneMessages[i] : CurrentObjective;
                 PrototypeAudio.Instance?.PlayMilestone();
-                PrototypeHud.Instance?.ShowBanner(title, message);
+                MissionPresentation.ShowBanner(title, message);
                 break;
             }
         }
@@ -142,9 +155,9 @@ namespace NetaJi.Prototype
             {
                 GameSession.Instance?.ResetChapter(chapterNumber);
             }
-            PrototypeHud.Instance?.HideChapterActions();
-            PrototypeHud.Instance?.RefreshMission();
-            PrototypeHud.Instance?.ShowBanner(introTitle, introMessage);
+            MissionPresentation.HideChapterActions();
+            MissionPresentation.RefreshMission();
+            MissionPresentation.ShowBanner(introTitle, introMessage);
         }
     }
 }

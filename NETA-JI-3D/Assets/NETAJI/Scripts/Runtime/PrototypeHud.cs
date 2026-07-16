@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 namespace NetaJi.Prototype
 {
-    public sealed class PrototypeHud : MonoBehaviour
+    public sealed class PrototypeHud : MonoBehaviour, IMissionPresentation
     {
         public static PrototypeHud Instance { get; private set; }
 
@@ -33,10 +33,24 @@ namespace NetaJi.Prototype
 
         private void Awake()
         {
-            Instance = this;
             whiteTexture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
             whiteTexture.SetPixel(0, 0, Color.white);
             whiteTexture.Apply();
+        }
+
+        private void OnEnable()
+        {
+            Instance = this;
+            MissionPresentation.Register(this);
+        }
+
+        private void OnDisable()
+        {
+            MissionPresentation.Unregister(this);
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
 
         public void SetInteractionPrompt(string value)

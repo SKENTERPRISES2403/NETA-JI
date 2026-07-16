@@ -1320,7 +1320,7 @@ namespace NetaJi.Prototype
                 && (chapterNumber != 22 || progress.primeMinisterGovernanceApproach == requiredDecision)
                 && (chapterNumber != 23 || progress.nationalDevelopmentApproach == requiredDecision)
                 && (chapterNumber != 24 || progress.globalLeadershipApproach == requiredDecision)
-                && (PrototypeHud.Instance == null || !PrototypeHud.Instance.IsDecisionOpen);
+                && !MissionPresentation.IsDecisionOpen;
             string marker = chapterNumber == 1
                 ? "PROTOTYPE"
                 : riskyDecision ? $"CHAPTER_{chapterNumber}_RISKY" : $"CHAPTER_{chapterNumber}";

@@ -583,7 +583,7 @@ namespace NetaJi.Prototype
                     return;
                 }
                 decisionPending = true;
-                PrototypeHud.Instance?.ShowDecision(
+                MissionPresentation.ShowDecision(
                     decisionTitle,
                     decisionMessage,
                     firstOption,
@@ -617,9 +617,9 @@ namespace NetaJi.Prototype
         {
             if (CanInteract && requiresDecision)
             {
-                if (PrototypeHud.Instance != null && PrototypeHud.Instance.IsDecisionOpen)
+                if (MissionPresentation.IsDecisionOpen)
                 {
-                    PrototypeHud.Instance.SelectDecisionForAutomation(option);
+                    MissionPresentation.SelectDecisionForAutomation(option);
                 }
                 else
                 {
@@ -924,7 +924,7 @@ namespace NetaJi.Prototype
                     ? $"Independent global leadership review {progress.globalLeadershipScore}/100. Trade trust {progress.globalTradeTrust}, science {progress.scienceInnovationLeadership}, peace-defense readiness {progress.peaceDefenseReadiness}, humanitarian-climate leadership {progress.humanitarianClimateLeadership}. India ne seva aur saath se Vishwa Guru outcome earn kiya."
                     : $"Independent global leadership review {progress.globalLeadershipScore}/100. Global power visible hai, lekin Vishwa Guru outcome hold par hai; trade, science, defensive peace and humanitarian leadership sab 75+ with score 88+ mandatory hain.";
             }
-            PrototypeHud.Instance?.ShowDialogue(dialogueSpeaker, dialogueText);
+            MissionPresentation.ShowDialogue(dialogueSpeaker, dialogueText);
             MissionController.Instance.Complete(this);
 
             if (hideAfterCompletion)
