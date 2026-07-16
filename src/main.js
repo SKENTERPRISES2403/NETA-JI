@@ -1,10 +1,12 @@
+import { findEnclosedCells } from "./capture-logic.js";
+import { evaluateMandate, getWinRules } from "./game-rules.js";
+
 const COLS = 64;
 const ROWS = 42;
 const ROUND_SECONDS = 90;
-const MIN_WIN_SECONDS = 10;
 const PROGRESS_KEY = "netaJiCampaignProgressV1";
 const ONBOARDING_KEY = "netaJiOnboardingSeenV1";
-const MAP_ASPECT = 0.82;
+const MAP_ASPECT = 0.88;
 const DEMO_REGION_ID = "uttar-pradesh";
 const DEMO_PARTY = {
   name: "Momo Lovers Party",
@@ -14,6 +16,9 @@ const DEMO_PARTY = {
 };
 const DEMO_FROM_QUERY = new URLSearchParams(window.location.search).get("demo") === "1";
 const MAP_QA_FROM_QUERY = new URLSearchParams(window.location.search).get("mapqa") === "1";
+const ARENA_QA_FROM_QUERY = new URLSearchParams(window.location.search).get("arenaqa") === "1";
+const SMOKE_CAPTURE_FROM_QUERY = new URLSearchParams(window.location.search).has("smoke");
+let smokeCaptureFrames = 0;
 const ONBOARDING_STEPS = [
   {
     title: "Choose a state",
@@ -106,46 +111,6 @@ const REGION_POSITIONS = {
   lakshadweep: [0.24, 0.86],
   puducherry: [0.58, 0.83]
 };
-
-const INDIA_OUTLINE = [
-  [0.41, 0.04],
-  [0.34, 0.08],
-  [0.29, 0.16],
-  [0.34, 0.23],
-  [0.28, 0.27],
-  [0.25, 0.34],
-  [0.18, 0.42],
-  [0.21, 0.53],
-  [0.27, 0.57],
-  [0.29, 0.66],
-  [0.35, 0.76],
-  [0.42, 0.94],
-  [0.5, 0.99],
-  [0.56, 0.87],
-  [0.57, 0.75],
-  [0.65, 0.67],
-  [0.68, 0.57],
-  [0.75, 0.52],
-  [0.72, 0.45],
-  [0.66, 0.42],
-  [0.64, 0.35],
-  [0.57, 0.29],
-  [0.55, 0.19],
-  [0.48, 0.13],
-  [0.47, 0.06]
-];
-
-const NORTH_EAST_OUTLINE = [
-  [0.72, 0.34],
-  [0.82, 0.27],
-  [0.95, 0.27],
-  [0.98, 0.36],
-  [0.93, 0.47],
-  [0.89, 0.57],
-  [0.8, 0.52],
-  [0.77, 0.45],
-  [0.7, 0.43]
-];
 
 const REGION_BLOB_SIZE = {
   "jammu-kashmir": [0.09, 0.055],
@@ -749,6 +714,8 @@ const fallbackMapData = {
   regionCount: Object.keys(REGION_MAP_SHAPES).length,
   sourceNote: "Stylized hand-tuned game polygons inspired by public India state/UT map references; not survey-grade official boundaries.",
   officialReference: "https://www.india.gov.in/explore-india",
+  license: "Project-authored fallback geometry",
+  attribution: "NETA JI fallback map",
   shapes: REGION_MAP_SHAPES
 };
 
@@ -1056,6 +1023,7 @@ const state = {
   roundStarted: false,
   paused: false,
   eventClock: 12,
+  eventLabelClock: 0,
   boostClock: 0,
   speedMul: 1,
   toastClock: 0,
@@ -1076,6 +1044,8 @@ const state = {
   appInstalled: false,
   audioContext: null,
   audioUnlocked: false,
+  canvasResizeFrame: null,
+  canvasResizeObserver: null,
   shareText: "",
   resultSummary: null
 };
@@ -1348,6 +1318,16 @@ function activateQuickDemo({ fromUrl = false } = {}) {
     toast.classList.remove("is-visible");
     return;
   }
+  if (ARENA_QA_FROM_QUERY) {
+    state.campaign.pendingRegionId = null;
+    selectRegion(DEMO_REGION_ID);
+    hideOnboarding(false);
+    if (confirmPanel) confirmPanel.hidden = true;
+    addFeed("Arena QA mode: real region silhouette is ready without starting the timer.");
+    state.toastClock = 0;
+    toast.classList.remove("is-visible");
+    return;
+  }
   showRegionPrompt(DEMO_REGION_ID, { silent: fromUrl });
   renderRegionHub();
   showOnboarding(true);
@@ -1519,9 +1499,10 @@ function updateMobileHint() {
   const wonCount = completedRegionCount();
   const activeRegion = getActiveRegion();
   if (state.mode === "playing" && activeRegion) {
+    const rules = getWinRules(state.demoMode);
     mobileHintCopy.textContent = state.roundStarted
-      ? "Swipe/tap anywhere in the arena to turn. Rally gives a short speed burst."
-      : `${activeRegion.name}: tap or swipe inside the arena to start the yatra.`;
+      ? `Target ${rules.influenceTarget}% influence + mandate ${rules.scoreTarget}. Cut rival routes, then close more loops.`
+      : `${activeRegion.name}: tap or swipe to start. One small loop cannot win the mandate.`;
     return;
   }
   if (state.mode === "result") {
@@ -1579,6 +1560,7 @@ function resetCampaignProgress() {
   state.roundStarted = false;
   state.paused = false;
   state.eventClock = 12;
+  state.eventLabelClock = 0;
   state.boostClock = 0;
   state.speedMul = 1;
   state.influence = 0;
@@ -1671,8 +1653,9 @@ function openRegionModal() {
   regionModal.classList.remove("is-open");
   confirmPanel.hidden = true;
   state.campaign.pendingRegionId = null;
-  renderRegionHub();
   state.mode = "map";
+  renderRegionHub();
+  updateStats();
   updateMobileHint();
   showToast(state.campaign.nationalWon ? "National mandate complete. World yatra coming soon." : "Touch any black flag on the India map.");
 }
@@ -1688,6 +1671,7 @@ function showRegionPrompt(regionId, options = {}) {
   state.campaign.pendingRegionId = region.id;
   state.mode = "confirm";
   renderRegionHub();
+  updateStats();
   confirmTitle.textContent = `${region.name} election?`;
   confirmCopy.textContent = state.campaign.completed[region.id]
     ? "This mandate is already won. OK to replay this region."
@@ -1703,10 +1687,10 @@ function selectRegion(regionId) {
   saveCampaignProgress();
   renderRegionHub();
   regionModal.classList.remove("is-open");
+  state.mode = "playing";
   resetGame();
   resultModal.classList.remove("is-open");
   setupModal.classList.remove("is-open");
-  state.mode = "playing";
   updateMobileHint();
   const yatraCopy = previous && previous.id !== region.id ? `Paidal yatra moved from ${previous.name} to ${region.name}.` : `${region.name} campaign opened.`;
   addFeed(yatraCopy);
@@ -1747,7 +1731,8 @@ function resizeCanvas() {
   const cssWidth = Math.max(1, Math.floor(rect.width));
   const cssHeight = Math.max(1, Math.floor(rect.height));
   const isMobile = Math.min(window.innerWidth || cssWidth, cssWidth) < 720;
-  const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.75 : 2);
+  // Keep phones crisp without paying for an oversized desktop backing store.
+  const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.75 : 1.5);
   const nextWidth = Math.max(1, Math.floor(cssWidth * dpr));
   const nextHeight = Math.max(1, Math.floor(cssHeight * dpr));
   if (canvas.width !== nextWidth) canvas.width = nextWidth;
@@ -1761,6 +1746,15 @@ function resizeCanvas() {
   state.cellSize = Math.min(cssWidth / COLS, cssHeight / ROWS);
   state.offsetX = (cssWidth - state.cellSize * COLS) / 2;
   state.offsetY = (cssHeight - state.cellSize * ROWS) / 2;
+}
+
+function scheduleCanvasResize() {
+  if (state.canvasResizeFrame) window.cancelAnimationFrame(state.canvasResizeFrame);
+  state.canvasResizeFrame = window.requestAnimationFrame(() => {
+    state.canvasResizeFrame = null;
+    resizeCanvas();
+    if (SMOKE_CAPTURE_FROM_QUERY) draw();
+  });
 }
 
 function hashText(value) {
@@ -1813,7 +1807,45 @@ function transformRegionShapePoint(localX, localY, centerX, centerY, rx, ry, pro
   };
 }
 
+function sampleArenaPolygon(points, maxPoints = 180) {
+  if (points.length <= maxPoints) return points;
+  const sampled = [];
+  const step = points.length / maxPoints;
+  for (let i = 0; i < maxPoints; i += 1) sampled.push(points[Math.floor(i * step)]);
+  return sampled;
+}
+
+function generateMapBasedRegionPolygon(region) {
+  const polygons = getRegionMapPolygons(region);
+  if (!polygons?.length) return null;
+  const largest = polygons.reduce(
+    (best, polygon) => (getPolygonArea(polygon) > getPolygonArea(best) ? polygon : best),
+    polygons[0]
+  );
+  if (!largest || largest.length < 3) return null;
+
+  const points = sampleArenaPolygon(largest).map(([x, y]) => ({ x: x * MAP_ASPECT, y }));
+  const minX = Math.min(...points.map((point) => point.x));
+  const maxX = Math.max(...points.map((point) => point.x));
+  const minY = Math.min(...points.map((point) => point.y));
+  const maxY = Math.max(...points.map((point) => point.y));
+  const sourceWidth = Math.max(0.0001, maxX - minX);
+  const sourceHeight = Math.max(0.0001, maxY - minY);
+  const paddingX = 3.6;
+  const paddingY = 3.2;
+  const scale = Math.min((COLS - paddingX * 2) / sourceWidth, (ROWS - paddingY * 2) / sourceHeight);
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+
+  return points.map((point) => ({
+    x: COLS / 2 + (point.x - centerX) * scale,
+    y: ROWS / 2 + (point.y - centerY) * scale
+  }));
+}
+
 function generateRegionPolygon(region) {
+  const mapPolygon = generateMapBasedRegionPolygon(region);
+  if (mapPolygon) return mapPolygon;
   const profile = getRegionShapeProfile(region);
   const localPoints = getRegionShapeLocalPoints(region, 0.1);
   const points = [];
@@ -1878,6 +1910,28 @@ function randomMaskedPoint() {
     if (isMaskedCell(x, y)) return { x, y };
   }
   return findMaskedSpawn(COLS / 2, ROWS / 2);
+}
+
+function chooseSeparatedSpawn(preferredX, preferredY, occupied, minimumDistance = 8) {
+  const preferred = findMaskedSpawn(preferredX, preferredY);
+  const separation = (point) => occupied.reduce(
+    (best, other) => Math.min(best, Math.hypot(point.x - other.x, point.y - other.y)),
+    Infinity
+  );
+  if (separation(preferred) >= minimumDistance) return preferred;
+
+  let best = preferred;
+  let bestSeparation = separation(preferred);
+  for (let attempt = 0; attempt < 70; attempt += 1) {
+    const candidate = randomMaskedPoint();
+    const candidateSeparation = separation(candidate);
+    if (candidateSeparation > bestSeparation) {
+      best = candidate;
+      bestSeparation = candidateSeparation;
+    }
+    if (candidateSeparation >= minimumDistance) break;
+  }
+  return best;
 }
 
 function claimRect(ownerId, cx, cy, w, h) {
@@ -2137,24 +2191,27 @@ function resetGame() {
   state.roundElapsed = 0;
   state.roundStarted = false;
   state.eventClock = state.demoMode ? 5 : 8;
+  state.eventLabelClock = 0;
   state.boostClock = 0;
   state.speedMul = 1;
   state.influence = 0;
   state.neta.decisionClock = 0;
   feedList.innerHTML = "";
 
-  claimDisk(1, state.player.x, state.player.y, state.demoMode ? 4.8 : 3.8);
+  claimDisk(1, state.player.x, state.player.y, state.demoMode ? 4.1 : 3.4);
   const spots = [
     [11, 10],
     [52, 11],
     [51, 32]
   ];
+  const occupiedSpawns = [state.player];
   state.data.opponentParties.slice(0, 3).forEach((party, i) => {
     const [sx, sy] = spots[i];
-    const { x, y } = findMaskedSpawn(sx, sy);
+    const { x, y } = chooseSeparatedSpawn(sx, sy, occupiedSpawns);
     const agent = createAgent(i + 2, party.name, party.color, party.symbol, x, y);
     state.opponents.push(agent);
-    claimDisk(agent.ownerId, x, y, 3.2);
+    occupiedSpawns.push(agent);
+    claimDisk(agent.ownerId, x, y, state.demoMode ? 3.5 : 3.7);
   });
 
   addFeed(`${activeRegion ? activeRegion.name : "District"} campaign office opened.`);
@@ -2199,8 +2256,9 @@ function startGame() {
 function beginRound() {
   if (state.mode !== "playing" || state.roundStarted) return;
   state.roundStarted = true;
-  state.eventClock = 8;
-  eventStat.textContent = "Campaign";
+  state.eventClock = state.demoMode ? 5 : 8;
+  state.eventLabelClock = 0;
+  eventStat.textContent = "Yatra";
   updateMobileHint();
   showToast("Campaign yatra started.");
   triggerHaptic(10);
@@ -2289,41 +2347,19 @@ function closeLoop(agent) {
     state.trail[idx] = 0;
   }
 
-  const visited = new Uint8Array(COLS * ROWS);
-  const queue = [];
-  const push = (x, y) => {
-    const idx = index(x, y);
-    if (!isMaskedCell(x, y) || visited[idx] || state.owner[idx] === agent.ownerId) return;
-    visited[idx] = 1;
-    queue.push([x, y]);
-  };
-
-  for (let x = 0; x < COLS; x += 1) {
-    push(x, 0);
-    push(x, ROWS - 1);
+  const enclosedCells = findEnclosedCells({
+    cols: COLS,
+    rows: ROWS,
+    regionMask: state.regionMask,
+    owner: state.owner,
+    ownerId: agent.ownerId
+  });
+  for (const idx of enclosedCells) {
+    state.owner[idx] = agent.ownerId;
+    state.trail[idx] = 0;
+    claimedCells.push(idx);
   }
-  for (let y = 0; y < ROWS; y += 1) {
-    push(0, y);
-    push(COLS - 1, y);
-  }
-
-  for (let i = 0; i < queue.length; i += 1) {
-    const [x, y] = queue[i];
-    if (x > 0) push(x - 1, y);
-    if (x < COLS - 1) push(x + 1, y);
-    if (y > 0) push(x, y - 1);
-    if (y < ROWS - 1) push(x, y + 1);
-  }
-
-  let gained = 0;
-  for (let i = 0; i < state.owner.length; i += 1) {
-    if (state.regionMask[i] && !visited[i] && state.owner[i] !== agent.ownerId) {
-      state.owner[i] = agent.ownerId;
-      state.trail[i] = 0;
-      claimedCells.push(i);
-      gained += 1;
-    }
-  }
+  const gained = enclosedCells.length;
 
   if (agent.ownerId === 1 && agent.trailCells.length + gained > 5) {
     const boothGain = agent.trailCells.length + gained;
@@ -2361,6 +2397,7 @@ function updateAgent(agent, dt) {
 
 function updateOpponents(dt) {
   for (const agent of state.opponents) {
+    if (state.mode !== "playing") return;
     agent.turnClock -= dt;
     const { x, y } = cellFromAgent(agent);
     const nearWall = x <= 2 || x >= COLS - 3 || y <= 2 || y >= ROWS - 3;
@@ -2401,7 +2438,14 @@ function handleTrailCuts() {
   for (const agent of [...state.opponents]) {
     const distanceToPlayer = Math.hypot(agent.x - state.player.x, agent.y - state.player.y);
     if (distanceToPlayer < 1.15) {
-      convertOpponent(agent.ownerId, agent.x, agent.y);
+      state.dangerCue = {
+        x: agent.x,
+        y: agent.y,
+        color: agent.color,
+        level: 1,
+        life: 0.24,
+        maxLife: 0.24
+      };
       continue;
     }
     const cell = cellFromAgent(agent);
@@ -2456,7 +2500,9 @@ function updateRouteDanger(dt) {
 }
 
 function triggerEvent() {
-  const event = state.data.randomEvents[Math.floor(Math.random() * state.data.randomEvents.length)];
+  const events = state.data.randomEvents || [];
+  if (!events.length || !state.player) return;
+  const event = events[Math.floor(Math.random() * events.length)];
   const soundForEffect = {
     dholBoost: "dhol",
     memeWave: "meme",
@@ -2466,6 +2512,7 @@ function triggerEvent() {
     speedUp: "rally"
   };
   eventStat.textContent = event.title;
+  state.eventLabelClock = 3.4;
   addFeed(event.title);
   showToast(event.copy);
   playSound(soundForEffect[event.effect] || "event");
@@ -2507,12 +2554,12 @@ function triggerEvent() {
     addEventScene("posterRain", state.player.x, state.player.y, state.party.color);
     triggerScreenShake(2, 0.14);
   } else if (event.effect === "claimLine") {
-    for (const idx of state.player.trailCells.slice(-16)) {
+    const claimedRoute = state.player.trailCells.slice(-16);
+    for (const idx of claimedRoute) {
       state.owner[idx] = 1;
-      state.trail[idx] = 0;
     }
-    state.player.trailCells = [];
-    state.player.trailPoints = [];
+    clearTrail(1);
+    addClaimBurst(claimedRoute, state.party.color);
   }
   if (event.impact) {
     adjustNeta(event.impact);
@@ -2536,8 +2583,14 @@ function updateSupporters(dt) {
     const dy = targetY - supporter.y;
     const distance = Math.hypot(dx, dy) || 1;
     const step = Math.min(distance, supporter.followSpeed * dt);
+    const previousX = supporter.x;
+    const previousY = supporter.y;
     supporter.x = clamp(supporter.x + (dx / distance) * step, 1, COLS - 1.01);
     supporter.y = clamp(supporter.y + (dy / distance) * step, 1, ROWS - 1.01);
+    if (!isMaskedCell(supporter.x, supporter.y)) {
+      supporter.x = previousX;
+      supporter.y = previousY;
+    }
   });
 
   for (let i = 0; i < state.supporters.length; i += 1) {
@@ -2557,6 +2610,13 @@ function updateSupporters(dt) {
         b.y = clamp(b.y + ny * push, 1, ROWS - 1.01);
       }
     }
+  }
+
+  for (const supporter of state.supporters) {
+    if (isMaskedCell(supporter.x, supporter.y)) continue;
+    const safe = findMaskedSpawn(supporter.x, supporter.y);
+    supporter.x = safe.x;
+    supporter.y = safe.y;
   }
 }
 
@@ -2594,6 +2654,19 @@ function updateEventScenes(dt) {
 }
 
 function updateStats() {
+  const activeRegion = getActiveRegion();
+  if (["setup", "map", "confirm"].includes(state.mode)) {
+    state.influence = 0;
+    regionStat.textContent = state.campaign.pendingRegionId
+      ? REGIONS.find((region) => region.id === state.campaign.pendingRegionId)?.name || "Choose State"
+      : activeRegion?.name || "Choose State";
+    influenceStat.textContent = `${completedRegionCount()}/${REGIONS.length}`;
+    timeStat.textContent = "Map";
+    eventStat.textContent = state.mode === "confirm" ? "Selected" : "Ready";
+    updateNetaPanel();
+    return;
+  }
+
   let playerCells = 0;
   let playableCells = 0;
   for (let i = 0; i < state.owner.length; i += 1) {
@@ -2602,11 +2675,21 @@ function updateStats() {
     if (state.owner[i] === 1) playerCells += 1;
   }
   state.influence = Math.round((playerCells / Math.max(1, playableCells)) * 100);
-  const activeRegion = getActiveRegion();
   regionStat.textContent = activeRegion ? activeRegion.name : "Choose State";
   influenceStat.textContent = `${state.influence}%`;
   timeStat.textContent = `${Math.ceil(state.timeLeft)}s`;
   updateNetaPanel();
+}
+
+function syncCampaignStatus() {
+  if (state.mode !== "playing") return;
+  if (state.paused) {
+    eventStat.textContent = "Paused";
+  } else if (!state.roundStarted) {
+    eventStat.textContent = "Ready";
+  } else if (state.eventLabelClock <= 0) {
+    eventStat.textContent = state.dangerCue ? "Danger" : "Yatra";
+  }
 }
 
 function finishRound(won, reason) {
@@ -2660,6 +2743,7 @@ function finishRound(won, reason) {
   resultModal.style.setProperty("--party-color", state.party.color);
   resultModal.dataset.result = victory ? (nationalComplete ? "national" : "win") : "loss";
   eventStat.textContent = victory ? "Mandate Won" : "Recount";
+  restartBtn.textContent = victory ? "Replay State" : "Retry State";
   nextRegionBtn.hidden = !victory;
   nextRegionBtn.textContent = nationalComplete ? "India Map" : "Next State";
   if (victory) {
@@ -2697,6 +2781,7 @@ function update(dt) {
   state.timeLeft -= dt;
   state.roundElapsed += dt;
   state.eventClock -= dt;
+  state.eventLabelClock = Math.max(0, state.eventLabelClock - dt);
   state.toastClock -= dt;
   if (state.toastClock <= 0) toast.classList.remove("is-visible");
 
@@ -2710,13 +2795,17 @@ function update(dt) {
 
   updateAmbientPeople(dt);
   updateAgent(state.player, dt);
+  if (state.mode !== "playing") return;
   updateOpponents(dt);
+  if (state.mode !== "playing") return;
   updateSupporters(dt);
   updateConversionBursts(dt);
   updateClaimBursts(dt);
   updateEventScenes(dt);
   updateRouteDanger(dt);
   handleTrailCuts();
+  if (state.mode !== "playing") return;
+  syncCampaignStatus();
 
   if (state.eventClock <= 0) {
     triggerEvent();
@@ -2725,14 +2814,14 @@ function update(dt) {
 
   updateStats();
   const score = mandateScore();
-  const earlyEnough = state.roundElapsed >= (state.demoMode ? 7 : MIN_WIN_SECONDS);
-  const influenceTarget = state.demoMode ? 44 : 52;
-  const scoreTarget = state.demoMode ? 50 : 55;
-  if (earlyEnough && state.influence >= influenceTarget && score >= scoreTarget) {
-    finishRound(true, "District mandate reached.");
-  } else if (state.timeLeft <= 0) {
-    finishRound(state.influence >= 30 && score >= 44, "The campaign clock ended.");
-  }
+  const result = evaluateMandate({
+    demoMode: state.demoMode,
+    roundElapsed: state.roundElapsed,
+    influence: state.influence,
+    score,
+    timeLeft: state.timeLeft
+  });
+  if (result) finishRound(result.won, result.reason);
 }
 
 function ownerColor(ownerId) {
@@ -2891,62 +2980,31 @@ function getRegionBlobSize(region) {
   );
 }
 
-function drawNormalizedPath(points, rect) {
-  ctx.beginPath();
-  points.forEach(([px, py], indexValue) => {
-    const x = rect.x + px * rect.width;
-    const y = rect.y + py * rect.height;
-    if (indexValue === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
-  ctx.closePath();
-}
-
 function drawCartoonIndiaBase(rect) {
-  ctx.save();
-  ctx.shadowColor = "rgba(21, 21, 21, 0.2)";
-  ctx.shadowBlur = 0;
-  ctx.shadowOffsetX = 5;
-  ctx.shadowOffsetY = 6;
-  ctx.fillStyle = "#f6e7bf";
-  ctx.strokeStyle = "#151515";
-  ctx.lineWidth = Math.max(4, rect.width * 0.014);
-  ctx.lineJoin = "round";
-  drawNormalizedPath(INDIA_OUTLINE, rect);
-  ctx.fill();
-  ctx.stroke();
-  drawNormalizedPath(NORTH_EAST_OUTLINE, rect);
-  ctx.fill();
-  ctx.stroke();
-  ctx.shadowColor = "transparent";
-  ctx.lineWidth = Math.max(3, rect.width * 0.01);
-  ctx.strokeStyle = "#151515";
-  ctx.beginPath();
-  ctx.moveTo(rect.x + rect.width * 0.64, rect.y + rect.height * 0.38);
-  ctx.quadraticCurveTo(
-    rect.x + rect.width * 0.72,
-    rect.y + rect.height * 0.33,
-    rect.x + rect.width * 0.79,
-    rect.y + rect.height * 0.37
-  );
-  ctx.stroke();
+  const polygons = REGIONS.flatMap((region) => getRegionMapPolygons(region) || []);
+  if (!polygons.length) return;
 
-  const islands = [
-    [0.24, 0.83, 3.8],
-    [0.23, 0.87, 3],
-    [0.25, 0.9, 2.8],
-    [0.78, 0.79, 3.4],
-    [0.79, 0.84, 3.2],
-    [0.8, 0.9, 3],
-    [0.81, 0.95, 2.7]
-  ];
+  ctx.save();
+  ctx.shadowColor = "rgba(21, 21, 21, 0.28)";
+  ctx.shadowBlur = Math.max(3, rect.width * 0.012);
+  ctx.shadowOffsetX = Math.max(3, rect.width * 0.012);
+  ctx.shadowOffsetY = Math.max(4, rect.width * 0.016);
   ctx.fillStyle = "#f6e7bf";
-  for (const [px, py, radius] of islands) {
-    ctx.beginPath();
-    ctx.arc(rect.x + px * rect.width, rect.y + py * rect.height, radius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
+  ctx.strokeStyle = "#151515";
+  ctx.lineWidth = Math.max(3.5, rect.width * 0.011);
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  for (const polygon of polygons) {
+    polygon.forEach(([px, py], indexValue) => {
+      const x = rect.x + px * rect.width;
+      const y = rect.y + py * rect.height;
+      if (indexValue === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.closePath();
   }
+  ctx.fill();
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -3395,22 +3453,36 @@ function drawRegionArena() {
 function drawNetaHud(width) {
   if (state.mode !== "playing") return;
   const score = mandateScore();
-  const status = state.dangerCue ? "Danger" : state.roundStarted ? `Yatra ${score}` : "Ready";
+  const rules = getWinRules(state.demoMode);
+  const status = state.dangerCue ? "Danger" : state.roundStarted ? `Yatra ${score}/${rules.scoreTarget}` : "Ready";
   const label = `${status}  S ${state.neta.support}  F ${state.neta.funds}  P ${state.neta.power}  R ${state.neta.reputation}`;
   const boxW = Math.min(width - 20, 390);
+  const goalProgress = clamp(
+    Math.min(state.influence / rules.influenceTarget, score / rules.scoreTarget),
+    0,
+    1
+  );
   ctx.save();
   ctx.fillStyle = state.dangerCue ? "rgba(217, 45, 32, 0.9)" : state.roundStarted ? "rgba(21, 21, 21, 0.88)" : "rgba(14, 159, 138, 0.9)";
   ctx.strokeStyle = "rgba(255, 253, 247, 0.72)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.roundRect(10, 10, boxW, 30, 8);
+  ctx.roundRect(10, 10, boxW, 38, 8);
   ctx.fill();
   ctx.stroke();
   ctx.fillStyle = "#fffdf7";
   ctx.font = `900 ${width < 430 ? 11 : 12}px ui-sans-serif`;
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  ctx.fillText(label, 22, 25, boxW - 24);
+  ctx.fillText(label, 22, 23, boxW - 24);
+  ctx.fillStyle = "rgba(255, 253, 247, 0.28)";
+  ctx.beginPath();
+  ctx.roundRect(18, 35, boxW - 16, 6, 3);
+  ctx.fill();
+  ctx.fillStyle = state.dangerCue ? "#ffd166" : state.party.color;
+  ctx.beginPath();
+  ctx.roundRect(18, 35, Math.max(6, (boxW - 16) * goalProgress), 6, 3);
+  ctx.fill();
   ctx.restore();
 }
 
@@ -4668,7 +4740,8 @@ function loop(timestamp) {
   updateScreenShake(dt);
   update(dt);
   draw();
-  requestAnimationFrame(loop);
+  smokeCaptureFrames += 1;
+  if (!SMOKE_CAPTURE_FROM_QUERY || smokeCaptureFrames < 12) requestAnimationFrame(loop);
 }
 
 function canvasPointFromEvent(event) {
@@ -4735,6 +4808,9 @@ function handleMapPointer(event) {
   } else {
     confirmPanel.hidden = true;
     state.campaign.pendingRegionId = null;
+    state.mode = "map";
+    renderRegionHub();
+    updateStats();
   }
 }
 
@@ -4794,7 +4870,11 @@ function useDecision(type) {
 }
 
 function bindEvents() {
-  window.addEventListener("resize", resizeCanvas);
+  window.addEventListener("resize", scheduleCanvasResize);
+  if (typeof ResizeObserver !== "undefined") {
+    state.canvasResizeObserver = new ResizeObserver(scheduleCanvasResize);
+    state.canvasResizeObserver.observe(canvas.parentElement || canvas);
+  }
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) autoPauseCampaign();
   });
@@ -4858,8 +4938,9 @@ function bindEvents() {
   onboardingSkipBtn?.addEventListener("click", () => hideOnboarding());
   restartBtn?.addEventListener("click", () => {
     resultModal.classList.remove("is-open");
-    if (getActiveRegion()) {
-      selectRegion(state.campaign.activeRegionId);
+    const replayRegionId = state.campaign.activeRegionId || state.campaign.lastWonRegionId;
+    if (replayRegionId) {
+      selectRegion(replayRegionId);
     } else {
       setupModal.classList.add("is-open");
       state.mode = "setup";
@@ -4874,6 +4955,8 @@ function bindEvents() {
     state.campaign.pendingRegionId = null;
     confirmPanel.hidden = true;
     state.mode = "map";
+    renderRegionHub();
+    updateStats();
     updateMobileHint();
   });
   shareBtn?.addEventListener("click", shareResult);
@@ -4890,7 +4973,7 @@ function setPaused(paused, message = "") {
   if (state.mode !== "playing" || !state.roundStarted) return false;
   state.paused = paused;
   pauseBtn.textContent = state.paused ? "Resume" : "Pause";
-  eventStat.textContent = state.paused ? "Paused" : "Campaign";
+  eventStat.textContent = state.paused ? "Paused" : "Yatra";
   if (message) showToast(message);
   updateNetaPanel();
   return true;
@@ -4991,6 +5074,7 @@ function registerServiceWorker() {
 }
 
 function registerDebugSnapshot() {
+  const activeRules = () => getWinRules(state.demoMode);
   window.__NETA_JI_DEBUG__ = () => ({
     mode: state.mode,
     activeRegion: getActiveRegion()?.name || null,
@@ -5011,6 +5095,10 @@ function registerDebugSnapshot() {
     supporters: state.supporters.length,
     eventScenes: state.eventScenes.length,
     dangerCue: Boolean(state.dangerCue),
+    routeCells: state.player?.trailCells.length || 0,
+    playableCells: state.regionMask.reduce((sum, value) => sum + value, 0),
+    winRules: { ...activeRules() },
+    mapProjection: state.mapData?.projection || null,
     installReady: Boolean(state.installPromptEvent),
     standalone: isStandaloneDisplay(),
     dpr: state.dpr,
@@ -5280,6 +5368,7 @@ async function init() {
   renderRegionHub();
   bindEvents();
   resizeCanvas();
+  scheduleCanvasResize();
   resetGame();
   registerDebugSnapshot();
   bindInstallEvents();

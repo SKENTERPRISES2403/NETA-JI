@@ -36,9 +36,12 @@ namespace NetaJi.Prototype.Editor
         private const string ChapterTwentyOneScenePath = "Assets/NETAJI/Scenes/Chapter21.unity";
         private const string ChapterTwentyTwoScenePath = "Assets/NETAJI/Scenes/Chapter22.unity";
         private const string ChapterTwentyThreeScenePath = "Assets/NETAJI/Scenes/Chapter23.unity";
+        private const string ChapterTwentyFourScenePath = "Assets/NETAJI/Scenes/Chapter24.unity";
         private const string MenuScenePath = "Assets/NETAJI/Scenes/MainMenu.unity";
+        private const string PrologueScenePath = "Assets/NETAJI/Scenes/Prologue.unity";
+        private const string FreeRoamScenePath = "Assets/NETAJI/Scenes/FreeRoam.unity";
         private const string MaterialPath = "Assets/NETAJI/Materials";
-        private static readonly string[] BuildScenes = { MenuScenePath, ScenePath, ChapterTwoScenePath, ChapterThreeScenePath, ChapterFourScenePath, ChapterFiveScenePath, ChapterSixScenePath, ChapterSevenScenePath, ChapterEightScenePath, ChapterNineScenePath, ChapterTenScenePath, ChapterElevenScenePath, ChapterTwelveScenePath, ChapterThirteenScenePath, ChapterFourteenScenePath, ChapterFifteenScenePath, ChapterSixteenScenePath, ChapterSeventeenScenePath, ChapterEighteenScenePath, ChapterNineteenScenePath, ChapterTwentyScenePath, ChapterTwentyOneScenePath, ChapterTwentyTwoScenePath, ChapterTwentyThreeScenePath };
+        private static readonly string[] BuildScenes = { MenuScenePath, PrologueScenePath, FreeRoamScenePath, ScenePath, ChapterTwoScenePath, ChapterThreeScenePath, ChapterFourScenePath, ChapterFiveScenePath, ChapterSixScenePath, ChapterSevenScenePath, ChapterEightScenePath, ChapterNineScenePath, ChapterTenScenePath, ChapterElevenScenePath, ChapterTwelveScenePath, ChapterThirteenScenePath, ChapterFourteenScenePath, ChapterFifteenScenePath, ChapterSixteenScenePath, ChapterSeventeenScenePath, ChapterEighteenScenePath, ChapterNineteenScenePath, ChapterTwentyScenePath, ChapterTwentyOneScenePath, ChapterTwentyTwoScenePath, ChapterTwentyThreeScenePath, ChapterTwentyFourScenePath };
 
         [MenuItem("NETA JI/Build Prototype Scene")]
         public static void Build()
@@ -610,6 +613,28 @@ namespace NetaJi.Prototype.Editor
                 policeKhaki,
                 foliage,
                 trunk);
+            BuildChapterTwentyFourScene(
+                sand,
+                stone,
+                darkStone,
+                teal,
+                yellow,
+                white,
+                shirt,
+                trousers,
+                skin,
+                hair,
+                shantiDress,
+                volunteerDress,
+                policeKhaki,
+                foliage,
+                trunk);
+            BuildPrologueScene(
+                sand, stone, darkStone, water, teal, yellow, white, shirt, trousers,
+                skin, hair, shantiDress, sandhyaDress, policeKhaki, volunteerDress, foliage, trunk);
+            BuildFreeRoamScene(
+                sand, stone, darkStone, water, teal, yellow, white, shirt, trousers,
+                skin, hair, shantiDress, sandhyaDress, policeKhaki, volunteerDress, foliage, trunk);
             BuildMainMenuScene(
                 sand,
                 stone,
@@ -628,6 +653,8 @@ namespace NetaJi.Prototype.Editor
             EditorBuildSettings.scenes = new[]
             {
                 new EditorBuildSettingsScene(MenuScenePath, true),
+                new EditorBuildSettingsScene(PrologueScenePath, true),
+                new EditorBuildSettingsScene(FreeRoamScenePath, true),
                 new EditorBuildSettingsScene(ScenePath, true),
                 new EditorBuildSettingsScene(ChapterTwoScenePath, true),
                 new EditorBuildSettingsScene(ChapterThreeScenePath, true),
@@ -650,13 +677,14 @@ namespace NetaJi.Prototype.Editor
                 new EditorBuildSettingsScene(ChapterTwentyScenePath, true),
                 new EditorBuildSettingsScene(ChapterTwentyOneScenePath, true),
                 new EditorBuildSettingsScene(ChapterTwentyTwoScenePath, true),
-                new EditorBuildSettingsScene(ChapterTwentyThreeScenePath, true)
+                new EditorBuildSettingsScene(ChapterTwentyThreeScenePath, true),
+                new EditorBuildSettingsScene(ChapterTwentyFourScenePath, true)
             };
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             Selection.activeGameObject = GameObject.Find("Azad");
-            Debug.Log($"NETA JI menu and chapter scenes generated through {ChapterTwentyThreeScenePath}");
+            Debug.Log($"NETA JI open-world scenes and story chapters generated through {ChapterTwentyFourScenePath}");
         }
 
         private static void BuildChapterTwoScene(
@@ -966,7 +994,7 @@ namespace NetaJi.Prototype.Editor
                 scenes = BuildScenes,
                 locationPathName = "Builds/Windows/NETA-JI-Prototype.exe",
                 target = BuildTarget.StandaloneWindows64,
-                options = BuildOptions.Development
+                options = BuildOptions.None
             };
             BuildPipeline.BuildPlayer(options);
         }
@@ -981,7 +1009,7 @@ namespace NetaJi.Prototype.Editor
                 scenes = BuildScenes,
                 locationPathName = "Builds/Android/NETA-JI-Prototype.apk",
                 target = BuildTarget.Android,
-                options = BuildOptions.Development
+                options = BuildOptions.None
             };
             BuildPipeline.BuildPlayer(options);
         }
@@ -990,14 +1018,20 @@ namespace NetaJi.Prototype.Editor
         {
             PlayerSettings.companyName = "SK Enterprises";
             PlayerSettings.productName = "NETA JI";
-            PlayerSettings.bundleVersion = "0.24.0";
+            PlayerSettings.bundleVersion = "0.27.0";
             PlayerSettings.colorSpace = ColorSpace.Gamma;
-            PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
+            PlayerSettings.allowedAutorotateToPortrait = false;
+            PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+            PlayerSettings.allowedAutorotateToLandscapeLeft = true;
+            PlayerSettings.allowedAutorotateToLandscapeRight = true;
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.skenterprises.netaji.prototype");
             PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
-            PlayerSettings.Android.bundleVersionCode = 24;
-            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7;
-            PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.Mono2x);
+            PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevelAuto;
+            PlayerSettings.Android.bundleVersionCode = 27;
+            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7 | AndroidArchitecture.ARM64;
+            PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
+            PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.Android, ManagedStrippingLevel.Medium);
             QualitySettings.vSyncCount = 0;
             QualitySettings.shadowDistance = 24f;
             QualitySettings.antiAliasing = 0;
@@ -1186,21 +1220,28 @@ namespace NetaJi.Prototype.Editor
             CreatePrimitiveChild("Arm Right", PrimitiveType.Capsule, root.transform, new Vector3(0.43f, 1.08f, 0f), new Vector3(0.17f, 0.42f, 0.17f), top);
             CreatePrimitiveChild("Head", PrimitiveType.Sphere, root.transform, new Vector3(0f, 1.78f, 0f), new Vector3(0.42f, 0.48f, 0.42f), skin);
             CreatePrimitiveChild("Hair", PrimitiveType.Sphere, root.transform, new Vector3(0f, 1.96f, -0.015f), new Vector3(0.43f, 0.19f, 0.43f), hair);
-            CreatePrimitiveChild("Shoulder Bag", PrimitiveType.Cube, root.transform, new Vector3(0.46f, 0.98f, 0.04f), new Vector3(0.16f, 0.62f, 0.48f), player ? lower : top);
+            CreatePrimitiveChild("Shoulder Bag", PrimitiveType.Cube, root.transform, new Vector3(0.43f, 0.72f, -0.16f), new Vector3(0.20f, 0.40f, 0.32f), player ? lower : top);
+            if (player)
+            {
+                GameObject bagStrap = CreatePrimitiveChild(
+                    "Shoulder Bag Strap", PrimitiveType.Cube, root.transform,
+                    new Vector3(0f, 1.23f, 0.34f), new Vector3(0.07f, 0.92f, 0.05f), lower);
+                bagStrap.transform.localRotation = Quaternion.Euler(0f, 0f, -27f);
+            }
             CreatePrimitiveChild("Belt", PrimitiveType.Cube, root.transform, new Vector3(0f, 0.78f, 0f), new Vector3(0.68f, 0.10f, 0.54f), lower);
             CreatePrimitiveChild("Shoe Left", PrimitiveType.Cube, root.transform, new Vector3(-0.18f, 0.08f, 0.10f), new Vector3(0.25f, 0.15f, 0.42f), lower);
             CreatePrimitiveChild("Shoe Right", PrimitiveType.Cube, root.transform, new Vector3(0.18f, 0.08f, 0.10f), new Vector3(0.25f, 0.15f, 0.42f), lower);
             CreatePrimitiveChild("Hand Left", PrimitiveType.Sphere, root.transform, new Vector3(-0.43f, 0.72f, 0f), new Vector3(0.18f, 0.20f, 0.18f), skin);
             CreatePrimitiveChild("Hand Right", PrimitiveType.Sphere, root.transform, new Vector3(0.43f, 0.72f, 0f), new Vector3(0.18f, 0.20f, 0.18f), skin);
-            CreatePrimitiveChild("Eye Left", PrimitiveType.Sphere, root.transform, new Vector3(-0.13f, 1.82f, 0.37f), new Vector3(0.07f, 0.08f, 0.05f), hair);
-            CreatePrimitiveChild("Eye Right", PrimitiveType.Sphere, root.transform, new Vector3(0.13f, 1.82f, 0.37f), new Vector3(0.07f, 0.08f, 0.05f), hair);
-            CreatePrimitiveChild("Nose", PrimitiveType.Sphere, root.transform, new Vector3(0f, 1.69f, 0.40f), new Vector3(0.09f, 0.13f, 0.10f), skin);
-            CreatePrimitiveChild("Mouth", PrimitiveType.Cube, root.transform, new Vector3(0f, 1.57f, 0.40f), new Vector3(0.16f, 0.035f, 0.035f), hair);
-            CreatePrimitiveChild("Collar Left", PrimitiveType.Cube, root.transform, new Vector3(-0.14f, 1.45f, 0.43f), new Vector3(0.22f, 0.20f, 0.05f), top).transform.localRotation = Quaternion.Euler(0f, 0f, -24f);
-            CreatePrimitiveChild("Collar Right", PrimitiveType.Cube, root.transform, new Vector3(0.14f, 1.45f, 0.43f), new Vector3(0.22f, 0.20f, 0.05f), top).transform.localRotation = Quaternion.Euler(0f, 0f, 24f);
+            CreatePrimitiveChild("Eye Left", PrimitiveType.Sphere, root.transform, new Vector3(-0.12f, 1.82f, 0.215f), new Vector3(0.055f, 0.065f, 0.035f), hair);
+            CreatePrimitiveChild("Eye Right", PrimitiveType.Sphere, root.transform, new Vector3(0.12f, 1.82f, 0.215f), new Vector3(0.055f, 0.065f, 0.035f), hair);
+            CreatePrimitiveChild("Nose", PrimitiveType.Sphere, root.transform, new Vector3(0f, 1.70f, 0.225f), new Vector3(0.075f, 0.11f, 0.07f), skin);
+            CreatePrimitiveChild("Mouth", PrimitiveType.Cube, root.transform, new Vector3(0f, 1.59f, 0.22f), new Vector3(0.13f, 0.028f, 0.025f), hair);
+            CreatePrimitiveChild("Collar Left", PrimitiveType.Cube, root.transform, new Vector3(-0.14f, 1.45f, 0.285f), new Vector3(0.20f, 0.18f, 0.04f), top).transform.localRotation = Quaternion.Euler(0f, 0f, -24f);
+            CreatePrimitiveChild("Collar Right", PrimitiveType.Cube, root.transform, new Vector3(0.14f, 1.45f, 0.285f), new Vector3(0.20f, 0.18f, 0.04f), top).transform.localRotation = Quaternion.Euler(0f, 0f, 24f);
             if (player)
             {
-                CreatePrimitiveChild("Moustache", PrimitiveType.Cube, root.transform, new Vector3(0f, 1.63f, 0.43f), new Vector3(0.22f, 0.045f, 0.04f), hair);
+                CreatePrimitiveChild("Moustache", PrimitiveType.Cube, root.transform, new Vector3(0f, 1.64f, 0.23f), new Vector3(0.19f, 0.038f, 0.028f), hair);
                 CreatePrimitiveChild("Wrist Watch", PrimitiveType.Cylinder, root.transform, new Vector3(-0.43f, 0.77f, 0f), new Vector3(0.10f, 0.04f, 0.10f), lower).transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
             }
             return root;

@@ -54,7 +54,7 @@ Passing requires the PM 100-day review, all four outcomes at 68 or above, and a 
 
 - Twelve ordered objectives and both long-term reform branches pass exact Windows runtime assertions
 - Start, decision, independent review, completion banner, and chapter actions were checked at 844x390
-- Responsive twenty-three-card chapter menu was checked at 1280x720 in a 6x4 grid
-- Windows development build succeeds with the menu and all twenty-three playable chapter scenes
-- Android project version is `0.24.0` (`versionCode 24`); consolidated APK verification follows the final endgame chapter
+- Responsive twenty-three-card chapter menu was checked at 1280x720 before the final chapter was added
+- Windows development build succeeds with the menu and all twenty-three chapters through this national-development milestone
+- Chapter 24 now continues into the audited global-cooperation endgame; consolidated Android project version is `0.27.0` (`versionCode 27`)
 - Physical Android install and touch-feel testing remain pending until an Android phone is connected

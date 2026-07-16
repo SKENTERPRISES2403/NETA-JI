@@ -16,10 +16,45 @@ namespace NetaJi.Prototype
         [SerializeField] private LayerMask collisionMask = ~0;
 
         private Vector3 smoothedPosition;
+        private Vector3 pedestrianOffset;
+        private float pedestrianDistance;
+        private bool followTargetHeading;
+        private float headingYawOffset;
 
         public void SetTarget(Transform value)
         {
             target = value;
+        }
+
+        public void SetTarget(Transform value, Vector3 offset, float targetDistance, bool snap)
+        {
+            target = value;
+            targetOffset = offset;
+            distance = Mathf.Max(minDistance, targetDistance);
+            if (snap && target != null)
+            {
+                yaw = target.eulerAngles.y;
+                pitch = 18f;
+                Vector3 focus = target.position + targetOffset;
+                smoothedPosition = focus + Quaternion.Euler(pitch, yaw, 0f) * Vector3.back * distance;
+                transform.position = smoothedPosition;
+            }
+        }
+
+        public void RestorePedestrianTarget(Transform value, bool snap)
+        {
+            SetHeadingFollow(false);
+            SetTarget(value, pedestrianOffset, pedestrianDistance, snap);
+        }
+
+        public void SetHeadingFollow(bool value)
+        {
+            followTargetHeading = value;
+            headingYawOffset = 0f;
+            if (value && target != null)
+            {
+                yaw = target.eulerAngles.y;
+            }
         }
 
         public void SetCollisionMask(LayerMask value)
@@ -29,6 +64,8 @@ namespace NetaJi.Prototype
 
         private void Start()
         {
+            pedestrianOffset = targetOffset;
+            pedestrianDistance = distance;
             smoothedPosition = transform.position;
         }
 
@@ -40,7 +77,16 @@ namespace NetaJi.Prototype
             }
 
             Vector2 look = PrototypeInput.Instance.LookDelta;
-            yaw += look.x;
+            if (followTargetHeading)
+            {
+                headingYawOffset += look.x;
+                float desiredYaw = target.eulerAngles.y + headingYawOffset;
+                yaw = Mathf.LerpAngle(yaw, desiredYaw, 1f - Mathf.Exp(-7f * Time.deltaTime));
+            }
+            else
+            {
+                yaw += look.x;
+            }
             pitch = Mathf.Clamp(pitch - look.y, -10f, 62f);
 
             Quaternion orbitRotation = Quaternion.Euler(pitch, yaw, 0f);

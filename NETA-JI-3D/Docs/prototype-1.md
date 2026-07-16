@@ -9,7 +9,13 @@
 
 ## World
 
-The first playable space is a compact Prayagraj/Daraganj-inspired ghat district. Real landmarks provide geographic and visual context, while all NGOs, hospitals, police cases, gangs, contractors, and political groups are fictional.
+The first playable space is a connected Prayagraj/Daraganj-inspired district. It includes a riverfront, ghats, markets, homes, parks, public buildings, roads, and stylized references to Allahabad University, the High Court, Chandrashekhar Azad Park, and Sangam. Real landmarks provide geographic and visual context, while all NGOs, hospitals, police cases, gangs, contractors, and political groups are fictional.
+
+Players can enter the district directly from the main menu and walk around without accepting a mission. A live minimap, full city map, driveable car, and driveable scooter support free exploration. The current world and characters are procedural low-poly prototype art; production-quality models, animation, traffic, and environmental audio remain later work.
+
+## Opening
+
+A short seven-shot cinematic introduces Azad through family life, community service, Sandhya's non-graphic abduction, the rescue, a hospital crisis, family recovery, and a public-service resolve. It uses visual staging and music instead of exposition text and can be skipped.
 
 ## First Mission
 
@@ -30,7 +36,10 @@ The first playable space is a compact Prayagraj/Daraganj-inspired ghat district.
 - Runtime log verifies procedural audio initialization without errors
 - Mobile screenshots verify route hints, chapter overlays, and readable world signage
 - Menu automation verifies title/story views and the menu-to-game smoke bypass
-- Legacy `missionStep` and save-v2 through save-v22 profiles migrate into twenty-three-chapter save progress
+- Prologue automation renders and visually verifies all seven wordless shots
+- Free-roam automation verifies walking, full-map display, car entry/exit, scooter entry/exit, player collision lifecycle, grounded wheels, and measured vehicle travel
+- Outfit automation verifies the political kurta/stole/kolhapuri set from four cardinal views and checks left/right symmetry
+- Legacy `missionStep` and save-v2 through save-v23 profiles migrate into twenty-four-chapter save progress
 - Chapter 9 automation verifies safe and risky constituency-expansion routes plus computed MLA nomination
 - Chapter 10 automation verifies both assembly-campaign routes and the computed seat result
 - Chapter 11 automation verifies public-allocation branches and the computed MLA performance review
@@ -46,6 +55,9 @@ The first playable space is a compact Prayagraj/Daraganj-inspired ghat district.
 - Chapter 21 automation verifies both second-national-campaign strategies, the independent fictional count, and the computed Prime Minister mandate
 - Chapter 22 automation verifies both first-100-day national-governance strategies and the computed Prime Minister public review
 - Chapter 23 automation verifies both ten-year national-development strategies and the computed four-outcome public review
-- Android development APK builds successfully for ARMv7 with min SDK 26 and target SDK 36
-- APK package manifest and v2 debug signature verified
+- Chapter 24 automation verifies cooperation and spectacle routes, the independent four-pillar review, and the earned Vishwa Guru outcome
+- Windows and Android demo packages build without Unity's Development Build watermark
+- Android version is `0.27.0` (`versionCode 27`), min SDK 26, target SDK 36, sensor-landscape, ARM64 plus ARMv7, and IL2CPP
+- APK package metadata, both native ABI libraries, absence of the debuggable manifest flag, and Android v2 signature are verified after the consolidated build
+- The current APK uses an Android debug certificate for local/company demo installs; a production keystore and AAB remain required for store submission
 - Physical Android install and touch-feel testing still require a connected phone

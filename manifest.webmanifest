@@ -4,7 +4,7 @@
     "description":  "A fictional mobile-first election capture arcade game.",
     "start_url":  "./",
     "display":  "standalone",
-    "orientation":  "portrait",
+    "orientation":  "any",
     "background_color":  "#fff3d6",
     "theme_color":  "#ff6b2d",
     "icons":  [

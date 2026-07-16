@@ -9,6 +9,12 @@ EditorBuildSettings:
     path: Assets/NETAJI/Scenes/MainMenu.unity
     guid: b9609bbe509f0ec4f8f83b07d397084a
   - enabled: 1
+    path: Assets/NETAJI/Scenes/Prologue.unity
+    guid: d88b297e85fdb19479233a0cc7cbb7ca
+  - enabled: 1
+    path: Assets/NETAJI/Scenes/FreeRoam.unity
+    guid: 815625079d3f39446ba59d6fde9555ab
+  - enabled: 1
     path: Assets/NETAJI/Scenes/Prototype01.unity
     guid: 37c94cba0ce145744af3394fb33ae61f
   - enabled: 1
@@ -77,5 +83,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/NETAJI/Scenes/Chapter23.unity
     guid: 271aabe3d3ef1664484582f7033f8b1d
+  - enabled: 1
+    path: Assets/NETAJI/Scenes/Chapter24.unity
+    guid: 5d6c5cfb54abd0641b9bb2a892b58fdd
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

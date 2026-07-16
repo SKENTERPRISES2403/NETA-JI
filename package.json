@@ -1,16 +1,23 @@
 {
   "name": "neta-ji",
   "version": "0.1.0",
+  "type": "module",
   "private": true,
   "description": "NETA JI pitch-ready static PWA demo.",
   "scripts": {
     "build": "node build-static.cjs",
     "dev": "node dev-server.cjs 5174 0.0.0.0",
+    "qa": "node --check src/main.js && node --check src/capture-logic.js && node --check src/game-rules.js && npm run logic:qa && npm run map:qa",
     "icons": "node tools/generate-icons.cjs",
+    "logic:qa": "node tools/game-logic-qa.mjs",
     "map:qa": "node tools/map-qa.cjs",
     "smoke:map": "node tools/mobile-smoke.cjs \"/?demo=1&mapqa=1&smoke=map\"",
+    "smoke:arena": "node tools/mobile-smoke.cjs \"/?demo=1&arenaqa=1&smoke=arena\"",
     "smoke:mobile": "node tools/mobile-smoke.cjs",
+    "smoke:phone": "node tools/mobile-smoke.cjs \"/?demo=1&smoke=local\" mobile",
+    "smoke:desktop": "node tools/mobile-smoke.cjs \"/?demo=1&smoke=local\" desktop",
     "smoke:public:map": "node tools/mobile-smoke.cjs \"https://neta-ji-demo.sd-skenterprises.chatgpt.site/?demo=1&mapqa=1\"",
+    "smoke:public:arena": "node tools/mobile-smoke.cjs \"https://neta-ji-demo.sd-skenterprises.chatgpt.site/?demo=1&arenaqa=1\"",
     "smoke:public": "node tools/mobile-smoke.cjs https://neta-ji-demo.sd-skenterprises.chatgpt.site/?demo=1"
   }
 }

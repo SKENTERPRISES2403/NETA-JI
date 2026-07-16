@@ -9,6 +9,8 @@ namespace NetaJi.Prototype
     public sealed class MainMenuController : MonoBehaviour
     {
         [SerializeField] private string gameplaySceneName = "Prototype01";
+        [SerializeField] private string prologueSceneName = "Prologue";
+        [SerializeField] private string freeRoamSceneName = "FreeRoam";
         [SerializeField] private string chapterTwoSceneName = "Chapter02";
         [SerializeField] private string chapterThreeSceneName = "Chapter03";
         [SerializeField] private string chapterFourSceneName = "Chapter04";
@@ -31,6 +33,7 @@ namespace NetaJi.Prototype
         [SerializeField] private string chapterTwentyOneSceneName = "Chapter21";
         [SerializeField] private string chapterTwentyTwoSceneName = "Chapter22";
         [SerializeField] private string chapterTwentyThreeSceneName = "Chapter23";
+        [SerializeField] private string chapterTwentyFourSceneName = "Chapter24";
 
         private Texture2D whiteTexture;
         private Texture2D primaryTexture;
@@ -64,6 +67,14 @@ namespace NetaJi.Prototype
             if (Array.IndexOf(arguments, "-prototypeSmoke") >= 0)
             {
                 SceneManager.LoadScene(gameplaySceneName);
+            }
+            else if (Array.IndexOf(arguments, "-prologueSmoke") >= 0)
+            {
+                SceneManager.LoadScene(prologueSceneName);
+            }
+            else if (Array.IndexOf(arguments, "-freeRoamSmoke") >= 0)
+            {
+                SceneManager.LoadScene(freeRoamSceneName);
             }
             else if (Array.IndexOf(arguments, "-chapter2Smoke") >= 0)
             {
@@ -104,7 +115,8 @@ namespace NetaJi.Prototype
                 SceneManager.LoadScene(chapterNineSceneName);
             }
             else if (Array.IndexOf(arguments, "-chapter10Smoke") >= 0
-                || Array.IndexOf(arguments, "-riskyAssemblyCampaignSmoke") >= 0)
+                || Array.IndexOf(arguments, "-riskyAssemblyCampaignSmoke") >= 0
+                || Array.IndexOf(arguments, "-outfitSmoke") >= 0)
             {
                 SceneManager.LoadScene(chapterTenSceneName);
             }
@@ -173,6 +185,11 @@ namespace NetaJi.Prototype
             {
                 SceneManager.LoadScene(chapterTwentyThreeSceneName);
             }
+            else if (Array.IndexOf(arguments, "-chapter24Smoke") >= 0
+                || Array.IndexOf(arguments, "-riskyGlobalLeadershipSmoke") >= 0)
+            {
+                SceneManager.LoadScene(chapterTwentyFourSceneName);
+            }
         }
 
         private IEnumerator RunMenuSmoke(string[] arguments)
@@ -205,6 +222,7 @@ namespace NetaJi.Prototype
                 GameSession.Instance.CompleteChapter(20);
                 GameSession.Instance.CompleteChapter(21);
                 GameSession.Instance.CompleteChapter(22);
+                GameSession.Instance.CompleteChapter(23);
             }
             yield return new WaitForSeconds(1.2f);
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "menu-start.png"));
@@ -249,7 +267,9 @@ namespace NetaJi.Prototype
             float buttonWidth = Mathf.Clamp(Screen.width * 0.27f, 210f, 320f);
             float buttonHeight = Mathf.Clamp(Screen.height * 0.105f, 46f, 64f);
             float buttonX = Screen.width - buttonWidth - 34f * scale;
-            float buttonY = Screen.height * 0.36f;
+            bool compactHeight = Screen.height < 480f;
+            float buttonGap = compactHeight ? 8f : 12f;
+            float buttonY = Screen.height * (compactHeight ? 0.29f : 0.36f);
             float nextButtonY = buttonY;
 
             if (GameSession.HasSave)
@@ -258,14 +278,21 @@ namespace NetaJi.Prototype
                 {
                     LoadChapter(GameSession.LastPlayedChapter, false);
                 }
-                nextButtonY += buttonHeight + 12f;
+                nextButtonY += buttonHeight + buttonGap;
             }
 
             if (GUI.Button(new Rect(buttonX, nextButtonY, buttonWidth, buttonHeight), "NAYA SAFAR", buttonStyle))
             {
-                LoadChapter(1, true);
+                GameSession.DeleteSave();
+                SceneManager.LoadScene(prologueSceneName);
             }
-            nextButtonY += buttonHeight + 12f;
+            nextButtonY += buttonHeight + buttonGap;
+
+            if (GUI.Button(new Rect(buttonX, nextButtonY, buttonWidth, buttonHeight), "PRAYAGRAJ GHUMEIN", secondaryButtonStyle))
+            {
+                SceneManager.LoadScene(freeRoamSceneName);
+            }
+            nextButtonY += buttonHeight + buttonGap;
 
             if (GUI.Button(new Rect(buttonX, nextButtonY, buttonWidth, buttonHeight), "CHAPTER CHUNEIN", secondaryButtonStyle))
             {
@@ -293,7 +320,11 @@ namespace NetaJi.Prototype
             float height = Mathf.Min(520f, Screen.height - 18f);
             Rect panel = new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
             DrawPanel(panel, new Color(0.01f, 0.055f, 0.065f, 0.98f));
-            GUI.Label(new Rect(panel.x + 24f, panel.y + 18f, panel.width - 48f, 46f), "AZAD KA SAFAR", subtitleStyle);
+            bool shortPanel = panel.height < 470f;
+            GUI.Label(
+                new Rect(panel.x + 24f, panel.y + (shortPanel ? 10f : 18f), panel.width - 48f, shortPanel ? 30f : 46f),
+                "AZAD KA SAFAR",
+                subtitleStyle);
 
             string[] chapterTitles =
             {
@@ -303,24 +334,24 @@ namespace NetaJi.Prototype
                 "PRADESH KI DASTAK", "PRADESH KA NETRUTVA", "PRADESH KA JANADESH",
                 "CM KE PEHLE 100 DIN", "BADLAV KE PAANCH SAAL", "DESH BHAR KA SAATH",
                 "RASHTRIYA CHUNAV", "HAAR KE BAAD HIMMAT", "PM KA JANADESH", "PM KE PEHLE 100 DIN",
-                "DESH KA BADLAV"
+                "DESH KA BADLAV", "SEVA SE VISHWA GURU"
             };
             float cardGap = 10f;
             bool compactGrid = chapterTitles.Length > 15;
             int cardColumns = chapterTitles.Length == 21 ? 7 : chapterTitles.Length > 21 ? 6 : chapterTitles.Length > 16 ? 5 : compactGrid ? 4 : chapterTitles.Length > 14 ? 5 : 7;
             float cardHeight = compactGrid
                 ? chapterTitles.Length > 20
-                    ? panel.height >= 470f ? 72f : 64f
+                    ? shortPanel ? 48f : 72f
                     : panel.height >= 470f ? 64f : 48f
                 : chapterTitles.Length > 14 ? 55f : 70f;
             float rowGap = compactGrid
                 ? chapterTitles.Length > 20
-                    ? panel.height >= 470f ? 8f : 6f
+                    ? shortPanel ? 4f : 8f
                     : panel.height >= 470f ? 8f : 6f
                 : chapterTitles.Length > 14 ? 8f : 12f;
             float cardWidth = (panel.width - 48f - cardGap * (cardColumns - 1)) / cardColumns;
             float firstX = panel.x + 24f;
-            float firstY = panel.y + (compactGrid ? 56f : 62f);
+            float firstY = panel.y + (compactGrid ? shortPanel ? 48f : 56f : 62f);
             for (int index = 0; index < chapterTitles.Length; index++)
             {
                 int column = index % cardColumns;
@@ -486,6 +517,10 @@ namespace NetaJi.Prototype
             else if (chapterNumber == 23)
             {
                 sceneName = chapterTwentyThreeSceneName;
+            }
+            else if (chapterNumber == 24)
+            {
+                sceneName = chapterTwentyFourSceneName;
             }
             SceneManager.LoadScene(sceneName);
         }

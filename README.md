@@ -18,12 +18,14 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - Textured arena ground, shaded territory, rounded campaign trails, and player motion dust
 - Neta Meter with public support, funds, local power, and reputation
 - Campaign decisions: Tea Rally, Poster Wave, and Donor Lunch tradeoffs
-- Rough India state/UT campaign hub
-- Cartoon India map home screen drawn in canvas
-- Improved state/UT polygon map with more realistic India layout and tap targets
-- External map shape data in [data/india-map-shapes.json](data/india-map-shapes.json), ready for future exact-boundary replacement
+- Real-shape India state/UT campaign hub drawn in canvas
+- Open-license geoBoundaries ADM1 silhouettes for all 28 states and 8 union territories
+- Correct geographic placement, polygon hit targets, source metadata, and visible attribution
+- The same real region silhouette expands to fill the gameplay arena after selection
 - Flag-touch state/UT selection with confirmation
-- Selected region opens as a large outlined gameplay arena
+- Small-loop capture is state-edge aware and cannot color the whole arena by mistake
+- Harder win pacing: multiple meaningful loops plus mandate score are required
+- Rival conversion requires cutting a rival route; touching the rival body alone is not enough
 - State/UT win progression with saved progress
 - Paidal-yatra style next-region flow
 - National mandate completion when all 36 regions are won, with world-yatra teaser
@@ -43,6 +45,29 @@ The tone is intentionally fictional, light, and meme-friendly. The game must not
 - APK prep notes in [docs/apk-prep.md](docs/apk-prep.md)
 - Mobile QA checklist in [docs/mobile-test-checklist.md](docs/mobile-test-checklist.md)
 - Production moderation roadmap in [docs/production-roadmap.md](docs/production-roadmap.md)
+- Third-party map attribution in [docs/third-party-notices.md](docs/third-party-notices.md)
+- Offline-demo privacy note in [docs/privacy.md](docs/privacy.md)
+
+## 3D Story Prototype
+
+`NETA-JI-3D` is the separate Unity 6 Android-first story prototype. It follows Azad from community service in Prayagraj through fictional local, state, and national public leadership.
+
+- 24 playable, save-backed chapters with a complete Prototype 1 story arc
+- Semi-realistic stylized third-person movement, mobile touch controls, dialogue, decisions, missions, and chapter selection
+- Seven-shot, wordless opening cinematic establishes Azad's family, public service, crisis, recovery, and resolve without graphic violence
+- Connected Prayagraj free-roam district with homes, public buildings, market, park, ghats, clean riverfront, stalls, roads, trees, and pedestrians
+- Live top-left minimap plus a full-screen labelled city map that tracks the player
+- Enter, drive, and exit car and scooter vehicles with mobile/keyboard controls and speed HUD
+- Chapter 10 political outfit is consistent across front, back, left, and right views
+- Safe and risky branches with computed public-support, governance, election, development, and global-cooperation outcomes
+- Final Chapter 24 earns the fictional Vishwa Guru outcome through fair trade, open science, defensive peace, and humanitarian-climate leadership rather than conquest
+- Unity version `0.27.0`, Android `versionCode 27`, min SDK 26, target SDK 36
+- Clean demo APK contains ARM64 and ARMv7 IL2CPP libraries, has no development-build flag, and passes Android v2 signature verification
+- Windows release automation covers the menu, all seven prologue shots, free-roam vehicles/map, Chapter 1, outfit views, and both Chapter 24 routes at compact 844x390 landscape presentation
+- Current art is a procedural low-poly prototype, not final GTA-level production art
+- Physical Android install, thermals, touch feel, and device-specific performance still require a connected phone
+
+See [NETA-JI-3D/Docs/prototype-1.md](NETA-JI-3D/Docs/prototype-1.md), [NETA-JI-3D/Docs/open-world-027.md](NETA-JI-3D/Docs/open-world-027.md), and [NETA-JI-3D/Docs/chapter-24.md](NETA-JI-3D/Docs/chapter-24.md).
 
 ## Run Locally
 
@@ -61,7 +86,7 @@ node dev-server.cjs 5174 0.0.0.0
 Then open:
 
 ```text
-http://localhost:5173
+http://localhost:5174
 ```
 
 Generate app icons and run a local mobile smoke check:
@@ -69,9 +94,11 @@ Generate app icons and run a local mobile smoke check:
 ```powershell
 npm.cmd run icons
 npm.cmd run build
+npm.cmd run logic:qa
 npm.cmd run map:qa
 npm.cmd run smoke:mobile
 npm.cmd run smoke:map
+npm.cmd run smoke:arena
 ```
 
 ## Public Demo
@@ -84,15 +111,22 @@ https://neta-ji-demo.sd-skenterprises.chatgpt.site/?demo=1
 
 This is the preferred company/mobile review link. It avoids localhost issues and opens the safe Quick Demo flow.
 
+QA views:
+
+```text
+?demo=1&mapqa=1
+?demo=1&arenaqa=1
+```
+
 ## Product Direction
 
 Build order:
 
 1. Playable district arena
-2. Better capture algorithm and AI
+2. Better capture algorithm and AI (current pitch pass complete)
 3. Stronger crowd movement and follower polish
 4. Deeper money, power, reputation, and public support systems
-5. Real map geometry using open map data after license review
+5. Real map geometry using open map data with CC attribution (complete)
 6. PWA and Android APK
 7. Optional multiplayer after the offline version is fun
 

@@ -95,20 +95,25 @@ namespace NetaJi.Prototype
         private void OnGUI()
         {
             EnsureStyles();
-            DrawPanel(new Rect(18f, 16f, Mathf.Min(440f, Screen.width * 0.52f), 124f), new Color(0.015f, 0.08f, 0.10f, 0.97f));
-            GUI.Label(new Rect(34f, 26f, 380f, 30f), "NETA JI  /  PRAYAGRAJ", titleStyle);
-            string mission = MissionController.Instance != null ? MissionController.Instance.MissionTitle : "Prototype 1";
-            string objective = MissionController.Instance != null ? MissionController.Instance.CurrentObjective : "Loading seva route...";
-            GUI.Label(new Rect(34f, 58f, Mathf.Min(400f, Screen.width * 0.47f), 22f), mission, smallStyle);
-            GUI.Label(new Rect(34f, 80f, Mathf.Min(400f, Screen.width * 0.47f), 30f), objective, bodyStyle);
-            string routeHint = GetRouteHint();
-            if (!string.IsNullOrEmpty(routeHint))
+            bool compactOverlay = Screen.height < 480f
+                && (IsDecisionOpen || Time.unscaledTime < bannerUntil);
+            if (!compactOverlay)
             {
-                GUI.Label(new Rect(34f, 105f, Mathf.Min(400f, Screen.width * 0.47f), 22f), routeHint, smallStyle);
+                DrawPanel(new Rect(18f, 16f, Mathf.Min(440f, Screen.width * 0.52f), 124f), new Color(0.015f, 0.08f, 0.10f, 0.97f));
+                GUI.Label(new Rect(34f, 26f, 380f, 30f), "NETA JI  /  PRAYAGRAJ", titleStyle);
+                string mission = MissionController.Instance != null ? MissionController.Instance.MissionTitle : "Prototype 1";
+                string objective = MissionController.Instance != null ? MissionController.Instance.CurrentObjective : "Loading seva route...";
+                GUI.Label(new Rect(34f, 58f, Mathf.Min(400f, Screen.width * 0.47f), 22f), mission, smallStyle);
+                GUI.Label(new Rect(34f, 80f, Mathf.Min(400f, Screen.width * 0.47f), 30f), objective, bodyStyle);
+                string routeHint = GetRouteHint();
+                if (!string.IsNullOrEmpty(routeHint))
+                {
+                    GUI.Label(new Rect(34f, 105f, Mathf.Min(400f, Screen.width * 0.47f), 22f), routeHint, smallStyle);
+                }
             }
 
             PlayerProgress progress = GameSession.Instance?.Progress;
-            if (progress != null)
+            if (progress != null && !compactOverlay)
             {
                 float width = Mathf.Min(420f, Screen.width * 0.42f);
                 bool showPolitics = progress.politicalPower > 0 || progress.volunteers > 0 || progress.oppositionPressure > 0;
@@ -148,7 +153,10 @@ namespace NetaJi.Prototype
                 bool showNationalDevelopment = progress.nationalHealthIndex > 0 || progress.nationalLearningIndex > 0
                     || progress.nationalSafetyJusticeIndex > 0 || progress.nationalLivelihoodIndex > 0
                     || progress.nationalDevelopmentScore > 0;
-                float statsHeight = showNationalDevelopment || showPrimeMinisterGovernance || showSecondNationalElection || showNationalComeback || showFirstNationalElection || showNationalExpansion || showStateTerm || showChiefMinisterGovernance || showStateElection || showStateLeadership || showStateExpansion
+                bool showGlobalLeadership = progress.globalTradeTrust > 0 || progress.scienceInnovationLeadership > 0
+                    || progress.peaceDefenseReadiness > 0 || progress.humanitarianClimateLeadership > 0
+                    || progress.globalLeadershipScore > 0;
+                float statsHeight = showGlobalLeadership || showNationalDevelopment || showPrimeMinisterGovernance || showSecondNationalElection || showNationalComeback || showFirstNationalElection || showNationalExpansion || showStateTerm || showChiefMinisterGovernance || showStateElection || showStateLeadership || showStateExpansion
                     ? 102f : showDistrict ? 130f : showLegislature ? 158f : showAssemblyElection ? 186f : showExpansion ? 158f
                     : showGovernance ? 158f : showCampaign ? 102f : showPolitics ? 76f : 52f;
                 Rect statsRect = new Rect(Screen.width - width - 18f, 16f, width, statsHeight);
@@ -275,12 +283,25 @@ namespace NetaJi.Prototype
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"PM100 D{progress.primeMinisterDelivery} C{progress.unionCabinetIntegrity} F{progress.nationalFiscalDiscipline} I{progress.institutionalTrust}  SCORE {score}  {review}", statStyle);
                 }
-                if (showNationalDevelopment)
+                if (showNationalDevelopment && !showGlobalLeadership)
                 {
                     string score = progress.nationalDevelopmentScore > 0 ? progress.nationalDevelopmentScore.ToString() : "--";
                     string review = progress.nationalDevelopmentReviewPassed ? "PASSED" : "OPEN";
                     GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
                         $"DEV H{progress.nationalHealthIndex} L{progress.nationalLearningIndex} S{progress.nationalSafetyJusticeIndex} J{progress.nationalLivelihoodIndex}  SCORE {score}  {review}", statStyle);
+                }
+                if (showGlobalLeadership)
+                {
+                    string score = progress.globalLeadershipScore > 0 ? progress.globalLeadershipScore.ToString() : "--";
+                    string review = progress.vishwaGuruOutcomeEarned ? "EARNED" : "REVIEW";
+                    GUIStyle globalStatStyle = new GUIStyle(statStyle)
+                    {
+                        fontSize = Screen.width < 900f ? Mathf.Max(10, statStyle.fontSize - 2) : statStyle.fontSize,
+                        wordWrap = false,
+                        clipping = TextClipping.Clip
+                    };
+                    GUI.Label(new Rect(statsRect.x + 10f, statsRect.y + 66f, statsRect.width - 20f, 26f),
+                        $"GLOB T{progress.globalTradeTrust} SCI{progress.scienceInnovationLeadership} DEF{progress.peaceDefenseReadiness} HUM{progress.humanitarianClimateLeadership} S{score} {review}", globalStatStyle);
                 }
             }
 

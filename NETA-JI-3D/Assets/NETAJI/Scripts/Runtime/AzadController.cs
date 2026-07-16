@@ -20,10 +20,69 @@ namespace NetaJi.Prototype
         private float verticalVelocity;
         private float nextFootstepAt;
         private IInteractable focusedInteractable;
+        private bool controlsEnabled = true;
+
+        public int VisibleRendererCount
+        {
+            get
+            {
+                int count = 0;
+                foreach (Renderer itemRenderer in GetComponentsInChildren<Renderer>(true))
+                {
+                    if (itemRenderer.enabled)
+                    {
+                        count++;
+                    }
+                }
+                return count;
+            }
+        }
+
+        public bool CollisionEnabled => characterController != null && characterController.enabled;
 
         public void SetCamera(Transform value)
         {
             cameraTransform = value;
+        }
+
+        public void SetControlEnabled(bool value)
+        {
+            controlsEnabled = value;
+            planarVelocity = Vector3.zero;
+            focusedInteractable = null;
+            PrototypeHud.Instance?.SetInteractionPrompt(string.Empty);
+        }
+
+        public void SetVisible(bool value)
+        {
+            foreach (Renderer itemRenderer in GetComponentsInChildren<Renderer>(true))
+            {
+                itemRenderer.enabled = value;
+            }
+        }
+
+        public void SetCollisionEnabled(bool value)
+        {
+            if (characterController != null)
+            {
+                characterController.enabled = value;
+            }
+        }
+
+        public void Teleport(Vector3 position, Quaternion rotation)
+        {
+            bool wasEnabled = characterController != null && characterController.enabled;
+            if (characterController != null)
+            {
+                characterController.enabled = false;
+            }
+            transform.SetPositionAndRotation(position, rotation);
+            if (characterController != null)
+            {
+                characterController.enabled = wasEnabled;
+            }
+            verticalVelocity = -2f;
+            planarVelocity = Vector3.zero;
         }
 
         private void Awake()
@@ -33,7 +92,7 @@ namespace NetaJi.Prototype
 
         private void Update()
         {
-            if (PrototypeInput.Instance == null || cameraTransform == null)
+            if (!controlsEnabled || PrototypeInput.Instance == null || cameraTransform == null)
             {
                 return;
             }
@@ -118,6 +177,7 @@ namespace NetaJi.Prototype
 
             focusedInteractable = best;
             PrototypeHud.Instance?.SetInteractionPrompt(best?.Prompt ?? string.Empty);
+            FreeRoamMapHud.Instance?.SetInteractionPrompt(best?.Prompt ?? string.Empty);
         }
     }
 }

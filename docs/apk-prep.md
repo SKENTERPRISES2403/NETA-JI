@@ -26,6 +26,7 @@ NETA JI is currently a static, installable PWA. APK packaging should start only 
 - Run `npm.cmd run smoke:mobile` for local mobile/desktop screenshots.
 - Run `npm.cmd run smoke:public` after deploy.
 - Confirm `manifest.webmanifest` has correct app name, icons, orientation, theme color, and display mode.
+- Verify portrait and landscape gameplay because the PWA manifest intentionally allows `orientation: any`.
 - Confirm `sw.js` cache version is bumped for every public release.
 - Generate signed internal test APK.
 - Install APK on a real Android phone.

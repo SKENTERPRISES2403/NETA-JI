@@ -12,6 +12,13 @@ const port = Number(process.env.PORT || 5177);
 const localPath = targetArg && !isPublicTarget ? targetArg : "/?demo=1&smoke=local";
 const baseUrl = isPublicTarget ? targetArg : `http://127.0.0.1:${port}${localPath}`;
 const outDir = path.join(root, "dist", "smoke");
+const targetUrl = new URL(baseUrl);
+const scenario = targetUrl.searchParams.get("mapqa") === "1"
+  ? "map"
+  : targetUrl.searchParams.get("arenaqa") === "1"
+    ? "arena"
+    : "demo";
+const artifactPrefix = `${isPublicTarget ? "public-" : ""}${scenario}`;
 
 function findChrome() {
   const candidates = [
@@ -87,11 +94,13 @@ async function main() {
 
   try {
     await waitFor(baseUrl);
-    const [page, manifest, serviceWorker, mainJs, mapData] = await Promise.all([
+    const [page, manifest, serviceWorker, mainJs, captureLogic, gameRules, mapData] = await Promise.all([
       requestText(baseUrl),
       requestText(makeUrl("/manifest.webmanifest")),
       requestText(makeUrl("/sw.js")),
       requestText(makeUrl("/src/main.js")),
+      requestText(makeUrl("/src/capture-logic.js")),
+      requestText(makeUrl("/src/game-rules.js")),
       requestText(makeUrl("/data/india-map-shapes.json"))
     ]);
 
@@ -101,39 +110,54 @@ async function main() {
     assertContains("main.js", mainJs, "drawMemeWaveScene");
     assertContains("main.js", mainJs, "isOnboardingVisible");
     assertContains("main.js", mainJs, "loadMapData");
-    assertContains("map data", mapData, "normalized-cartoon-india-v1");
+    assertContains("capture logic", captureLogic, "findEnclosedCells");
+    assertContains("game rules", gameRules, "influenceTarget: 62");
+    assertContains("map data", mapData, "normalized-geoboundaries-india-adm1-v1");
+    assertContains("map data", mapData, "Creative Commons Attribution 2.5 India");
+    assertContains("index.html", page, "geoBoundaries / DataMeet India / ECI");
 
     const chrome = findChrome();
     if (!chrome) throw new Error("Chrome or Edge was not found. Set CHROME_PATH to run screenshots.");
 
+    const requestedViewport = process.argv[3] || process.env.SMOKE_VIEWPORT;
     const shots = [
       { name: "mobile", size: "390,844" },
       { name: "desktop", size: "1280,720" }
-    ];
+    ].filter((shot) => !requestedViewport || shot.name === requestedViewport);
+    if (shots.length === 0) throw new Error(`Unknown SMOKE_VIEWPORT: ${requestedViewport}`);
     const screenshots = [];
     for (const shot of shots) {
-      const profile = path.join(os.tmpdir(), `neta-ji-${shot.name}-${Date.now()}`);
-      const file = path.join(outDir, `${shot.name}.png`);
-      const result = spawnSync(
-        chrome,
-        [
-          "--headless=new",
-          "--disable-gpu",
-          "--no-first-run",
-          "--disable-dev-shm-usage",
-          "--virtual-time-budget=6000",
-          `--user-data-dir=${profile}`,
-          `--window-size=${shot.size}`,
-          `--screenshot=${file}`,
-          baseUrl
-        ],
-        { stdio: "inherit", windowsHide: true }
-      );
-      if (result.status !== 0) throw new Error(`${shot.name} screenshot failed`);
-      const bytes = fs.statSync(file).size;
-      if (bytes < 10000) throw new Error(`${shot.name} screenshot looks too small: ${bytes} bytes`);
-      screenshots.push({ ...shot, file, bytes });
-      fs.rmSync(profile, { recursive: true, force: true });
+      const profile = path.join(os.tmpdir(), `neta-ji-${artifactPrefix}-${shot.name}-${Date.now()}`);
+      const file = path.join(outDir, `${artifactPrefix}-${shot.name}.png`);
+      fs.rmSync(file, { force: true });
+      try {
+        const result = spawnSync(
+          chrome,
+          [
+            "--headless=new",
+            "--disable-gpu",
+            "--disable-extensions",
+            "--disable-background-networking",
+            "--disable-component-update",
+            "--no-first-run",
+            "--disable-dev-shm-usage",
+            ...(shot.name === "desktop" ? ["--force-device-scale-factor=1"] : []),
+            `--virtual-time-budget=${shot.name === "desktop" ? 700 : 1800}`,
+            `--user-data-dir=${profile}`,
+            `--window-size=${shot.size}`,
+            `--screenshot=${file}`,
+            baseUrl
+          ],
+          { stdio: "inherit", windowsHide: true, timeout: 60000, killSignal: "SIGKILL" }
+        );
+        if (result.error) throw new Error(`${shot.name} screenshot process failed: ${result.error.message}`);
+        if (result.status !== 0) throw new Error(`${shot.name} screenshot failed with status ${result.status}`);
+        const bytes = fs.statSync(file).size;
+        if (bytes < 10000) throw new Error(`${shot.name} screenshot looks too small: ${bytes} bytes`);
+        screenshots.push({ ...shot, file, bytes });
+      } finally {
+        fs.rmSync(profile, { recursive: true, force: true, maxRetries: 4, retryDelay: 120 });
+      }
     }
 
     const report = {
@@ -141,7 +165,7 @@ async function main() {
       checkedAt: new Date().toISOString(),
       screenshots
     };
-    fs.writeFileSync(path.join(outDir, "report.json"), JSON.stringify(report, null, 2));
+    fs.writeFileSync(path.join(outDir, `${artifactPrefix}-report.json`), JSON.stringify(report, null, 2));
     console.log(JSON.stringify(report, null, 2));
   } finally {
     if (server && !server.killed) server.kill();

@@ -87,13 +87,17 @@ const outOfRange = [];
 const badPolygons = [];
 const centroidMismatches = [];
 const perRegion = [];
+let pointCount = 0;
 
 for (const region of regions) {
   const polygons = shapes[region.id] || [];
   polygons.forEach((polygon, polygonIndex) => {
-    if (polygon.length < 3) badPolygons.push(`${region.id}[${polygonIndex}]`);
+    pointCount += polygon.length;
+    if (polygon.length < 3 || polygonArea(polygon) < 0.00000001) badPolygons.push(`${region.id}[${polygonIndex}]`);
     polygon.forEach(([x, y], pointIndex) => {
-      if (x < 0 || x > 1 || y < 0 || y > 1) outOfRange.push(`${region.id}[${polygonIndex}][${pointIndex}]`);
+      if (!Number.isFinite(x) || !Number.isFinite(y) || x < 0 || x > 1 || y < 0 || y > 1) {
+        outOfRange.push(`${region.id}[${polygonIndex}][${pointIndex}]`);
+      }
     });
   });
 
@@ -117,9 +121,13 @@ const report = {
   checkedAt: new Date().toISOString(),
   schemaVersion: mapData.schemaVersion ?? null,
   projection: mapData.projection || null,
+  sourceName: mapData.sourceName || null,
   sourceNote: mapData.sourceNote || "",
+  license: mapData.license || null,
+  attribution: mapData.attribution || null,
   regionCount: regions.length,
   shapeCount: Object.keys(shapes).length,
+  pointCount,
   missing,
   extra,
   outOfRange,
@@ -128,10 +136,31 @@ const report = {
   perRegion
 };
 
-fs.mkdirSync(path.join(root, "reports"), { recursive: true });
-fs.writeFileSync(path.join(root, "reports", "map-qa-report.json"), JSON.stringify(report, null, 2));
-console.log(JSON.stringify(report, null, 2));
+try {
+  fs.mkdirSync(path.join(root, "reports"), { recursive: true });
+  fs.writeFileSync(path.join(root, "reports", "map-qa-report.json"), JSON.stringify(report, null, 2));
+} catch (error) {
+  console.warn(`Map QA report was not written: ${error.code || error.message}`);
+}
+const { perRegion: regionDetails, ...summary } = report;
+console.log(JSON.stringify(summary, null, 2));
+if (process.env.MAP_QA_VERBOSE === "1") {
+  console.log(JSON.stringify({ perRegion: regionDetails }, null, 2));
+}
 
-if (!mapData.sourceNote || !mapData.officialReference || missing.length || extra.length || outOfRange.length || badPolygons.length || centroidMismatches.length) {
+if (
+  !mapData.sourceNote ||
+  !mapData.officialReference ||
+  !mapData.sourceUrl ||
+  !mapData.license ||
+  !mapData.attribution ||
+  !/^normalized-(geoboundaries|cartoon)-india-/.test(mapData.projection || "") ||
+  pointCount > 12000 ||
+  missing.length ||
+  extra.length ||
+  outOfRange.length ||
+  badPolygons.length ||
+  centroidMismatches.length
+) {
   process.exitCode = 1;
 }

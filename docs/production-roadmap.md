@@ -8,7 +8,7 @@
 - Shareable result poster.
 - Offline PWA behavior.
 
-Status: in progress and deployable.
+Status: core gameplay/map fixes complete locally; final smoke, commit, and public redeploy pending.
 
 ## Stage 2: Content Polish
 
@@ -26,9 +26,13 @@ Status: in progress and deployable.
 - Store-safe privacy and safety copy.
 - Internal test APK.
 
+Status: preparation documented; wrapper project and signed APK not created yet.
+
 ## Stage 4: Moderated Public Sharing
 
 Use a backend only when public user-generated content is stored or shared.
+
+Render/MongoDB are not required for the current static offline PWA. They become relevant here or in multiplayer, after a concrete data model, privacy policy, and moderation workflow are approved.
 
 Required systems:
 

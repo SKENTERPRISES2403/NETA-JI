@@ -4,9 +4,10 @@
 
 Create a fictional party, run campaign routes, close loops, and turn the arena into your party color while comedy events create meme moments.
 
-## First Playable Scope
+## Current Pitch Scope
 
-- One fictional district arena
+- India hub with all 28 states and 8 union territories
+- Each selected region expands into a large real-silhouette campaign arena
 - Single-player against AI parties
 - Mobile and laptop controls
 - Custom party name, color, slogan, and symbol
@@ -24,7 +25,7 @@ Create a fictional party, run campaign routes, close loops, and turn the arena i
 5. Booth wins increase public support, funds, and local power.
 6. Pick short campaign decisions when the team is ready.
 7. Random events change the pace and the Neta Meter.
-8. Win by crossing the mandate target before time ends.
+8. Win only after the minimum campaign time and both influence/mandate targets are crossed.
 9. Winning every state/UT completes the fictional national mandate and shows a world-yatra teaser.
 
 ## Neta Meter
@@ -39,6 +40,15 @@ Create a fictional party, run campaign routes, close loops, and turn the arena i
 - Tea Rally: spends funds for public support and reputation.
 - Poster Wave: spends funds, claims nearby booths, and adds local power.
 - Donor Lunch: gains funds and power, but costs reputation and a little support.
+
+## Round Rules
+
+- Demo: minimum 16 seconds, 55% influence, mandate score 59.
+- Standard: minimum 22 seconds, 62% influence, mandate score 65.
+- A small loop captures only its enclosed cells; the region boundary is the flood-fill outside edge.
+- Self-crossing is allowed and never causes a recount by itself.
+- A rival converts only when the player cuts the rival route. Body contact only creates danger feedback.
+- A converted rival disappears and its supporters join the player's loose moving crowd.
 
 ## Theme Rules
 
@@ -77,4 +87,4 @@ Avoid these words in user-facing UI:
 
 ## Data Plan
 
-Current data is local and fictional. Future map data should come only from open/public map sources with license review. Do not import real party, real leader, real slogan, voter targeting, caste, religion, or election result data into gameplay.
+Current gameplay data is local and fictional. State/UT silhouettes use attributed open-license geoBoundaries ADM1 data; Survey of India maps are reference-only. Do not import real party, real leader, real slogan, voter targeting, caste, religion, or election result data into gameplay.

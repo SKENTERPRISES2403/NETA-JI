@@ -336,9 +336,31 @@ namespace NetaJi.Prototype.Editor
             Material yellow,
             Material dark)
         {
-            CreatePrimitiveChild("Long Kurta Front", PrimitiveType.Cube, person, new Vector3(0f, 0.92f, 0.34f), new Vector3(0.68f, 0.92f, 0.12f), white);
-            CreatePrimitiveChild("Party Stole Left", PrimitiveType.Cube, person, new Vector3(-0.23f, 1.12f, -0.48f), new Vector3(0.12f, 0.74f, 0.05f), teal);
-            CreatePrimitiveChild("Party Stole Right", PrimitiveType.Cube, person, new Vector3(0.23f, 1.12f, -0.48f), new Vector3(0.12f, 0.74f, 0.05f), yellow);
+            Transform bag = person.Find("Shoulder Bag");
+            Transform strap = person.Find("Shoulder Bag Strap");
+            Transform belt = person.Find("Belt");
+            Transform shoeLeft = person.Find("Shoe Left");
+            Transform shoeRight = person.Find("Shoe Right");
+            if (bag != null) bag.gameObject.SetActive(false);
+            if (strap != null) strap.gameObject.SetActive(false);
+            if (belt != null) belt.gameObject.SetActive(false);
+            if (shoeLeft != null) shoeLeft.gameObject.SetActive(false);
+            if (shoeRight != null) shoeRight.gameObject.SetActive(false);
+
+            CreatePrimitiveChild("Long Kurta Body", PrimitiveType.Capsule, person,
+                new Vector3(0f, 1.04f, 0f), new Vector3(0.70f, 0.62f, 0.48f), white);
+            CreatePrimitiveChild("Long Kurta Hem", PrimitiveType.Capsule, person,
+                new Vector3(0f, 0.70f, 0f), new Vector3(0.70f, 0.38f, 0.46f), white);
+            CreatePrimitiveChild("Kurta Placket", PrimitiveType.Cube, person,
+                new Vector3(0f, 1.28f, 0.255f), new Vector3(0.055f, 0.38f, 0.025f), dark);
+            CreatePrimitiveChild("Party Stole Left", PrimitiveType.Cube, person,
+                new Vector3(-0.22f, 1.12f, 0.265f), new Vector3(0.105f, 0.76f, 0.028f), teal);
+            CreatePrimitiveChild("Party Stole Right", PrimitiveType.Cube, person,
+                new Vector3(0.22f, 1.12f, 0.265f), new Vector3(0.105f, 0.76f, 0.028f), yellow);
+            CreatePrimitiveChild("Stole Shoulder Left", PrimitiveType.Cube, person,
+                new Vector3(-0.24f, 1.46f, 0.15f), new Vector3(0.105f, 0.08f, 0.28f), teal);
+            CreatePrimitiveChild("Stole Shoulder Right", PrimitiveType.Cube, person,
+                new Vector3(0.24f, 1.46f, 0.15f), new Vector3(0.105f, 0.08f, 0.28f), yellow);
             CreatePrimitiveChild("Kolhapuri Left", PrimitiveType.Cube, person, new Vector3(-0.18f, 0.07f, 0.16f), new Vector3(0.28f, 0.10f, 0.46f), dark);
             CreatePrimitiveChild("Kolhapuri Right", PrimitiveType.Cube, person, new Vector3(0.18f, 0.07f, 0.16f), new Vector3(0.28f, 0.10f, 0.46f), dark);
         }

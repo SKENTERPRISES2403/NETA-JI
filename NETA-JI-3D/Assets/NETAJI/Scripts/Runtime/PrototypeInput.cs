@@ -22,6 +22,7 @@ namespace NetaJi.Prototype
         private Texture2D whiteTexture;
         private Texture2D helpButtonTexture;
         private Texture2D helpButtonActiveTexture;
+        private string actionLabel = "HELP";
 
         public Vector2 Move
         {
@@ -35,6 +36,11 @@ namespace NetaJi.Prototype
 
         public Vector2 LookDelta => lookDelta;
         public bool RunHeld => Input.GetKey(KeyCode.LeftShift) || touchMove.magnitude > 0.88f;
+
+        public void SetActionLabel(string value)
+        {
+            actionLabel = string.IsNullOrWhiteSpace(value) ? "USE" : value.Trim().ToUpperInvariant();
+        }
 
         private void Awake()
         {
@@ -178,7 +184,7 @@ namespace NetaJi.Prototype
             style.normal.background = helpButtonTexture;
             style.active.background = helpButtonActiveTexture;
 
-            if (GUI.Button(helpRect, "HELP", style))
+            if (GUI.Button(helpRect, actionLabel, style))
             {
                 interactQueued = true;
             }
