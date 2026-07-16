@@ -116,7 +116,8 @@ namespace NetaJi.Prototype
 
         private void OnGUI()
         {
-            if (StoryHubController.Instance != null && StoryHubController.Instance.ConfirmationOpen)
+            if (MissionPresentation.IsDecisionOpen
+                || (StoryHubController.Instance != null && StoryHubController.Instance.ConfirmationOpen))
             {
                 return;
             }

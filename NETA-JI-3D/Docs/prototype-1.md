@@ -48,6 +48,8 @@ A short seven-shot cinematic introduces Azad through family life, community serv
 - Continuity automation verifies direct Chapter 1 to Chapter 2 advancement inside `FreeRoam` without reloading the city
 - Shared-world Chapter 3 automation verifies all eleven search objectives, temporary night atmosphere, live map routing, Trust 67 / Funds Rs 900 / Reputation 40, clean atmosphere restoration, and Chapter 4 readiness
 - Continuity automation verifies direct Chapter 2 to Chapter 3 advancement inside `FreeRoam` with the night-search profile active
+- Shared-world Chapter 4 automation verifies all eleven police-led rescue objectives, the safe/risky choice, temporary dawn atmosphere, live map routing, Trust 83 / Funds Rs 650 / Reputation 56 on the coordinated route, clean atmosphere restoration, and Chapter 5 readiness
+- Continuity automation verifies direct Chapter 3 to Chapter 4 advancement inside `FreeRoam` with the dawn-rescue profile active
 - Open-world presentation automation verifies six moving ambient vehicles, adaptive MSAA/shadow setup, location-aware audio, landmark captures, and unchanged car/scooter physics
 - Outfit automation verifies the political kurta/stole/kolhapuri set from four cardinal views and checks left/right symmetry
 - Legacy `missionStep` and save-v2 through save-v23 profiles migrate into twenty-four-chapter save progress
@@ -68,7 +70,7 @@ A short seven-shot cinematic introduces Azad through family life, community serv
 - Chapter 23 automation verifies both ten-year national-development strategies and the computed four-outcome public review
 - Chapter 24 automation verifies cooperation and spectacle routes, the independent four-pillar review, and the earned Vishwa Guru outcome
 - Windows and Android demo packages build without Unity's Development Build watermark
-- Android version is `0.32.0` (`versionCode 32`), min SDK 26, target SDK 36, sensor-landscape, ARM64 plus ARMv7, and IL2CPP
+- Android version is `0.33.0` (`versionCode 33`), min SDK 26, target SDK 36, sensor-landscape, ARM64 plus ARMv7, and IL2CPP
 - APK package metadata, both native ABI libraries, absence of the debuggable manifest flag, and Android v2 signature are verified after the consolidated build
 - The current APK uses an Android debug certificate for local/company demo installs; a production keystore and AAB remain required for store submission
 - Physical Android install and touch-feel testing still require a connected phone

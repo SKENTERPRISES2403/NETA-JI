@@ -429,8 +429,30 @@ namespace NetaJi.Prototype.Editor
                 sandhyaDress,
                 policeKhaki,
                 volunteerDress);
+            GameObject chapterFourRoot = CreateOpenWorldChapterFourMission(
+                world.transform,
+                stone,
+                darkStone,
+                teal,
+                yellow,
+                white,
+                marketRed,
+                skin,
+                hair,
+                shantiDress,
+                sandhyaDress,
+                volunteerDress,
+                policeKhaki,
+                foliage,
+                trunk);
             OpenWorldMissionDirector missionDirector = systems.AddComponent<OpenWorldMissionDirector>();
-            missionDirector.Configure(controller, storyHub, chapterOneRoot, chapterTwoRoot, chapterThreeRoot);
+            missionDirector.Configure(
+                controller,
+                storyHub,
+                chapterOneRoot,
+                chapterTwoRoot,
+                chapterThreeRoot,
+                chapterFourRoot);
             CreateOpenWorldLighting();
 
             EditorSceneManager.MarkSceneDirty(freeRoamScene);
@@ -1161,6 +1183,305 @@ namespace NetaJi.Prototype.Editor
             mission.ConfigureIntro(
                 "CHAPTER 3 / GHAR KA SANNATA",
                 "Sandhya ghar nahi lauti. Har clue verify karo, har minute sambhal kar chalo.");
+            return root;
+        }
+
+        private static GameObject CreateOpenWorldChapterFourMission(
+            Transform parent,
+            Material stone,
+            Material darkStone,
+            Material teal,
+            Material yellow,
+            Material white,
+            Material alertRed,
+            Material skin,
+            Material hair,
+            Material shantiDress,
+            Material sandhyaDress,
+            Material volunteerDress,
+            Material policeKhaki,
+            Material foliage,
+            Material trunk)
+        {
+            GameObject root = new GameObject("Open World Chapter 04 - Operation Umeed");
+            root.transform.SetParent(parent);
+            root.AddComponent<OpenWorldMissionHud>();
+            root.AddComponent<OpenWorldMissionAtmosphere>().ConfigureDawnRescue();
+            MissionController mission = root.AddComponent<MissionController>();
+            List<MissionObjective> objectives = new List<MissionObjective>();
+            List<string> labels = new List<string>();
+
+            CreateBox("Mission Godown Yard", new Vector3(75f, -0.10f, 190f),
+                new Vector3(54f, 0.22f, 42f), stone, root.transform);
+            CreateBox("Mission Godown Access Road", new Vector3(75f, 0.02f, 158f),
+                new Vector3(11f, 0.10f, 26f), darkStone, root.transform);
+            CreateBox("Mission Godown Floor", new Vector3(75f, 0.04f, 201f),
+                new Vector3(25f, 0.12f, 14f), darkStone, root.transform);
+            CreateBox("Mission Godown Back Wall", new Vector3(75f, 3.6f, 207.8f),
+                new Vector3(25f, 7.2f, 0.7f), darkStone, root.transform);
+            CreateBox("Mission Godown Left Wall", new Vector3(62.8f, 3.6f, 201f),
+                new Vector3(0.7f, 7.2f, 14f), darkStone, root.transform);
+            CreateBox("Mission Godown Right Wall", new Vector3(87.2f, 3.6f, 201f),
+                new Vector3(0.7f, 7.2f, 14f), darkStone, root.transform);
+            CreateBox("Mission Godown Roof", new Vector3(75f, 7.2f, 201f),
+                new Vector3(25.5f, 0.45f, 14.5f), teal, root.transform);
+            CreateBox("Mission Godown Front Left", new Vector3(66f, 3.6f, 194.1f),
+                new Vector3(6f, 7.2f, 0.7f), darkStone, root.transform);
+            CreateBox("Mission Godown Front Right", new Vector3(84f, 3.6f, 194.1f),
+                new Vector3(6f, 7.2f, 0.7f), darkStone, root.transform);
+            CreateWorldLabel("Mission Godown Sign", "OLD RIVERSIDE STORAGE  /  FICTIONAL",
+                new Vector3(75f, 5.8f, 193.7f), Vector3.zero, yellow, root.transform, 0.022f);
+
+            CreateBox("Mission Family Safe Tent Floor", new Vector3(56f, 0.06f, 176f),
+                new Vector3(12f, 0.12f, 9f), teal, root.transform);
+            CreateBox("Mission Family Safe Tent Back", new Vector3(56f, 1.7f, 180.4f),
+                new Vector3(12f, 3.4f, 0.35f), teal, root.transform);
+            CreateBox("Mission Family Safe Tent Roof", new Vector3(56f, 3.35f, 176f),
+                new Vector3(12.5f, 0.25f, 9.5f), white, root.transform);
+            CreateWorldLabel("Mission Family Safe Point Sign", "FAMILY SAFE POINT",
+                new Vector3(56f, 2.5f, 180.18f), Vector3.zero, yellow, root.transform, 0.022f);
+
+            CreateBox("Mission Police Barricade Left", new Vector3(69f, 0.65f, 176f),
+                new Vector3(8f, 1.3f, 0.35f), policeKhaki, root.transform);
+            CreateBox("Mission Police Barricade Right", new Vector3(81f, 0.65f, 176f),
+                new Vector3(8f, 1.3f, 0.35f), policeKhaki, root.transform);
+            CreateWorldLabel("Mission Barricade Text", "POLICE  /  KEEP CLEAR",
+                new Vector3(75f, 1.38f, 175.80f), Vector3.zero, darkStone, root.transform, 0.018f);
+
+            GameObject van = new GameObject("Mission Suspect White Van");
+            van.transform.SetParent(root.transform);
+            van.transform.position = new Vector3(86f, 0f, 184f);
+            CreatePrimitiveChild("Van Body", PrimitiveType.Cube, van.transform,
+                new Vector3(0f, 1.25f, 0f), new Vector3(4.8f, 2.5f, 2.2f), white);
+            CreatePrimitiveChild("Van Cabin", PrimitiveType.Cube, van.transform,
+                new Vector3(1.55f, 1.4f, 0f), new Vector3(1.8f, 2.1f, 2.1f), white);
+            CreatePrimitiveChild("Van Side Scratch", PrimitiveType.Cube, van.transform,
+                new Vector3(-0.6f, 1.2f, -1.13f), new Vector3(1.4f, 0.10f, 0.04f), alertRed)
+                .transform.localRotation = Quaternion.Euler(0f, 0f, -16f);
+            CreatePrimitiveChild("Van Plate 27", PrimitiveType.Cube, van.transform,
+                new Vector3(-2.42f, 0.92f, 0f), new Vector3(0.04f, 0.34f, 0.86f), yellow);
+            for (int index = 0; index < 4; index++)
+            {
+                float x = index < 2 ? -1.45f : 1.45f;
+                float z = index % 2 == 0 ? -1.05f : 1.05f;
+                CreatePrimitiveChild($"Mission Van Wheel {index + 1}", PrimitiveType.Cylinder, van.transform,
+                    new Vector3(x, 0.45f, z), new Vector3(0.42f, 0.18f, 0.42f), darkStone)
+                    .transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            }
+
+            for (int index = 0; index < 5; index++)
+            {
+                CreateBox($"Mission Storage Crate {index + 1}",
+                    new Vector3(66f + index * 4.2f, 0.7f, 205f),
+                    new Vector3(2.2f, 1.4f, 2.2f), index % 2 == 0 ? stone : teal, root.transform);
+            }
+            CreateTree("Mission Godown Neem", new Vector3(54f, 0f, 194f), foliage, trunk, root.transform);
+            CreateStreetLamp("Mission Perimeter Lamp Left", new Vector3(65f, 0f, 173f),
+                darkStone, yellow, root.transform);
+            CreateStreetLamp("Mission Perimeter Lamp Right", new Vector3(85f, 0f, 173f),
+                darkStone, yellow, root.transform);
+            CreateMissionPointLight(
+                "Mission Perimeter Warm Light Left", new Vector3(65f, 4.2f, 173f), root.transform,
+                new Color(1f, 0.64f, 0.28f), 2.2f, 19f);
+            CreateMissionPointLight(
+                "Mission Perimeter Warm Light Right", new Vector3(85f, 4.2f, 173f), root.transform,
+                new Color(1f, 0.64f, 0.28f), 2.2f, 19f);
+            CreateMissionPointLight(
+                "Mission Godown Interior Light", new Vector3(75f, 5.8f, 202f), root.transform,
+                new Color(0.72f, 0.82f, 1f), 1.8f, 20f);
+
+            Vector3[] backupPositions =
+            {
+                new Vector3(64f, 0f, 179f), new Vector3(69f, 0f, 180f),
+                new Vector3(80f, 0f, 180f), new Vector3(84f, 0f, 179f)
+            };
+            for (int index = 0; index < backupPositions.Length; index++)
+            {
+                GameObject officer = ParentPerson(CreatePerson(
+                    $"Mission Backup Officer {index + 1}", backupPositions[index],
+                    policeKhaki, darkStone, skin, hair, false), root.transform);
+                AddPoliceDetails(officer.transform, policeKhaki, darkStone);
+                foreach (Collider officerCollider in officer.GetComponentsInChildren<Collider>(true))
+                {
+                    officerCollider.enabled = false;
+                }
+            }
+            GameObject medic = ParentPerson(CreatePerson(
+                "Mission Medical Volunteer", new Vector3(59f, 0f, 174f),
+                white, darkStone, skin, hair, false), root.transform);
+            CreatePrimitiveChild("Medical Satchel", PrimitiveType.Cube, medic.transform,
+                new Vector3(0.48f, 0.92f, 0f), new Vector3(0.22f, 0.55f, 0.48f), alertRed);
+            foreach (Collider medicCollider in medic.GetComponentsInChildren<Collider>(true))
+            {
+                medicCollider.enabled = false;
+            }
+
+            GameObject samrat = ParentPerson(CreatePerson(
+                "Mission 04 Constable Samrat", new Vector3(70f, 0f, 173f),
+                policeKhaki, darkStone, skin, hair, false), root.transform);
+            AddPoliceDetails(samrat.transform, policeKhaki, darkStone);
+            objectives.Add(AddObjective(
+                samrat, "rescue-brief", "Samrat se rescue brief lein", "Constable Samrat",
+                "Van mil gayi hai. Backup paanch minute door hai. Pehle plate verify karo aur watch receiver ka signal lock karo; bina plan koi andar nahi jayega.",
+                1, 0, 1, false));
+            labels.Add("Riverside perimeter par Samrat se rescue briefing lein");
+
+            objectives.Add(AddObjective(
+                van, "verify-van", "Van ki plate verify karein", "Azad",
+                "Plate ka aakhri number 27 hai aur side par wahi scratch hai jo CCTV mein tha. Evidence photo Samrat ko bhej diya.",
+                1, 0, 1, false));
+            labels.Add("CCTV clue se suspect van verify karein");
+
+            GameObject receiver = new GameObject("Mission Sandhya Watch Receiver");
+            receiver.transform.SetParent(root.transform);
+            receiver.transform.position = new Vector3(81f, 0.95f, 173f);
+            CreatePrimitiveChild("Receiver Body", PrimitiveType.Cube, receiver.transform,
+                Vector3.zero, new Vector3(0.78f, 0.58f, 0.32f), darkStone);
+            CreatePrimitiveChild("Signal Screen", PrimitiveType.Cube, receiver.transform,
+                new Vector3(0f, 0.04f, -0.19f), new Vector3(0.55f, 0.30f, 0.05f), teal);
+            CreatePrimitiveChild("Antenna", PrimitiveType.Cylinder, receiver.transform,
+                new Vector3(0.28f, 0.52f, 0f), new Vector3(0.05f, 0.34f, 0.05f), yellow);
+            objectives.Add(AddObjective(
+                receiver, "watch-signal", "Watch signal lock karein", "Volunteer",
+                "Weak signal main godown se aa raha hai. Receiver ka live location police tablet par share ho gaya.",
+                1, -50, 1, false));
+            labels.Add("Sandhya ki watch ka short-range signal lock karein");
+
+            GameObject briefingTable = new GameObject("Mission Rescue Approach Board");
+            briefingTable.transform.SetParent(root.transform);
+            briefingTable.transform.position = new Vector3(75f, 1.15f, 173f);
+            CreatePrimitiveChild("Plan Board", PrimitiveType.Cube, briefingTable.transform,
+                Vector3.zero, new Vector3(2.8f, 1.55f, 0.18f), white);
+            CreatePrimitiveChild("Safe Route", PrimitiveType.Cube, briefingTable.transform,
+                new Vector3(-0.5f, 0.16f, -0.12f), new Vector3(1.15f, 0.10f, 0.04f), teal)
+                .transform.localRotation = Quaternion.Euler(0f, 0f, 22f);
+            CreatePrimitiveChild("Risk Route", PrimitiveType.Cube, briefingTable.transform,
+                new Vector3(0.52f, -0.20f, -0.12f), new Vector3(1.05f, 0.10f, 0.04f), alertRed)
+                .transform.localRotation = Quaternion.Euler(0f, 0f, -26f);
+            MissionObjective decision = AddObjective(
+                briefingTable, "rescue-decision", "Rescue approach chunein", "Azad",
+                "Samrat, perimeter aur backup ke saath chalenge. Sandhya ki safety mere ego se badi hai.",
+                3, -100, 3, false);
+            decision.ConfigureDecision(
+                "rescue-approach",
+                "RESCUE APPROACH",
+                "Backup bas kuch minute door hai. Coordinated entry safer hai; solo entry tez lag sakti hai, par Sandhya aur team dono ko risk hoga.",
+                "SAMRAT KA PLAN\nFunds -100 / Trust +3",
+                "AKELA SIDE GATE\nTrust -4 / Rep -3",
+                "Azad akela side gate tak badhta hai. Alarm trigger hota hai aur Samrat ko team jaldi move karni padti hai.",
+                -4, 0, -3);
+            objectives.Add(decision);
+            labels.Add("Coordinated police entry ya risky solo route mein decision lein");
+
+            GameObject gate = new GameObject("Mission Police Controlled Gate");
+            gate.transform.SetParent(root.transform);
+            gate.transform.position = new Vector3(75f, 0f, 194f);
+            CreatePrimitiveChild("Gate Left Panel", PrimitiveType.Cube, gate.transform,
+                new Vector3(-2.0f, 2.0f, 0f), new Vector3(3.8f, 4.0f, 0.28f), teal);
+            CreatePrimitiveChild("Gate Right Panel", PrimitiveType.Cube, gate.transform,
+                new Vector3(2.0f, 2.0f, 0f), new Vector3(3.8f, 4.0f, 0.28f), teal);
+            CreatePrimitiveChild("Gate Lock", PrimitiveType.Cube, gate.transform,
+                new Vector3(0f, 1.4f, -0.24f), new Vector3(0.85f, 1.1f, 0.34f), darkStone);
+            CreatePrimitiveChild("Police Key", PrimitiveType.Cube, gate.transform,
+                new Vector3(0f, 1.6f, -0.46f), new Vector3(0.20f, 0.50f, 0.08f), yellow);
+            objectives.Add(AddObjective(
+                gate, "open-gate", "Police gate unlock karein", "Constable Samrat",
+                "Lock khul gaya. Shield team pehle, Azad mere peeche. Kisi ko hero banne ki zarurat nahi.",
+                1, 0, 1, true));
+            labels.Add("Samrat ke saath police-controlled gate safely unlock karein");
+
+            GameObject radio = new GameObject("Mission Patrol Signal Radio");
+            radio.transform.SetParent(root.transform);
+            radio.transform.position = new Vector3(69f, 0.95f, 190f);
+            CreatePrimitiveChild("Radio", PrimitiveType.Cube, radio.transform,
+                Vector3.zero, new Vector3(0.72f, 0.78f, 0.34f), policeKhaki);
+            CreatePrimitiveChild("Transmit Key", PrimitiveType.Cube, radio.transform,
+                new Vector3(0f, 0.12f, -0.21f), new Vector3(0.28f, 0.22f, 0.06f), yellow);
+            objectives.Add(AddObjective(
+                radio, "patrol-signal", "Entry signal bhejein", "Police Radio",
+                "Control, child located zone confirmed. Medical team aur family safe point standby par rahein.",
+                1, 0, 1, false));
+            labels.Add("Patrol aur medical team ko entry signal bhejein");
+
+            GameObject sandhya = ParentPerson(CreatePerson(
+                "Mission 04 Sandhya", new Vector3(75f, 0f, 202f),
+                sandhyaDress, darkStone, skin, hair, false), root.transform);
+            AddPigtails(sandhya.transform, hair);
+            sandhya.transform.localScale = Vector3.one * 0.72f;
+            objectives.Add(AddObjective(
+                sandhya, "reach-sandhya", "Sandhya tak pahunchein", "Sandhya",
+                "Papa... mujhe pata tha aap aaoge. Samrat uncle bhi aaye hain na?",
+                3, 0, 2, false));
+            labels.Add("Police team ke saath godown mein Sandhya tak pahunchein");
+
+            GameObject firstAid = new GameObject("Mission Child First Aid Kit");
+            firstAid.transform.SetParent(root.transform);
+            firstAid.transform.position = new Vector3(78f, 0.65f, 201f);
+            CreatePrimitiveChild("Medical Case", PrimitiveType.Cube, firstAid.transform,
+                Vector3.zero, new Vector3(1.15f, 0.68f, 0.72f), white);
+            CreatePrimitiveChild("Medical Mark Horizontal", PrimitiveType.Cube, firstAid.transform,
+                new Vector3(0f, 0f, -0.39f), new Vector3(0.48f, 0.15f, 0.05f), alertRed);
+            CreatePrimitiveChild("Medical Mark Vertical", PrimitiveType.Cube, firstAid.transform,
+                new Vector3(0f, 0f, -0.40f), new Vector3(0.15f, 0.48f, 0.05f), alertRed);
+            objectives.Add(AddObjective(
+                firstAid, "first-aid", "First aid aur paani dein", "Azad",
+                "Sandhya hosh mein hai. Paani dheere, blanket pehle. Medical team bahar poora check karegi.",
+                1, -100, 1, false));
+            labels.Add("Sandhya ko basic first aid aur paani dein");
+
+            GameObject ledger = new GameObject("Mission Fictional Payment Ledger");
+            ledger.transform.SetParent(root.transform);
+            ledger.transform.position = new Vector3(83f, 0.82f, 202f);
+            CreatePrimitiveChild("Ledger", PrimitiveType.Cube, ledger.transform,
+                Vector3.zero, new Vector3(0.78f, 0.14f, 1.0f), yellow);
+            CreatePrimitiveChild("Evidence Bag", PrimitiveType.Cube, ledger.transform,
+                new Vector3(0f, 0.18f, 0f), new Vector3(1.1f, 0.05f, 1.35f), white);
+            objectives.Add(AddObjective(
+                ledger, "secure-ledger", "Payment ledger secure karein", "Constable Samrat",
+                "Is fictional register ko haath mat lagao; evidence bag mein seal hoga. Ismein aur extortion cases ki entries ho sakti hain.",
+                1, 0, 1, true));
+            labels.Add("Samrat ke liye fictional ledger evidence secure karein");
+
+            GameObject handover = new GameObject("Mission Evidence Handover Point");
+            handover.transform.SetParent(root.transform);
+            handover.transform.position = new Vector3(72f, 0.8f, 179f);
+            CreatePrimitiveChild("Evidence Crate", PrimitiveType.Cube, handover.transform,
+                Vector3.zero, new Vector3(1.4f, 0.75f, 1.0f), policeKhaki);
+            objectives.Add(AddObjective(
+                handover, "evidence-handover", "Evidence handover complete karein", "Constable Samrat",
+                "Van, call recording, watch signal aur ledger chain mein hain. Ab case facts par chalega, gusse par nahi.",
+                1, 0, 2, false));
+            labels.Add("Police evidence handover record complete karein");
+
+            GameObject shanti = ParentPerson(CreatePerson(
+                "Mission 04 Shanti", new Vector3(56f, 0f, 176f),
+                shantiDress, darkStone, skin, hair, false), root.transform);
+            AddScarf(shanti.transform, shantiDress);
+            objectives.Add(AddObjective(
+                shanti, "family-reunion", "Family safe point par Shanti se milen", "Shanti",
+                "Sandhya ghar aa gayi. Aaj Samrat aur mohalla saath tha; kal humein aisa system banana hai jahan kisi maa ko akela na padna pade.",
+                2, 0, 2, false));
+            labels.Add("Family safe point par Shanti se milen");
+
+            mission.Configure(
+                "Operation Umeed: Riverside Perimeter",
+                objectives,
+                labels,
+                "CHAPTER 4 COMPLETE",
+                "Sandhya safe hai. Evidence police custody mein hai aur family saath hai.");
+            mission.ConfigureMilestones(
+                new List<int> { 3, 6, 8 },
+                new List<string> { "LOCATION CONFIRMED", "ENTRY READY", "SANDHYA SAFE" },
+                new List<string>
+                {
+                    "Van aur watch signal match karte hain. Ab rescue approach decide karna hai.",
+                    "Gate aur patrol signal ready hain. Samrat ki team ke saath Sandhya tak pahuncho.",
+                    "Sandhya mil gayi hai. First aid ke baad evidence secure karna hoga."
+                });
+            mission.ConfigureChapter(4, "Chapter05");
+            mission.ConfigureIntro(
+                "CHAPTER 4 / OPERATION UMEED",
+                "Riverside godown. Sandhya ki safety pehle; gussa aur jaldbazi baad mein.");
             return root;
         }
 

@@ -26,6 +26,8 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Save v3 migration, three-chapter unlock flow, and deterministic chapter smoke tests
 - Reusable two-option decision UI with persisted story consequences
 - Fourth playable chapter: `Operation Umeed`, a non-graphic police-led rescue
+- `Operation Umeed` now runs at a connected riverside perimeter in `FreeRoam`, with dawn lighting, police coordination, live map routing, a family safe point, evidence custody, and no scene reload
+- Chapters 1 through 4 can advance directly inside the shared `FreeRoam` world
 - Save v4 migration and independent safe/risky branch verification
 - Persistent `PROOF` stat for documents, evidence chains, and future opposition cases
 - Fifth playable chapter: `Dawa Ka Sach`, a fictional hospital-supply investigation
@@ -122,9 +124,9 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Windows: `Builds/Windows/NETA-JI-Prototype.exe`
 - Android: `Builds/Android/NETA-JI-Prototype.apk`
 - Android demo APK: IL2CPP, ARM64 plus ARMv7, minimum Android 8 (API 26), target API 36
-- APK SHA-256: `FD09074CE0A8ADC157602902E98467A8B536E042888EDA9A46FE237E11F65507`
+- APK SHA-256: `2FD6FE35DCEF5AA70597DB971F5E22D56CC6C60BC180A349F6D23D2F7A6C2EEA`
 
-The Android artifact is non-debuggable but still signed with the Android debug certificate for local and company-demo installs. Its package id is `com.skenterprises.netaji.prototype`, version `0.32.0` (`versionCode 32`). A production keystore and AAB remain required before store submission.
+The Android artifact is non-debuggable but still signed with the Android debug certificate for local and company-demo installs. Its package id is `com.skenterprises.netaji.prototype`, version `0.33.0` (`versionCode 33`). A production keystore and AAB remain required before store submission.
 
 ## Generate The Scene
 
