@@ -8,37 +8,45 @@ namespace NetaJi.Prototype
 
         [SerializeField] private AzadController player;
         [SerializeField] private StoryHubController storyHub;
-        [SerializeField] private GameObject chapterOneRoot;
+        [SerializeField] private GameObject[] chapterRoots;
 
         private bool missionActive;
+        private GameObject activeRoot;
 
         public AzadController Player => player;
         public bool MissionActive => missionActive;
-        public MissionController ActiveMission => missionActive && chapterOneRoot != null
-            ? chapterOneRoot.GetComponent<MissionController>()
+        public MissionController ActiveMission => missionActive && activeRoot != null
+            ? activeRoot.GetComponent<MissionController>()
             : null;
 
         public void Configure(
             AzadController playerValue,
             StoryHubController storyHubValue,
-            GameObject chapterOneRootValue)
+            params GameObject[] chapterRootValues)
         {
             player = playerValue;
             storyHub = storyHubValue;
-            chapterOneRoot = chapterOneRootValue;
-            if (chapterOneRoot != null)
+            chapterRoots = chapterRootValues;
+            DeactivateAllRoots();
+        }
+
+        private void DeactivateAllRoots()
+        {
+            if (chapterRoots == null)
             {
-                chapterOneRoot.SetActive(false);
+                return;
+            }
+
+            foreach (GameObject chapterRoot in chapterRoots)
+            {
+                chapterRoot?.SetActive(false);
             }
         }
 
         private void Awake()
         {
             Instance = this;
-            if (chapterOneRoot != null)
-            {
-                chapterOneRoot.SetActive(false);
-            }
+            DeactivateAllRoots();
         }
 
         private void OnDestroy()
@@ -51,18 +59,46 @@ namespace NetaJi.Prototype
 
         public bool TryStartChapter(int chapter)
         {
-            if (missionActive || chapter != 1 || chapterOneRoot == null)
+            if (missionActive || !CanHostChapter(chapter))
             {
                 return false;
             }
 
             missionActive = true;
+            activeRoot = chapterRoots[chapter - 1];
             storyHub?.SetMissionLocked(true);
             FreeRoamMapHud.Instance?.SetInteractionPrompt(string.Empty);
-            chapterOneRoot.SetActive(true);
+            activeRoot.SetActive(true);
             player?.SetControlEnabled(true);
             GameSession.Instance?.SetLastPlayedChapter(chapter);
             return true;
+        }
+
+        public bool ContinueToNextChapter()
+        {
+            MissionController mission = ActiveMission;
+            int nextChapter = mission != null ? mission.ChapterNumber + 1 : 0;
+            if (mission == null || !mission.IsComplete || !CanHostChapter(nextChapter))
+            {
+                return false;
+            }
+
+            GameObject completedRoot = activeRoot;
+            missionActive = false;
+            activeRoot = null;
+            completedRoot.SetActive(false);
+            FreeRoamMapHud.Instance?.ClearMissionTarget();
+            storyHub?.RefreshFromProgress();
+            return TryStartChapter(nextChapter);
+        }
+
+        public bool CanHostChapter(int chapter)
+        {
+            int index = chapter - 1;
+            return chapterRoots != null
+                && index >= 0
+                && index < chapterRoots.Length
+                && chapterRoots[index] != null;
         }
 
         public void ExitCompletedMission()
@@ -74,7 +110,9 @@ namespace NetaJi.Prototype
             }
 
             missionActive = false;
-            chapterOneRoot.SetActive(false);
+            GameObject completedRoot = activeRoot;
+            activeRoot = null;
+            completedRoot.SetActive(false);
             FreeRoamMapHud.Instance?.ClearMissionTarget();
             storyHub?.SetMissionLocked(false);
             storyHub?.RefreshFromProgress();

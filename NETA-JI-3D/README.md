@@ -18,6 +18,8 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Full-screen 3D title scene with Continue, New Game, and Azad story modal
 - Save-compatible chapter selection with unlock and resume state
 - Second playable chapter: `Shaam Ki Paathshala`, with nine community-education objectives
+- `Shaam Ki Paathshala` now runs inside connected Allahpur/Prayagraj with an evening courtyard, learners, warm safety lights, live map routing, and no scene reload
+- Chapter 1 can advance directly into Chapter 2 inside the shared `FreeRoam` world
 - Third playable chapter: `Sandhya Kahan Hai?`, with evidence-led community search objectives
 - Save v3 migration, three-chapter unlock flow, and deterministic chapter smoke tests
 - Reusable two-option decision UI with persisted story consequences
@@ -117,11 +119,10 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 
 - Windows: `Builds/Windows/NETA-JI-Prototype.exe`
 - Android: `Builds/Android/NETA-JI-Prototype.apk`
-- Android development APK: Mono, ARMv7, minimum Android 8 (API 26), target API 36
-- Store/release builds will switch to IL2CPP ARM64 after the prototype is approved
+- Android demo APK: IL2CPP, ARM64 plus ARMv7, minimum Android 8 (API 26), target API 36
+- APK SHA-256: `969F69C0B99479625A4586D2433533CC41456E26D6435DCB1BECAC2399713A81`
 
-The Android artifact is a debug-signed development build. Its package id is
-`com.skenterprises.netaji.prototype`, version `0.24.0` (`versionCode 24`).
+The Android artifact is non-debuggable but still signed with the Android debug certificate for local and company-demo installs. Its package id is `com.skenterprises.netaji.prototype`, version `0.31.0` (`versionCode 31`). A production keystore and AAB remain required before store submission.
 
 ## Generate The Scene
 

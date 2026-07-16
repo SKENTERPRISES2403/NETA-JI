@@ -402,8 +402,22 @@ namespace NetaJi.Prototype.Editor
                 policeKhaki,
                 volunteerDress,
                 marketRed);
+            GameObject chapterTwoRoot = CreateOpenWorldChapterTwoMission(
+                world.transform,
+                stone,
+                darkStone,
+                teal,
+                yellow,
+                white,
+                skin,
+                hair,
+                shantiDress,
+                policeKhaki,
+                volunteerDress,
+                foliage,
+                trunk);
             OpenWorldMissionDirector missionDirector = systems.AddComponent<OpenWorldMissionDirector>();
-            missionDirector.Configure(controller, storyHub, chapterOneRoot);
+            missionDirector.Configure(controller, storyHub, chapterOneRoot, chapterTwoRoot);
             CreateOpenWorldLighting();
 
             EditorSceneManager.MarkSceneDirty(freeRoamScene);
@@ -616,6 +630,247 @@ namespace NetaJi.Prototype.Editor
                 "AZAD / 31 / SOCIAL WORKER",
                 "Helpers Hand se shuru hua Sunday route ab poore Prayagraj me chalega.");
             return root;
+        }
+
+        private static GameObject CreateOpenWorldChapterTwoMission(
+            Transform parent,
+            Material stone,
+            Material darkStone,
+            Material teal,
+            Material yellow,
+            Material white,
+            Material skin,
+            Material hair,
+            Material shantiDress,
+            Material policeKhaki,
+            Material volunteerDress,
+            Material foliage,
+            Material trunk)
+        {
+            GameObject root = new GameObject("Open World Chapter 02 - Shaam Ki Paathshala");
+            root.transform.SetParent(parent);
+            root.AddComponent<OpenWorldMissionHud>();
+            root.AddComponent<OpenWorldMissionAtmosphere>().ConfigureEvening();
+            MissionController mission = root.AddComponent<MissionController>();
+            List<MissionObjective> objectives = new List<MissionObjective>();
+            List<string> labels = new List<string>();
+
+            CreateBox("Allahpur Mission Learning Courtyard", new Vector3(-165f, -0.10f, -63f),
+                new Vector3(38f, 0.22f, 34f), stone, root.transform);
+            CreateBox("Allahpur Mission Community Hall", new Vector3(-165f, 2.5f, -44f),
+                new Vector3(22f, 5f, 7f), teal, root.transform);
+            CreateBox("Allahpur Mission Blackboard", new Vector3(-165f, 2.35f, -47.55f),
+                new Vector3(8.4f, 2.55f, 0.18f), darkStone, root.transform);
+            CreateWorldLabel("Allahpur Class Title", "HELPERS HAND EVENING CLASS",
+                new Vector3(-165f, 4.45f, -47.42f), Vector3.zero, yellow, root.transform, 0.025f);
+            CreateWorldLabel("Allahpur Blackboard Lesson", "FORM  /  ENGLISH  /  MATHS",
+                new Vector3(-165f, 2.45f, -47.42f), Vector3.zero, white, root.transform, 0.017f);
+            CreateTree("Mission Courtyard Neem", new Vector3(-178f, 0f, -54f), foliage, trunk, root.transform);
+            CreateStreetLamp("Mission Courtyard Solar Lamp", new Vector3(-152f, 0f, -61f),
+                darkStone, yellow, root.transform);
+            CreateStreetLamp("Mission Courtyard Entry Lamp", new Vector3(-178f, 0f, -74f),
+                darkStone, yellow, root.transform);
+            CreateMissionPointLight("Courtyard Entry Warm Light", new Vector3(-178f, 4.1f, -74f), root.transform);
+            CreateMissionPointLight("Courtyard Desk Warm Light", new Vector3(-158f, 4.2f, -61f), root.transform);
+            CreateMissionPointLight("Blackboard Warm Light", new Vector3(-165f, 4.4f, -49f), root.transform);
+
+            Vector3[] learnerPositions =
+            {
+                new Vector3(-176f, 0f, -59f), new Vector3(-173f, 0f, -53f),
+                new Vector3(-163f, 0f, -56f), new Vector3(-157f, 0f, -53f),
+                new Vector3(-175f, 0f, -49f), new Vector3(-156f, 0f, -48f)
+            };
+            for (int index = 0; index < learnerPositions.Length; index++)
+            {
+                Material top = index % 3 == 0 ? volunteerDress : index % 3 == 1 ? teal : yellow;
+                GameObject learner = ParentPerson(CreatePerson(
+                    $"Evening Class Learner {index + 1}", learnerPositions[index],
+                    top, darkStone, skin, hair, false), root.transform);
+                learner.transform.localScale = Vector3.one * (0.66f + (index % 2) * 0.06f);
+                foreach (Collider learnerCollider in learner.GetComponentsInChildren<Collider>(true))
+                {
+                    learnerCollider.enabled = false;
+                }
+            }
+
+            GameObject waitingParent = ParentPerson(CreatePerson(
+                "Evening Class Waiting Parent", new Vector3(-180f, 0f, -67f),
+                shantiDress, darkStone, skin, hair, false), root.transform);
+            foreach (Collider parentCollider in waitingParent.GetComponentsInChildren<Collider>(true))
+            {
+                parentCollider.enabled = false;
+            }
+
+            GameObject shanti = ParentPerson(CreatePerson(
+                "Mission 02 Shanti", new Vector3(-171f, 0f, -69f),
+                shantiDress, darkStone, skin, hair, false), root.transform);
+            AddScarf(shanti.transform, shantiDress);
+            objectives.Add(AddObjective(
+                shanti,
+                "class-plan",
+                "Shanti se class plan lein",
+                "Shanti",
+                "Azad, aaj admission forms bhi hain aur chhote bachchon ki English class bhi. Pehle do desks aur books ready kara do; main attendance bana rahi hoon.",
+                1,
+                0,
+                0,
+                false));
+            labels.Add("Allahpur courtyard me Shanti se class plan samjhein");
+
+            GameObject deskA = CreateStudyDesk(
+                "Mission Study Desk A", new Vector3(-171f, 0f, -63f), darkStone, yellow);
+            deskA.transform.SetParent(root.transform, true);
+            objectives.Add(AddObjective(
+                deskA, "desk-a", "Pehla desk lagayein", "Azad",
+                "Desk seedha rahe, bachchon ko likhte waqt jagah milni chahiye.",
+                1, -25, 1, false));
+            labels.Add("Pehla study desk arrange karein");
+
+            GameObject deskB = CreateStudyDesk(
+                "Mission Study Desk B", new Vector3(-165f, 0f, -63f), darkStone, yellow);
+            deskB.transform.SetParent(root.transform, true);
+            objectives.Add(AddObjective(
+                deskB, "desk-b", "Doosra desk lagayein", "Volunteer",
+                "Is desk par admission form help hogi. Pens aur documents ke clips bhi rakh dete hain.",
+                1, -25, 1, false));
+            labels.Add("Doosra study desk arrange karein");
+
+            GameObject books = new GameObject("Mission Donated Book Crate");
+            books.transform.SetParent(root.transform);
+            books.transform.position = new Vector3(-159f, 0.42f, -63f);
+            CreatePrimitiveChild("Crate", PrimitiveType.Cube, books.transform, Vector3.zero,
+                new Vector3(1.25f, 0.78f, 0.92f), darkStone);
+            for (int index = 0; index < 5; index++)
+            {
+                Transform book = CreatePrimitiveChild(
+                    $"Book {index + 1}", PrimitiveType.Cube, books.transform,
+                    new Vector3(-0.38f + index * 0.19f, 0.48f + (index % 2) * 0.08f, 0f),
+                    new Vector3(0.16f, 0.55f, 0.60f), index % 2 == 0 ? teal : yellow).transform;
+                book.localRotation = Quaternion.Euler(0f, 0f, -8f + index * 4f);
+            }
+            objectives.Add(AddObjective(
+                books, "books", "Donated books sort karein", "Azad",
+                "Class 3 se 8 tak alag bundles. Naam likh denge, par kisi bachche ko kitab ke bina wapas nahi bhejna.",
+                2, 0, 1, false));
+            labels.Add("Donated books ko class-wise sort karein");
+
+            GameObject raju = ParentPerson(CreatePerson(
+                "Mission Student Raju", new Vector3(-168f, 0f, -56f),
+                volunteerDress, darkStone, skin, hair, false), root.transform);
+            raju.transform.localScale = Vector3.one * 0.82f;
+            objectives.Add(AddObjective(
+                raju,
+                "raju-form",
+                "Raju ka admission form dekhein",
+                "Raju",
+                "Bhaiya, address proof mein kiraye ka paper hai. School wale bol rahe the guardian signature bhi chahiye.",
+                4,
+                0,
+                2,
+                false));
+            labels.Add("Raju ka admission form complete karayein");
+
+            GameObject samrat = ParentPerson(CreatePerson(
+                "Mission 02 Constable Samrat", new Vector3(-155f, 0f, -69f),
+                policeKhaki, darkStone, skin, hair, false), root.transform);
+            AddPoliceDetails(samrat.transform, policeKhaki, darkStone);
+            objectives.Add(AddObjective(
+                samrat,
+                "samrat-safety",
+                "Samrat se safety update lein",
+                "Constable Samrat",
+                "Gali ki main light band hai. Complaint number mil gaya hai; tab tak solar lamp class ke exit par shift kara do. Bachche andhere mein nahi jayenge.",
+                2,
+                0,
+                1,
+                false));
+            labels.Add("Constable Samrat se streetlight update lein");
+
+            GameObject solarSwitch = new GameObject("Mission Portable Solar Lamp Control");
+            solarSwitch.transform.SetParent(root.transform);
+            solarSwitch.transform.position = new Vector3(-152f, 0.92f, -61f);
+            CreatePrimitiveChild("Battery", PrimitiveType.Cube, solarSwitch.transform, Vector3.zero,
+                new Vector3(0.72f, 0.65f, 0.52f), teal);
+            CreatePrimitiveChild("Switch", PrimitiveType.Cube, solarSwitch.transform,
+                new Vector3(0f, 0.18f, 0.28f), new Vector3(0.18f, 0.18f, 0.08f), yellow);
+            objectives.Add(AddObjective(
+                solarSwitch,
+                "solar-lamp",
+                "Solar lamp activate karein",
+                "Azad",
+                "Temporary light chal gayi. Complaint receipt notice board par laga denge; permanent repair ka follow-up kal hoga.",
+                3,
+                -150,
+                2,
+                false));
+            labels.Add("Class exit ke paas temporary solar lamp activate karein");
+
+            GameObject teachingPoint = new GameObject("Mission Evening Teaching Point");
+            teachingPoint.transform.SetParent(root.transform);
+            teachingPoint.transform.position = new Vector3(-165f, 1.2f, -48.4f);
+            CreatePrimitiveChild("Chalk Box", PrimitiveType.Cube, teachingPoint.transform, Vector3.zero,
+                new Vector3(0.72f, 0.18f, 0.28f), white);
+            objectives.Add(AddObjective(
+                teachingPoint,
+                "teach-class",
+                "Evening class shuru karein",
+                "Azad",
+                "Aaj ka pehla lesson: form bharte waqt har box padhna hai, bina samjhe sign nahi karna. Phir English reading karenge.",
+                5,
+                0,
+                3,
+                false));
+            labels.Add("Blackboard par evening class shuru karein");
+
+            GameObject coordinator = ParentPerson(CreatePerson(
+                "Mission Helpers Hand Coordinator", new Vector3(-158f, 0f, -55f),
+                volunteerDress, darkStone, skin, hair, false), root.transform);
+            CreatePrimitiveChild("Helpers Hand Badge", PrimitiveType.Cube, coordinator.transform,
+                new Vector3(0f, 1.25f, 0.48f), new Vector3(0.20f, 0.20f, 0.04f), teal);
+            objectives.Add(AddObjective(
+                coordinator,
+                "class-report",
+                "Coordinator ko report dein",
+                "Helpers Hand Coordinator",
+                "Attendance 23, admission forms 4, books 17. Shanti ne tuition fund ka hisaab bhi note kar diya. Agli class Wednesday ko.",
+                4,
+                300,
+                3,
+                false));
+            labels.Add("Helpers Hand coordinator ko class report dein");
+
+            mission.Configure(
+                "Shaam Ki Paathshala: Allahpur Courtyard",
+                objectives,
+                labels,
+                "CHAPTER 2 COMPLETE",
+                "Forms, books, safety aur class: Allahpur ki paathshala roshan hui.");
+            mission.ConfigureMilestones(
+                new List<int> { 4, 7 },
+                new List<string> { "ADMISSION HELP", "CLASS READY" },
+                new List<string>
+                {
+                    "Desks aur books ready hain. Ab Raju ka admission form dekhna hai.",
+                    "Safe exit light active hai. Evening class shuru ki ja sakti hai."
+                });
+            mission.ConfigureChapter(2, "Chapter03");
+            mission.ConfigureIntro(
+                "CHAPTER 2 / SHAAM KI PAATHSHALA",
+                "Allahpur courtyard me forms, books aur safe evening class taiyaar karni hai.");
+            return root;
+        }
+
+        private static void CreateMissionPointLight(string name, Vector3 position, Transform parent)
+        {
+            GameObject lightObject = new GameObject(name);
+            lightObject.transform.SetParent(parent);
+            lightObject.transform.position = position;
+            Light light = lightObject.AddComponent<Light>();
+            light.type = LightType.Point;
+            light.color = new Color(1f, 0.62f, 0.28f);
+            light.intensity = 2.1f;
+            light.range = 18f;
+            light.shadows = LightShadows.None;
         }
 
         private static void CreateOpenWorldGround(

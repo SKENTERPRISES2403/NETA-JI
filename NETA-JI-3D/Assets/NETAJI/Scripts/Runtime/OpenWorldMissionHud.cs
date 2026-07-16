@@ -166,8 +166,14 @@ namespace NetaJi.Prototype
 
             string mission = MissionController.Instance?.MissionTitle ?? "Prayagraj Seva Route";
             string objective = MissionController.Instance?.CurrentObjective ?? "Mission taiyaar ho raha hai";
+            GUIStyle missionTitleStyle = new GUIStyle(titleStyle)
+            {
+                fontSize = mission.Length > 32 ? Mathf.Max(11, titleStyle.fontSize - 4) : titleStyle.fontSize,
+                wordWrap = false,
+                clipping = TextClipping.Clip
+            };
             GUI.Label(new Rect(card.x + 14f, card.y + 8f, card.width - 28f, 22f), "STORY MISSION  /  PRAYAGRAJ", smallStyle);
-            GUI.Label(new Rect(card.x + 14f, card.y + 29f, card.width - 28f, 27f), mission, titleStyle);
+            GUI.Label(new Rect(card.x + 14f, card.y + 29f, card.width - 28f, 27f), mission, missionTitleStyle);
             GUI.Label(new Rect(card.x + 14f, card.y + 54f, card.width - 28f, 24f), objective, bodyStyle);
             string route = GetRouteHint();
             if (!string.IsNullOrEmpty(route))
@@ -243,9 +249,13 @@ namespace NetaJi.Prototype
                 DrawPanel(next, new Color(0.94f, 0.64f, 0.12f, 0.98f));
                 GUIStyle darkButton = new GUIStyle(statStyle);
                 darkButton.normal.textColor = new Color(0.02f, 0.10f, 0.11f);
-                if (GUI.Button(next, "CHAPTER 2 SHURU", darkButton))
+                int nextChapter = (MissionController.Instance?.ChapterNumber ?? 1) + 1;
+                if (GUI.Button(next, $"CHAPTER {nextChapter} SHURU", darkButton))
                 {
-                    SceneManager.LoadScene(nextChapterScene);
+                    if (OpenWorldMissionDirector.Instance?.ContinueToNextChapter() != true)
+                    {
+                        SceneManager.LoadScene(nextChapterScene);
+                    }
                 }
             }
         }

@@ -21,6 +21,8 @@ A short seven-shot cinematic introduces Azad through family life, community serv
 
 `Ravivaar Ki Seva: Ghat Se Ghar Tak` introduces Azad through ordinary public service before the origin crisis. It now runs in the connected city instead of an isolated arena: Azad starts at Helpers Hand, clears three Daraganj ghat litter spots, reports to a volunteer, travels to Allahpur to meet Sandhya and read Shanti's ledger, works with Constable Samrat in the civic records district, and returns to Helpers Hand with the pension file.
 
+`Shaam Ki Paathshala` also runs in the same connected district. Azad prepares an Allahpur evening class with Shanti, arranges desks and donated books, helps a family with an admission form, coordinates a safe streetlight repair with Constable Samrat, teaches the first lesson, and reports back to Helpers Hand. The mission applies a temporary evening atmosphere and restores the free-roam presentation when it ends.
+
 ## Tone And Safety
 
 - 70% hopeful social drama, 30% safe local humour
@@ -40,6 +42,8 @@ A short seven-shot cinematic introduces Azad through family life, community serv
 - Free-roam automation verifies walking, full-map display, car entry/exit, scooter entry/exit, player collision lifecycle, grounded wheels, and measured vehicle travel
 - Story-hub automation verifies a fresh Chapter 1 launch, mission completion, persisted progress, return near Helpers Hand, `1/24` HUD state, and Chapter 2 availability
 - Shared-world Chapter 1 automation verifies all nine objectives without leaving `FreeRoam`, live objective navigation on the city map, Trust 35 / Funds Rs 950 / Reputation 16, an in-world completion choice, and Chapter 2 readiness
+- Shared-world Chapter 2 automation verifies all nine Allahpur objectives, temporary evening atmosphere, live map routing, Trust 58 / Funds Rs 1050 / Reputation 30, clean atmosphere restoration, and Chapter 3 readiness
+- Continuity automation verifies direct Chapter 1 to Chapter 2 advancement inside `FreeRoam` without reloading the city
 - Open-world presentation automation verifies six moving ambient vehicles, adaptive MSAA/shadow setup, location-aware audio, landmark captures, and unchanged car/scooter physics
 - Outfit automation verifies the political kurta/stole/kolhapuri set from four cardinal views and checks left/right symmetry
 - Legacy `missionStep` and save-v2 through save-v23 profiles migrate into twenty-four-chapter save progress
@@ -60,7 +64,7 @@ A short seven-shot cinematic introduces Azad through family life, community serv
 - Chapter 23 automation verifies both ten-year national-development strategies and the computed four-outcome public review
 - Chapter 24 automation verifies cooperation and spectacle routes, the independent four-pillar review, and the earned Vishwa Guru outcome
 - Windows and Android demo packages build without Unity's Development Build watermark
-- Android version is `0.30.0` (`versionCode 30`), min SDK 26, target SDK 36, sensor-landscape, ARM64 plus ARMv7, and IL2CPP
+- Android version is `0.31.0` (`versionCode 31`), min SDK 26, target SDK 36, sensor-landscape, ARM64 plus ARMv7, and IL2CPP
 - APK package metadata, both native ABI libraries, absence of the debuggable manifest flag, and Android v2 signature are verified after the consolidated build
 - The current APK uses an Android debug certificate for local/company demo installs; a production keystore and AAB remain required for store submission
 - Physical Android install and touch-feel testing still require a connected phone

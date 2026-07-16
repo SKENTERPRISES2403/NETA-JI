@@ -74,7 +74,9 @@ namespace NetaJi.Prototype
             }
             else if (Array.IndexOf(arguments, "-freeRoamSmoke") >= 0
                 || Array.IndexOf(arguments, "-storyHubSmoke") >= 0
-                || Array.IndexOf(arguments, "-openWorldChapterOneSmoke") >= 0)
+                || Array.IndexOf(arguments, "-openWorldChapterOneSmoke") >= 0
+                || Array.IndexOf(arguments, "-openWorldContinuitySmoke") >= 0
+                || Array.IndexOf(arguments, "-openWorldChapterTwoSmoke") >= 0)
             {
                 SceneManager.LoadScene(freeRoamSceneName);
             }
