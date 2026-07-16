@@ -6,6 +6,7 @@ namespace NetaJi.Prototype
     public sealed class OpenWorldMissionAtmosphere : MonoBehaviour
     {
         [SerializeField] private bool evening;
+        [SerializeField] private bool nightSearch;
 
         private AmbientMode previousAmbientMode;
         private Color previousAmbientSky;
@@ -16,7 +17,7 @@ namespace NetaJi.Prototype
         private Color previousFogColor;
         private float previousFogDensity;
         private Material previousSkybox;
-        private Material eveningSkybox;
+        private Material missionSkybox;
         private Light sun;
         private Color previousSunColor;
         private float previousSunIntensity;
@@ -24,15 +25,23 @@ namespace NetaJi.Prototype
         private bool applied;
 
         public bool IsApplied => applied;
+        public bool IsNightSearch => applied && nightSearch;
 
         public void ConfigureEvening()
         {
             evening = true;
+            nightSearch = false;
+        }
+
+        public void ConfigureNightSearch()
+        {
+            evening = false;
+            nightSearch = true;
         }
 
         private void OnEnable()
         {
-            if (!evening)
+            if (!evening && !nightSearch)
             {
                 return;
             }
@@ -48,29 +57,41 @@ namespace NetaJi.Prototype
             previousSkybox = RenderSettings.skybox;
 
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.28f, 0.32f, 0.48f);
-            RenderSettings.ambientEquatorColor = new Color(0.16f, 0.20f, 0.31f);
-            RenderSettings.ambientGroundColor = new Color(0.08f, 0.10f, 0.16f);
+            RenderSettings.ambientSkyColor = nightSearch
+                ? new Color(0.13f, 0.18f, 0.30f)
+                : new Color(0.28f, 0.32f, 0.48f);
+            RenderSettings.ambientEquatorColor = nightSearch
+                ? new Color(0.10f, 0.14f, 0.22f)
+                : new Color(0.16f, 0.20f, 0.31f);
+            RenderSettings.ambientGroundColor = nightSearch
+                ? new Color(0.035f, 0.05f, 0.09f)
+                : new Color(0.08f, 0.10f, 0.16f);
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
-            RenderSettings.fogColor = new Color(0.18f, 0.24f, 0.35f);
-            RenderSettings.fogDensity = 0.0018f;
+            RenderSettings.fogColor = nightSearch
+                ? new Color(0.07f, 0.11f, 0.20f)
+                : new Color(0.18f, 0.24f, 0.35f);
+            RenderSettings.fogDensity = nightSearch ? 0.0026f : 0.0018f;
             if (previousSkybox != null)
             {
-                eveningSkybox = new Material(previousSkybox);
-                if (eveningSkybox.HasProperty("_SkyTint"))
+                missionSkybox = new Material(previousSkybox);
+                if (missionSkybox.HasProperty("_SkyTint"))
                 {
-                    eveningSkybox.SetColor("_SkyTint", new Color(0.16f, 0.24f, 0.43f));
+                    missionSkybox.SetColor("_SkyTint", nightSearch
+                        ? new Color(0.035f, 0.08f, 0.18f)
+                        : new Color(0.16f, 0.24f, 0.43f));
                 }
-                if (eveningSkybox.HasProperty("_GroundColor"))
+                if (missionSkybox.HasProperty("_GroundColor"))
                 {
-                    eveningSkybox.SetColor("_GroundColor", new Color(0.045f, 0.06f, 0.11f));
+                    missionSkybox.SetColor("_GroundColor", nightSearch
+                        ? new Color(0.012f, 0.02f, 0.045f)
+                        : new Color(0.045f, 0.06f, 0.11f));
                 }
-                if (eveningSkybox.HasProperty("_Exposure"))
+                if (missionSkybox.HasProperty("_Exposure"))
                 {
-                    eveningSkybox.SetFloat("_Exposure", 0.42f);
+                    missionSkybox.SetFloat("_Exposure", nightSearch ? 0.20f : 0.42f);
                 }
-                RenderSettings.skybox = eveningSkybox;
+                RenderSettings.skybox = missionSkybox;
                 DynamicGI.UpdateEnvironment();
             }
 
@@ -88,9 +109,13 @@ namespace NetaJi.Prototype
                 previousSunColor = sun.color;
                 previousSunIntensity = sun.intensity;
                 previousSunRotation = sun.transform.rotation;
-                sun.color = new Color(1f, 0.66f, 0.38f);
-                sun.intensity = 0.72f;
-                sun.transform.rotation = Quaternion.Euler(18f, -35f, 0f);
+                sun.color = nightSearch
+                    ? new Color(0.58f, 0.70f, 1f)
+                    : new Color(1f, 0.66f, 0.38f);
+                sun.intensity = nightSearch ? 0.52f : 0.72f;
+                sun.transform.rotation = nightSearch
+                    ? Quaternion.Euler(40f, -24f, 0f)
+                    : Quaternion.Euler(18f, -35f, 0f);
             }
 
             applied = true;
@@ -120,10 +145,10 @@ namespace NetaJi.Prototype
                 sun.transform.rotation = previousSunRotation;
             }
 
-            if (eveningSkybox != null)
+            if (missionSkybox != null)
             {
-                Destroy(eveningSkybox);
-                eveningSkybox = null;
+                Destroy(missionSkybox);
+                missionSkybox = null;
             }
 
             applied = false;

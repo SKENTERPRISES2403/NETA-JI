@@ -416,8 +416,21 @@ namespace NetaJi.Prototype.Editor
                 volunteerDress,
                 foliage,
                 trunk);
+            GameObject chapterThreeRoot = CreateOpenWorldChapterThreeMission(
+                world.transform,
+                darkStone,
+                teal,
+                yellow,
+                white,
+                marketRed,
+                skin,
+                hair,
+                shantiDress,
+                sandhyaDress,
+                policeKhaki,
+                volunteerDress);
             OpenWorldMissionDirector missionDirector = systems.AddComponent<OpenWorldMissionDirector>();
-            missionDirector.Configure(controller, storyHub, chapterOneRoot, chapterTwoRoot);
+            missionDirector.Configure(controller, storyHub, chapterOneRoot, chapterTwoRoot, chapterThreeRoot);
             CreateOpenWorldLighting();
 
             EditorSceneManager.MarkSceneDirty(freeRoamScene);
@@ -860,16 +873,319 @@ namespace NetaJi.Prototype.Editor
             return root;
         }
 
+        private static GameObject CreateOpenWorldChapterThreeMission(
+            Transform parent,
+            Material darkStone,
+            Material teal,
+            Material yellow,
+            Material white,
+            Material alertRed,
+            Material skin,
+            Material hair,
+            Material shantiDress,
+            Material sandhyaDress,
+            Material policeKhaki,
+            Material volunteerDress)
+        {
+            GameObject root = new GameObject("Open World Chapter 03 - Sandhya Kahan Hai");
+            root.transform.SetParent(parent);
+            root.AddComponent<OpenWorldMissionHud>();
+            root.AddComponent<OpenWorldMissionAtmosphere>().ConfigureNightSearch();
+            MissionController mission = root.AddComponent<MissionController>();
+            List<MissionObjective> objectives = new List<MissionObjective>();
+            List<string> labels = new List<string>();
+
+            CreateBox("Mission Allahpur Home Porch", new Vector3(-152f, 0.14f, -162f),
+                new Vector3(10f, 0.25f, 7f), darkStone, root.transform);
+            CreateWorldLabel("Mission Home Search Sign", "AZAD  /  SHANTI  /  SANDHYA",
+                new Vector3(-152f, 3.7f, -166f), Vector3.zero, yellow, root.transform, 0.021f);
+            CreateStreetLamp("Mission Home Search Lamp", new Vector3(-143f, 0f, -158f),
+                darkStone, yellow, root.transform);
+            CreateMissionPointLight(
+                "Mission Home Warm Light", new Vector3(-143f, 4.1f, -158f), root.transform,
+                new Color(1f, 0.62f, 0.25f), 2.5f, 18f);
+
+            CreateBox("Mission Gupta Chai Stall", new Vector3(-92f, 1.55f, -154f),
+                new Vector3(8f, 3.1f, 5f), teal, root.transform);
+            CreateBox("Mission Gupta Chai Counter", new Vector3(-92f, 0.74f, -156.75f),
+                new Vector3(6.2f, 1.35f, 0.85f), darkStone, root.transform);
+            CreateBox("Mission Gupta Chai Canopy", new Vector3(-92f, 3.25f, -153.3f),
+                new Vector3(8.6f, 0.28f, 6.0f), alertRed, root.transform);
+            CreateWorldLabel("Mission Gupta Chai Sign", "GUPTA CHAI  /  CCTV",
+                new Vector3(-92f, 2.6f, -156.88f), Vector3.zero, yellow, root.transform, 0.024f);
+            CreateWorldLabel("Mission Gupta Chai Line", "CHAI THANDI  /  CLUE GARAM",
+                new Vector3(-92f, 2.05f, -156.90f), Vector3.zero, white, root.transform, 0.014f);
+            CreateMissionPointLight(
+                "Mission CCTV Stall Light", new Vector3(-92f, 4.25f, -157f), root.transform,
+                new Color(1f, 0.67f, 0.30f), 2.4f, 17f);
+
+            CreateBox("Mission Helpers Search Desk", new Vector3(52f, 0.65f, -184f),
+                new Vector3(8.8f, 1.3f, 3.1f), teal, root.transform);
+            CreateBox("Mission Helpers Search Board", new Vector3(52f, 2.15f, -185.65f),
+                new Vector3(9.5f, 2.1f, 0.18f), darkStone, root.transform);
+            CreateWorldLabel("Mission Helpers Search Title", "HELPERS HAND  /  VERIFIED SEARCH",
+                new Vector3(52f, 2.48f, -185.78f), Vector3.zero, yellow, root.transform, 0.019f);
+            CreateWorldLabel("Mission Helpers Search Rule", "NO RUMOURS  /  TEAM ROUTES ONLY",
+                new Vector3(52f, 1.85f, -185.79f), Vector3.zero, white, root.transform, 0.013f);
+            CreateMissionPointLight(
+                "Mission Search Desk Light", new Vector3(52f, 4.2f, -188f), root.transform,
+                new Color(1f, 0.63f, 0.25f), 2.6f, 20f);
+
+            CreateBox("Mission Neutral Police Help Desk", new Vector3(69f, 0.70f, -184f),
+                new Vector3(10f, 1.4f, 3.2f), policeKhaki, root.transform);
+            CreateBox("Mission Police Help Board", new Vector3(69f, 2.25f, -185.7f),
+                new Vector3(10.8f, 2.3f, 0.18f), darkStone, root.transform);
+            CreateWorldLabel("Mission Police Help Title", "NEUTRAL NIGHT HELP DESK",
+                new Vector3(69f, 2.58f, -185.84f), Vector3.zero, white, root.transform, 0.021f);
+            CreateWorldLabel("Mission Police Help Rule", "RECORD  /  VERIFY  /  RESPOND",
+                new Vector3(69f, 1.92f, -185.85f), Vector3.zero, yellow, root.transform, 0.014f);
+            CreatePrimitiveChild("Mission Police Beacon Red", PrimitiveType.Sphere, root.transform,
+                new Vector3(66.8f, 3.55f, -185.5f), new Vector3(0.38f, 0.20f, 0.38f), alertRed)
+                .AddComponent<WorldMotion>().Configure(WorldMotionKind.Float, 0.08f, 2.2f, Vector3.up);
+            CreatePrimitiveChild("Mission Police Beacon Blue", PrimitiveType.Sphere, root.transform,
+                new Vector3(71.2f, 3.55f, -185.5f), new Vector3(0.38f, 0.20f, 0.38f), teal)
+                .AddComponent<WorldMotion>().Configure(WorldMotionKind.Float, 0.08f, 2.5f, Vector3.up);
+            CreateMissionPointLight(
+                "Mission Police Red Light", new Vector3(66.8f, 3.6f, -186f), root.transform,
+                new Color(1f, 0.16f, 0.10f), 1.35f, 12f);
+            CreateMissionPointLight(
+                "Mission Police Blue Light", new Vector3(71.2f, 3.6f, -186f), root.transform,
+                new Color(0.14f, 0.42f, 1f), 1.35f, 12f);
+
+            Vector3[] searchLightPositions =
+            {
+                new Vector3(-126f, 4.0f, -140f), new Vector3(-98f, 4.0f, -142f),
+                new Vector3(-111f, 4.0f, -125f), new Vector3(-75f, 4.0f, -135f),
+                new Vector3(18f, 4.0f, -136f), new Vector3(46f, 4.0f, -178f)
+            };
+            for (int index = 0; index < searchLightPositions.Length; index++)
+            {
+                CreateMissionPointLight(
+                    $"Mission Search Pool {index + 1}", searchLightPositions[index], root.transform,
+                    new Color(1f, 0.70f, 0.34f), 1.65f, 15f);
+            }
+
+            Vector3[] volunteerPositions =
+            {
+                new Vector3(-132f, 0f, -141f), new Vector3(-101f, 0f, -139f),
+                new Vector3(-84f, 0f, -146f), new Vector3(-68f, 0f, -133f),
+                new Vector3(45f, 0f, -188f), new Vector3(58f, 0f, -188f)
+            };
+            for (int index = 0; index < volunteerPositions.Length; index++)
+            {
+                Material top = index % 3 == 0 ? volunteerDress : index % 3 == 1 ? teal : yellow;
+                GameObject volunteer = ParentPerson(CreatePerson(
+                    $"Mission Search Volunteer {index + 1}", volunteerPositions[index],
+                    top, darkStone, skin, hair, false), root.transform);
+                volunteer.transform.localScale = Vector3.one * 0.92f;
+                Transform torch = CreatePrimitiveChild(
+                    "Search Torch", PrimitiveType.Cylinder, volunteer.transform,
+                    new Vector3(0.42f, 1.0f, 0.22f), new Vector3(0.055f, 0.22f, 0.055f), yellow).transform;
+                torch.localRotation = Quaternion.Euler(72f, 0f, 20f);
+                foreach (Collider volunteerCollider in volunteer.GetComponentsInChildren<Collider>(true))
+                {
+                    volunteerCollider.enabled = false;
+                }
+            }
+
+            GameObject shanti = ParentPerson(CreatePerson(
+                "Mission 03 Shanti", new Vector3(-152f, 0f, -162f),
+                shantiDress, darkStone, skin, hair, false), root.transform);
+            AddScarf(shanti.transform, shantiDress);
+            objectives.Add(AddObjective(
+                shanti, "missing-alert", "Shanti se poori baat samjhein", "Shanti",
+                "Azad, Sandhya library se abhi tak nahi lauti. Uska phone watch bhi unreachable hai. Ghabrana nahi hai, par ek minute bhi waste nahi karna.",
+                0, 0, 0, false));
+            labels.Add("Allahpur ghar par Shanti se missing alert samjhein");
+
+            GameObject ribbon = new GameObject("Mission Sandhya Blue Ribbon");
+            ribbon.transform.SetParent(root.transform);
+            ribbon.transform.position = new Vector3(-126f, 0.18f, -140f);
+            CreatePrimitiveChild("Ribbon Clue Marker", PrimitiveType.Cylinder, ribbon.transform,
+                new Vector3(0f, -0.11f, 0f), new Vector3(0.72f, 0.025f, 0.72f), darkStone);
+            CreatePrimitiveChild("Ribbon Left", PrimitiveType.Cube, ribbon.transform,
+                new Vector3(-0.13f, 0f, 0f), new Vector3(0.12f, 0.05f, 0.62f), sandhyaDress)
+                .transform.localRotation = Quaternion.Euler(0f, 24f, 0f);
+            CreatePrimitiveChild("Ribbon Right", PrimitiveType.Cube, ribbon.transform,
+                new Vector3(0.13f, 0f, 0f), new Vector3(0.12f, 0.05f, 0.62f), sandhyaDress)
+                .transform.localRotation = Quaternion.Euler(0f, -24f, 0f);
+            foreach (Collider ribbonCollider in ribbon.GetComponentsInChildren<Collider>(true))
+            {
+                ribbonCollider.enabled = false;
+            }
+            objectives.Add(AddObjective(
+                ribbon, "blue-ribbon", "Neela ribbon inspect karein", "Azad",
+                "Yeh Sandhya ke school ribbon jaisa hai. Pehle witness se confirm karte hain, phir Samrat ko exact location denge.",
+                1, 0, 1, false));
+            labels.Add("Allahpur lane me mile blue ribbon ko inspect karein");
+
+            GameObject meera = ParentPerson(CreatePerson(
+                "Mission Neighbor Meera", new Vector3(-98f, 0f, -142f),
+                volunteerDress, darkStone, skin, hair, false), root.transform);
+            objectives.Add(AddObjective(
+                meera, "last-seen", "Meera ji se last-seen poochhein", "Meera",
+                "Maine use stationery shop ke paas dekha tha. Ek safed van do baar lane mein ghoomi thi. Number poora nahi, bas aakhri mein 27 yaad hai.",
+                1, 0, 1, false));
+            labels.Add("Neighbor Meera se verified last-seen detail lein");
+
+            GameObject teaOwner = ParentPerson(CreatePerson(
+                "Mission Gupta Chai Owner", new Vector3(-95f, 0f, -158.4f),
+                yellow, darkStone, skin, hair, false), root.transform);
+            objectives.Add(AddObjective(
+                teaOwner, "cctv-access", "Gupta ji se CCTV access lein", "Gupta Ji",
+                "Camera chalu tha, lekin backup unit ka switch trip ho gaya. Aaj chai se zyada recording kaam aayegi; switch counter ke peeche hai.",
+                0, 0, 1, false));
+            labels.Add("Gupta Chai ke camera ka access lein");
+
+            GameObject cameraSwitch = new GameObject("Mission CCTV Backup Switch");
+            cameraSwitch.transform.SetParent(root.transform);
+            cameraSwitch.transform.position = new Vector3(-88.7f, 1.0f, -156.8f);
+            CreatePrimitiveChild("Switch Box", PrimitiveType.Cube, cameraSwitch.transform,
+                Vector3.zero, new Vector3(0.65f, 0.85f, 0.30f), darkStone);
+            CreatePrimitiveChild("Switch Lever", PrimitiveType.Cube, cameraSwitch.transform,
+                new Vector3(0f, 0.05f, 0.20f), new Vector3(0.16f, 0.42f, 0.10f), yellow)
+                .transform.localRotation = Quaternion.Euler(0f, 0f, -18f);
+            objectives.Add(AddObjective(
+                cameraSwitch, "cctv-power", "CCTV backup chalu karein", "Azad",
+                "Backup aa gaya. Recording ko phone par copy karne ke liye data pack aur card reader lena hoga.",
+                0, -50, 1, false));
+            labels.Add("Tea stall ka CCTV backup power restore karein");
+
+            GameObject cctvScreen = new GameObject("Mission CCTV Evidence Screen");
+            cctvScreen.transform.SetParent(root.transform);
+            cctvScreen.transform.position = new Vector3(-92f, 1.45f, -156.82f);
+            cctvScreen.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+            CreatePrimitiveChild("Monitor", PrimitiveType.Cube, cctvScreen.transform,
+                Vector3.zero, new Vector3(2.0f, 1.25f, 0.22f), darkStone);
+            CreatePrimitiveChild("Footage", PrimitiveType.Cube, cctvScreen.transform,
+                new Vector3(0f, 0f, -0.13f), new Vector3(1.70f, 0.96f, 0.05f), teal);
+            CreatePrimitiveChild("White Van Frame", PrimitiveType.Cube, cctvScreen.transform,
+                new Vector3(-0.15f, -0.08f, -0.18f), new Vector3(0.9f, 0.38f, 0.04f), white);
+            CreatePrimitiveChild("Plate 27", PrimitiveType.Cube, cctvScreen.transform,
+                new Vector3(0.32f, -0.24f, -0.22f), new Vector3(0.26f, 0.10f, 0.02f), yellow);
+            objectives.Add(AddObjective(
+                cctvScreen, "cctv-clue", "CCTV footage verify karein", "Azad",
+                "Safed van, 8:17 PM. Plate ka hissa clear hai: ...27. Sandhya frame mein hai, aur van old godown wali road par mudti hai.",
+                1, 0, 0, false));
+            labels.Add("CCTV recording se vehicle aur route clue nikalein");
+
+            GameObject coordinator = ParentPerson(CreatePerson(
+                "Mission Search Coordinator", new Vector3(48f, 0f, -187f),
+                volunteerDress, darkStone, skin, hair, false), root.transform);
+            CreatePrimitiveChild("Helpers Hand Badge", PrimitiveType.Cube, coordinator.transform,
+                new Vector3(0f, 1.25f, 0.48f), new Vector3(0.20f, 0.20f, 0.04f), teal);
+            objectives.Add(AddObjective(
+                coordinator, "search-network", "Verified search teams activate karein", "Helpers Hand Coordinator",
+                "Do verified teams nikal rahe hain. Photo sirf team phones par rahegi, public rumour nahi. Shanti ke paas ek volunteer rukega.",
+                1, 0, 1, false));
+            labels.Add("Helpers Hand ka verified search network activate karein");
+
+            GameObject samrat = ParentPerson(CreatePerson(
+                "Mission 03 Constable Samrat", new Vector3(66f, 0f, -187f),
+                policeKhaki, darkStone, skin, hair, false), root.transform);
+            AddPoliceDetails(samrat.transform, policeKhaki, darkStone);
+            objectives.Add(AddObjective(
+                samrat, "samrat-response", "Samrat ko evidence dein", "Constable Samrat",
+                "Main control room aur patrol ko partial plate bhej raha hoon. Tum facts likhwao; pressure ya phone aaye toh seedha mere saamne record hoga.",
+                1, 0, 1, false));
+            labels.Add("Neutral help desk par Samrat ko ribbon aur CCTV evidence dein");
+
+            GameObject incidentBoard = new GameObject("Mission Incident Evidence Board");
+            incidentBoard.transform.SetParent(root.transform);
+            incidentBoard.transform.position = new Vector3(72f, 1.35f, -186.0f);
+            incidentBoard.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+            CreatePrimitiveChild("Board", PrimitiveType.Cube, incidentBoard.transform,
+                Vector3.zero, new Vector3(2.9f, 1.9f, 0.18f), white);
+            CreatePrimitiveChild("Photo Marker", PrimitiveType.Cube, incidentBoard.transform,
+                new Vector3(-0.72f, 0.35f, -0.14f), new Vector3(0.62f, 0.65f, 0.04f), sandhyaDress);
+            CreatePrimitiveChild("Vehicle Note", PrimitiveType.Cube, incidentBoard.transform,
+                new Vector3(0.65f, 0.25f, -0.14f), new Vector3(0.82f, 0.42f, 0.04f), yellow);
+            CreatePrimitiveChild("Route Note", PrimitiveType.Cube, incidentBoard.transform,
+                new Vector3(0f, -0.48f, -0.14f), new Vector3(1.65f, 0.34f, 0.04f), teal);
+            objectives.Add(AddObjective(
+                incidentBoard, "incident-record", "Incident record verify karein", "Azad",
+                "Time, route, ribbon, partial plate aur witness statement sab match kar rahe hain. Andaza nahi, sirf verified facts aage jayenge.",
+                2, 0, 2, false));
+            labels.Add("Police help desk par incident record verify karein");
+
+            GameObject routeMap = new GameObject("Mission Old Godown Route Map");
+            routeMap.transform.SetParent(root.transform);
+            routeMap.transform.position = new Vector3(54f, 1.25f, -186.0f);
+            routeMap.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+            CreatePrimitiveChild("Map Board", PrimitiveType.Cube, routeMap.transform,
+                Vector3.zero, new Vector3(2.6f, 1.5f, 0.12f), white);
+            CreatePrimitiveChild("Route A", PrimitiveType.Cube, routeMap.transform,
+                new Vector3(-0.45f, 0.15f, -0.09f), new Vector3(1.05f, 0.10f, 0.04f), teal)
+                .transform.localRotation = Quaternion.Euler(0f, 0f, 24f);
+            CreatePrimitiveChild("Route B", PrimitiveType.Cube, routeMap.transform,
+                new Vector3(0.42f, -0.14f, -0.09f), new Vector3(1.12f, 0.10f, 0.04f), teal)
+                .transform.localRotation = Quaternion.Euler(0f, 0f, -18f);
+            CreatePrimitiveChild("Godown Marker", PrimitiveType.Sphere, routeMap.transform,
+                new Vector3(0.92f, -0.42f, -0.12f), new Vector3(0.20f, 0.20f, 0.08f), yellow);
+            objectives.Add(AddObjective(
+                routeMap, "route-plan", "Safe search route confirm karein", "Search Coordinator",
+                "Team A main road se, Team B river-side lane se. Koi akela godown ke andar nahi jayega; location milte hi Samrat ko update hoga.",
+                1, 0, 1, false));
+            labels.Add("Volunteer teams ke liye safe search route confirm karein");
+
+            GameObject phone = new GameObject("Mission Unknown Caller Phone");
+            phone.transform.SetParent(root.transform);
+            phone.transform.position = new Vector3(-148.5f, 1.15f, -162f);
+            CreatePrimitiveChild("Phone Body", PrimitiveType.Cube, phone.transform,
+                Vector3.zero, new Vector3(0.34f, 0.62f, 0.12f), darkStone);
+            CreatePrimitiveChild("Incoming Call", PrimitiveType.Cube, phone.transform,
+                new Vector3(0f, 0.02f, -0.08f), new Vector3(0.24f, 0.38f, 0.04f), alertRed)
+                .AddComponent<WorldMotion>().Configure(WorldMotionKind.Float, 0.05f, 3.8f, Vector3.up);
+            objectives.Add(AddObjective(
+                phone, "extortion-call", "Incoming call Samrat ke saath record karein", "Unknown Caller",
+                "Rs 50 lakh tayyar rakho. Agla message ka wait karo. Phone band mat karna.",
+                1, -100, 1, false));
+            labels.Add("Allahpur ghar par unknown call ko police ke saath record karein");
+
+            mission.Configure(
+                "Sandhya Kahan Hai?: Night Search",
+                objectives,
+                labels,
+                "CHAPTER 3 COMPLETE",
+                "Verified search active hai. Samrat ke paas van route aur recorded call dono hain.");
+            mission.ConfigureMilestones(
+                new List<int> { 3, 6, 9 },
+                new List<string> { "LAST-SEEN CONFIRMED", "CAMERA CLUE", "RESPONSE ACTIVE" },
+                new List<string>
+                {
+                    "Meera ne white van aur partial plate yaad ki. Tea stall camera check karna hai.",
+                    "Footage ne old godown route confirm kiya. Helpers Hand aur Samrat ko evidence dena hoga.",
+                    "Verified search route ready hai. Ghar ka phone baj raha hai."
+                });
+            mission.ConfigureChapter(3, "Chapter04");
+            mission.ConfigureIntro(
+                "CHAPTER 3 / GHAR KA SANNATA",
+                "Sandhya ghar nahi lauti. Har clue verify karo, har minute sambhal kar chalo.");
+            return root;
+        }
+
         private static void CreateMissionPointLight(string name, Vector3 position, Transform parent)
+        {
+            CreateMissionPointLight(
+                name, position, parent, new Color(1f, 0.62f, 0.28f), 2.1f, 18f);
+        }
+
+        private static void CreateMissionPointLight(
+            string name,
+            Vector3 position,
+            Transform parent,
+            Color color,
+            float intensity,
+            float range)
         {
             GameObject lightObject = new GameObject(name);
             lightObject.transform.SetParent(parent);
             lightObject.transform.position = position;
             Light light = lightObject.AddComponent<Light>();
             light.type = LightType.Point;
-            light.color = new Color(1f, 0.62f, 0.28f);
-            light.intensity = 2.1f;
-            light.range = 18f;
+            light.color = color;
+            light.intensity = intensity;
+            light.range = range;
             light.shadows = LightShadows.None;
         }
 

@@ -21,6 +21,8 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - `Shaam Ki Paathshala` now runs inside connected Allahpur/Prayagraj with an evening courtyard, learners, warm safety lights, live map routing, and no scene reload
 - Chapter 1 can advance directly into Chapter 2 inside the shared `FreeRoam` world
 - Third playable chapter: `Sandhya Kahan Hai?`, with evidence-led community search objectives
+- `Sandhya Kahan Hai?` now runs across connected Allahpur and Helpers Hand with night lighting, verified search teams, fictional CCTV evidence, a neutral police help desk, and no scene reload
+- Chapters 1, 2, and 3 can advance directly inside the shared `FreeRoam` world
 - Save v3 migration, three-chapter unlock flow, and deterministic chapter smoke tests
 - Reusable two-option decision UI with persisted story consequences
 - Fourth playable chapter: `Operation Umeed`, a non-graphic police-led rescue
@@ -120,9 +122,9 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Windows: `Builds/Windows/NETA-JI-Prototype.exe`
 - Android: `Builds/Android/NETA-JI-Prototype.apk`
 - Android demo APK: IL2CPP, ARM64 plus ARMv7, minimum Android 8 (API 26), target API 36
-- APK SHA-256: `969F69C0B99479625A4586D2433533CC41456E26D6435DCB1BECAC2399713A81`
+- APK SHA-256: `FD09074CE0A8ADC157602902E98467A8B536E042888EDA9A46FE237E11F65507`
 
-The Android artifact is non-debuggable but still signed with the Android debug certificate for local and company-demo installs. Its package id is `com.skenterprises.netaji.prototype`, version `0.31.0` (`versionCode 31`). A production keystore and AAB remain required before store submission.
+The Android artifact is non-debuggable but still signed with the Android debug certificate for local and company-demo installs. Its package id is `com.skenterprises.netaji.prototype`, version `0.32.0` (`versionCode 32`). A production keystore and AAB remain required before store submission.
 
 ## Generate The Scene
 

@@ -23,6 +23,8 @@ A short seven-shot cinematic introduces Azad through family life, community serv
 
 `Shaam Ki Paathshala` also runs in the same connected district. Azad prepares an Allahpur evening class with Shanti, arranges desks and donated books, helps a family with an admission form, coordinates a safe streetlight repair with Constable Samrat, teaches the first lesson, and reports back to Helpers Hand. The mission applies a temporary evening atmosphere and restores the free-roam presentation when it ends.
 
+`Sandhya Kahan Hai?` is the third connected-city mission. Azad starts at the Allahpur home, verifies a dropped ribbon and witness account, restores a fictional tea-stall CCTV backup, coordinates privacy-safe Helpers Hand search teams, gives the evidence to Constable Samrat at a neutral night help desk, confirms a police-led search route, and records a fictional extortion call. The mission contains no combat or graphic harm; the police-led rescue remains Chapter 4.
+
 ## Tone And Safety
 
 - 70% hopeful social drama, 30% safe local humour
@@ -44,6 +46,8 @@ A short seven-shot cinematic introduces Azad through family life, community serv
 - Shared-world Chapter 1 automation verifies all nine objectives without leaving `FreeRoam`, live objective navigation on the city map, Trust 35 / Funds Rs 950 / Reputation 16, an in-world completion choice, and Chapter 2 readiness
 - Shared-world Chapter 2 automation verifies all nine Allahpur objectives, temporary evening atmosphere, live map routing, Trust 58 / Funds Rs 1050 / Reputation 30, clean atmosphere restoration, and Chapter 3 readiness
 - Continuity automation verifies direct Chapter 1 to Chapter 2 advancement inside `FreeRoam` without reloading the city
+- Shared-world Chapter 3 automation verifies all eleven search objectives, temporary night atmosphere, live map routing, Trust 67 / Funds Rs 900 / Reputation 40, clean atmosphere restoration, and Chapter 4 readiness
+- Continuity automation verifies direct Chapter 2 to Chapter 3 advancement inside `FreeRoam` with the night-search profile active
 - Open-world presentation automation verifies six moving ambient vehicles, adaptive MSAA/shadow setup, location-aware audio, landmark captures, and unchanged car/scooter physics
 - Outfit automation verifies the political kurta/stole/kolhapuri set from four cardinal views and checks left/right symmetry
 - Legacy `missionStep` and save-v2 through save-v23 profiles migrate into twenty-four-chapter save progress
@@ -64,7 +68,7 @@ A short seven-shot cinematic introduces Azad through family life, community serv
 - Chapter 23 automation verifies both ten-year national-development strategies and the computed four-outcome public review
 - Chapter 24 automation verifies cooperation and spectacle routes, the independent four-pillar review, and the earned Vishwa Guru outcome
 - Windows and Android demo packages build without Unity's Development Build watermark
-- Android version is `0.31.0` (`versionCode 31`), min SDK 26, target SDK 36, sensor-landscape, ARM64 plus ARMv7, and IL2CPP
+- Android version is `0.32.0` (`versionCode 32`), min SDK 26, target SDK 36, sensor-landscape, ARM64 plus ARMv7, and IL2CPP
 - APK package metadata, both native ABI libraries, absence of the debuggable manifest flag, and Android v2 signature are verified after the consolidated build
 - The current APK uses an Android debug certificate for local/company demo installs; a production keystore and AAB remain required for store submission
 - Physical Android install and touch-feel testing still require a connected phone
