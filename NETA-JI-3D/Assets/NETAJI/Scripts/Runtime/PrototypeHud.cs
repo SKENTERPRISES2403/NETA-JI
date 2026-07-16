@@ -382,13 +382,26 @@ namespace NetaJi.Prototype
 
         private void DrawChapterActions()
         {
-            float width = string.IsNullOrEmpty(nextChapterScene) ? 190f : 390f;
+            bool hasNextChapter = !string.IsNullOrEmpty(nextChapterScene);
+            int buttonCount = hasNextChapter ? 3 : 2;
+            float gap = 10f;
+            float buttonWidth = Mathf.Clamp((Screen.width - 56f - gap * (buttonCount - 1)) / buttonCount, 150f, 190f);
+            float width = buttonWidth * buttonCount + gap * (buttonCount - 1);
             float height = 52f;
             float x = (Screen.width - width) * 0.5f;
             float y = Screen.height - height - 24f;
-            if (!string.IsNullOrEmpty(nextChapterScene))
+
+            Rect returnRect = new Rect(x, y, buttonWidth, height);
+            DrawPanel(returnRect, new Color(0.02f, 0.25f, 0.27f, 0.96f));
+            if (GUI.Button(returnRect, "PRAYAGRAJ WAPAS", statStyle))
             {
-                Rect nextRect = new Rect(x, y, 190f, height);
+                StoryHubFlow.OpenAtMissionMarker();
+            }
+            x += buttonWidth + gap;
+
+            if (hasNextChapter)
+            {
+                Rect nextRect = new Rect(x, y, buttonWidth, height);
                 DrawPanel(nextRect, new Color(0.93f, 0.61f, 0.10f, 0.96f));
                 GUIStyle nextStyle = new GUIStyle(statStyle);
                 nextStyle.normal.textColor = new Color(0.02f, 0.10f, 0.11f);
@@ -396,10 +409,10 @@ namespace NetaJi.Prototype
                 {
                     SceneManager.LoadScene(nextChapterScene);
                 }
-                x += 200f;
+                x += buttonWidth + gap;
             }
 
-            Rect menuRect = new Rect(x, y, 190f, height);
+            Rect menuRect = new Rect(x, y, buttonWidth, height);
             DrawPanel(menuRect, new Color(0.02f, 0.25f, 0.27f, 0.96f));
             if (GUI.Button(menuRect, "MAIN MENU", statStyle))
             {

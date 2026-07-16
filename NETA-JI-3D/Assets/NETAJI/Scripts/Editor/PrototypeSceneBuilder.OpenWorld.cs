@@ -375,17 +375,49 @@ namespace NetaJi.Prototype.Editor
                     new Vector3(135f, 0f, -35f), new Vector3(-145f, 0f, 112f),
                     new Vector3(-28f, 0f, 116f), new Vector3(-128f, 0f, 24f),
                     new Vector3(-145f, 0f, -130f), new Vector3(28f, 0f, -72f),
-                    new Vector3(78f, 0f, 74f), new Vector3(82f, 0f, -142f)
+                    new Vector3(78f, 0f, 74f), new Vector3(82f, 0f, -142f),
+                    new Vector3(34f, 0f, -182f)
                 },
                 new[]
                 {
                     "Daraganj Ghats", "Allahabad Univ.", "High Court", "Azad Park",
-                    "Allahpur", "Loknath Market", "Sangam Mall", "Seva Hospital"
+                    "Allahpur", "Loknath Market", "Sangam Mall", "Seva Hospital", "Story Mission"
                 });
+            CreateStoryMissionMarker(world.transform, controller, teal, yellow, darkStone);
             CreateOpenWorldLighting();
 
             EditorSceneManager.MarkSceneDirty(freeRoamScene);
             EditorSceneManager.SaveScene(freeRoamScene, FreeRoamScenePath);
+        }
+
+        private static void CreateStoryMissionMarker(
+            Transform parent, AzadController player, Material teal, Material yellow, Material darkStone)
+        {
+            GameObject marker = new GameObject("Helpers Hand Story Mission");
+            marker.transform.SetParent(parent);
+            marker.transform.position = new Vector3(34f, 0f, -182f);
+            SphereCollider trigger = marker.AddComponent<SphereCollider>();
+            trigger.isTrigger = true;
+            trigger.center = new Vector3(0f, 1f, 0f);
+            trigger.radius = 2.4f;
+
+            CreatePrimitiveChild("Mission Ground Ring", PrimitiveType.Cylinder, marker.transform,
+                new Vector3(0f, 0.08f, 0f), new Vector3(2.3f, 0.08f, 2.3f), teal);
+            CreatePrimitiveChild("Mission Inner Ring", PrimitiveType.Cylinder, marker.transform,
+                new Vector3(0f, 0.14f, 0f), new Vector3(1.65f, 0.07f, 1.65f), yellow);
+            CreatePrimitiveChild("Mission Beacon Stem", PrimitiveType.Cube, marker.transform,
+                new Vector3(0f, 2.0f, 0f), new Vector3(0.34f, 2.5f, 0.34f), yellow)
+                .AddComponent<WorldMotion>().Configure(WorldMotionKind.Float, 0.16f, 1.8f, Vector3.up);
+            CreatePrimitiveChild("Mission Beacon Dot", PrimitiveType.Sphere, marker.transform,
+                new Vector3(0f, 3.65f, 0f), new Vector3(0.75f, 0.75f, 0.75f), yellow)
+                .AddComponent<WorldMotion>().Configure(WorldMotionKind.Float, 0.22f, 1.55f, Vector3.up);
+            CreatePrimitiveChild("Mission Direction Base", PrimitiveType.Cube, marker.transform,
+                new Vector3(0f, 0.32f, 0f), new Vector3(2.8f, 0.18f, 0.42f), darkStone);
+            CreateWorldLabel("Story Mission Sign", "STORY MISSION", new Vector3(34f, 4.85f, -182f),
+                Vector3.zero, yellow, parent, 0.028f);
+
+            StoryHubController hub = marker.AddComponent<StoryHubController>();
+            hub.Configure(player, new Vector3(34f, 0f, -188f), Vector3.zero);
         }
 
         private static void CreateOpenWorldGround(

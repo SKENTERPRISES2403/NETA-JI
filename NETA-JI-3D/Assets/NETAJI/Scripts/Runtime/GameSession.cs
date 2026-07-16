@@ -204,6 +204,38 @@ namespace NetaJi.Prototype
         public static int HighestUnlockedChapter => GetSavedChapterState().highestUnlockedChapter;
         public static int LastPlayedChapter => Mathf.Clamp(GetSavedChapterState().lastPlayedChapter, 1, 24);
 
+        public bool IsChapterComplete(int chapterNumber)
+        {
+            return chapterNumber switch
+            {
+                1 => progress.chapterOneComplete,
+                2 => progress.chapterTwoComplete,
+                3 => progress.chapterThreeComplete,
+                4 => progress.chapterFourComplete,
+                5 => progress.chapterFiveComplete,
+                6 => progress.chapterSixComplete,
+                7 => progress.chapterSevenComplete,
+                8 => progress.chapterEightComplete,
+                9 => progress.chapterNineComplete,
+                10 => progress.chapterTenComplete,
+                11 => progress.chapterElevenComplete,
+                12 => progress.chapterTwelveComplete,
+                13 => progress.chapterThirteenComplete,
+                14 => progress.chapterFourteenComplete,
+                15 => progress.chapterFifteenComplete,
+                16 => progress.chapterSixteenComplete,
+                17 => progress.chapterSeventeenComplete,
+                18 => progress.chapterEighteenComplete,
+                19 => progress.chapterNineteenComplete,
+                20 => progress.chapterTwentyComplete,
+                21 => progress.chapterTwentyOneComplete,
+                22 => progress.chapterTwentyTwoComplete,
+                23 => progress.chapterTwentyThreeComplete,
+                24 => progress.chapterTwentyFourComplete,
+                _ => false
+            };
+        }
+
         public static void DeleteSave()
         {
             try

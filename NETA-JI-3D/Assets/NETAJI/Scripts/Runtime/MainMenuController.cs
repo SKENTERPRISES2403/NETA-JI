@@ -72,7 +72,8 @@ namespace NetaJi.Prototype
             {
                 SceneManager.LoadScene(prologueSceneName);
             }
-            else if (Array.IndexOf(arguments, "-freeRoamSmoke") >= 0)
+            else if (Array.IndexOf(arguments, "-freeRoamSmoke") >= 0
+                || Array.IndexOf(arguments, "-storyHubSmoke") >= 0)
             {
                 SceneManager.LoadScene(freeRoamSceneName);
             }
@@ -276,7 +277,7 @@ namespace NetaJi.Prototype
             {
                 if (GUI.Button(new Rect(buttonX, nextButtonY, buttonWidth, buttonHeight), "SEVA JAARI RAKHEIN", buttonStyle))
                 {
-                    LoadChapter(GameSession.LastPlayedChapter, false);
+                    StoryHubFlow.OpenAtMissionMarker();
                 }
                 nextButtonY += buttonHeight + buttonGap;
             }
@@ -326,16 +327,7 @@ namespace NetaJi.Prototype
                 "AZAD KA SAFAR",
                 subtitleStyle);
 
-            string[] chapterTitles =
-            {
-                "GHAT SE GHAR TAK", "SHAAM KI PAATHSHALA", "SANDHYA KAHAN HAI", "OPERATION UMEED",
-                "DAWA KA SACH", "SEVA SE SIYASAT", "WARD KA FAISLA", "PEHLE 100 DIN",
-                "VIDHANSABHA KI RAAH", "JANATA KA MANDATE", "JANATA KA MLA", "ZILA SANGATHAN",
-                "PRADESH KI DASTAK", "PRADESH KA NETRUTVA", "PRADESH KA JANADESH",
-                "CM KE PEHLE 100 DIN", "BADLAV KE PAANCH SAAL", "DESH BHAR KA SAATH",
-                "RASHTRIYA CHUNAV", "HAAR KE BAAD HIMMAT", "PM KA JANADESH", "PM KE PEHLE 100 DIN",
-                "DESH KA BADLAV", "SEVA SE VISHWA GURU"
-            };
+            string[] chapterTitles = StoryChapterCatalog.Titles;
             float cardGap = 10f;
             bool compactGrid = chapterTitles.Length > 15;
             int cardColumns = chapterTitles.Length == 21 ? 7 : chapterTitles.Length > 21 ? 6 : chapterTitles.Length > 16 ? 5 : compactGrid ? 4 : chapterTitles.Length > 14 ? 5 : 7;

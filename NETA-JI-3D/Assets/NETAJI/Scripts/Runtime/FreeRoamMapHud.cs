@@ -23,6 +23,10 @@ namespace NetaJi.Prototype
         private string interactionPrompt = string.Empty;
         private string activeVehicleName = string.Empty;
         private float activeVehicleSpeed;
+        private int storyChapter;
+        private int storyCompleted;
+        private string storyTitle = string.Empty;
+        private bool storyCampaignComplete;
 
         public void SetInteractionPrompt(string value)
         {
@@ -45,6 +49,14 @@ namespace NetaJi.Prototype
         {
             activeVehicleName = string.Empty;
             activeVehicleSpeed = 0f;
+        }
+
+        public void SetStoryStatus(int chapter, int completed, string title, bool campaignComplete)
+        {
+            storyChapter = Mathf.Clamp(chapter, 1, StoryChapterCatalog.Count);
+            storyCompleted = Mathf.Clamp(completed, 0, StoryChapterCatalog.Count);
+            storyTitle = title ?? string.Empty;
+            storyCampaignComplete = campaignComplete;
         }
 
         public void Configure(
@@ -86,6 +98,11 @@ namespace NetaJi.Prototype
 
         private void OnGUI()
         {
+            if (StoryHubController.Instance != null && StoryHubController.Instance.ConfirmationOpen)
+            {
+                return;
+            }
+
             if (trackedTarget == null)
             {
                 return;
@@ -119,6 +136,11 @@ namespace NetaJi.Prototype
             if (!string.IsNullOrWhiteSpace(activeVehicleName))
             {
                 DrawVehicleStatus();
+            }
+
+            if (!string.IsNullOrWhiteSpace(storyTitle))
+            {
+                DrawStoryStatus();
             }
 
             if (!string.IsNullOrWhiteSpace(interactionPrompt))
@@ -180,6 +202,45 @@ namespace NetaJi.Prototype
             };
             unitStyle.normal.textColor = Color.white;
             GUI.Label(new Rect(panel.x + 6f, panel.y + height * 0.48f, panel.width - 12f, height * 0.43f), "KM/H  |  " + activeVehicleName, unitStyle);
+        }
+
+        private void DrawStoryStatus()
+        {
+            float width = Mathf.Clamp(Screen.width * 0.32f, 240f, 310f);
+            float height = Mathf.Clamp(Screen.height * 0.21f, 80f, 98f);
+            float y = string.IsNullOrWhiteSpace(activeVehicleName)
+                ? 16f
+                : 16f + Mathf.Clamp(Screen.height * 0.16f, 58f, 82f) + 10f;
+            Rect panel = new Rect(Screen.width - width - 18f, y, width, height);
+            GUI.DrawTexture(panel, panelTexture);
+
+            GUIStyle chapterStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = Mathf.Clamp(Mathf.RoundToInt(height * 0.20f), 11, 15),
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleLeft,
+                wordWrap = false,
+                clipping = TextClipping.Clip
+            };
+            chapterStyle.normal.textColor = new Color(0.58f, 0.88f, 0.82f);
+            GUI.Label(new Rect(panel.x + 12f, panel.y + 5f, panel.width - 24f, 22f),
+                storyCampaignComplete ? "STORY COMPLETE" : $"STORY  /  CH {storyChapter:00} OF {StoryChapterCatalog.Count}", chapterStyle);
+
+            GUIStyle titleStyle = new GUIStyle(chapterStyle)
+            {
+                fontSize = Mathf.Clamp(Mathf.RoundToInt(height * 0.22f), 12, 17),
+                clipping = TextClipping.Clip
+            };
+            titleStyle.normal.textColor = new Color(1f, 0.76f, 0.20f);
+            GUI.Label(new Rect(panel.x + 12f, panel.y + 27f, panel.width - 24f, 25f), storyTitle, titleStyle);
+
+            GUIStyle progressStyle = new GUIStyle(chapterStyle)
+            {
+                fontSize = Mathf.Clamp(Mathf.RoundToInt(height * 0.16f), 10, 13)
+            };
+            progressStyle.normal.textColor = Color.white;
+            GUI.Label(new Rect(panel.x + 12f, panel.yMax - 29f, panel.width - 24f, 22f),
+                storyCampaignComplete ? "FINAL REVIEW AVAILABLE" : $"{storyCompleted}/{StoryChapterCatalog.Count} COMPLETE  |  HELPERS HAND", progressStyle);
         }
 
         private void DrawMap(Rect mapRect, bool showLabels)
