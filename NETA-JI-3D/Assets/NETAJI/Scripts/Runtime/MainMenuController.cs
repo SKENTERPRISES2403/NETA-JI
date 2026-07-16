@@ -80,7 +80,9 @@ namespace NetaJi.Prototype
                 || Array.IndexOf(arguments, "-openWorldChapterTwoContinuitySmoke") >= 0
                 || Array.IndexOf(arguments, "-openWorldChapterThreeSmoke") >= 0
                 || Array.IndexOf(arguments, "-openWorldChapterThreeContinuitySmoke") >= 0
-                || Array.IndexOf(arguments, "-openWorldChapterFourSmoke") >= 0)
+                || Array.IndexOf(arguments, "-openWorldChapterFourSmoke") >= 0
+                || Array.IndexOf(arguments, "-openWorldChapterFourContinuitySmoke") >= 0
+                || Array.IndexOf(arguments, "-openWorldChapterFiveSmoke") >= 0)
             {
                 SceneManager.LoadScene(freeRoamSceneName);
             }

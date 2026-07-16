@@ -31,6 +31,8 @@ Android-first third-person prototype for **NETA JI: Rise of a Leader**.
 - Save v4 migration and independent safe/risky branch verification
 - Persistent `PROOF` stat for documents, evidence chains, and future opposition cases
 - Fifth playable chapter: `Dawa Ka Sach`, a fictional hospital-supply investigation
+- `Dawa Ka Sach` now runs at the connected Seva Hospital campus in `FreeRoam`, with emergency triage, verified donors, pharmacy evidence, certified records, recovery garden, and no scene reload
+- Chapters 1 through 5 can advance directly inside the shared `FreeRoam` world
 - Save v5 migration and independently verified case-file/public-post outcomes
 - Persistent `POWER`, `TEAM`, and `PRESSURE` political-organization stats
 - Sixth playable chapter: `India Helping Party`, covering accountable party foundation
@@ -124,9 +126,9 @@ The existing browser/PWA game remains separate in the repository root. This Unit
 - Windows: `Builds/Windows/NETA-JI-Prototype.exe`
 - Android: `Builds/Android/NETA-JI-Prototype.apk`
 - Android demo APK: IL2CPP, ARM64 plus ARMv7, minimum Android 8 (API 26), target API 36
-- APK SHA-256: `2FD6FE35DCEF5AA70597DB971F5E22D56CC6C60BC180A349F6D23D2F7A6C2EEA`
+- APK SHA-256: `E2899558403161367CF74B31E1DD3D435B7ABF171D6872DB040BC6E3BB699B65`
 
-The Android artifact is non-debuggable but still signed with the Android debug certificate for local and company-demo installs. Its package id is `com.skenterprises.netaji.prototype`, version `0.33.0` (`versionCode 33`). A production keystore and AAB remain required before store submission.
+The Android artifact is non-debuggable but still signed with the Android debug certificate for local and company-demo installs. Its package id is `com.skenterprises.netaji.prototype`, version `0.34.0` (`versionCode 34`). A production keystore and AAB remain required before store submission.
 
 ## Generate The Scene
 

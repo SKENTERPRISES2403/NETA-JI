@@ -8,6 +8,7 @@ namespace NetaJi.Prototype
         [SerializeField] private bool evening;
         [SerializeField] private bool nightSearch;
         [SerializeField] private bool dawnRescue;
+        [SerializeField] private bool hospitalMorning;
 
         private AmbientMode previousAmbientMode;
         private Color previousAmbientSky;
@@ -28,12 +29,14 @@ namespace NetaJi.Prototype
         public bool IsApplied => applied;
         public bool IsNightSearch => applied && nightSearch;
         public bool IsDawnRescue => applied && dawnRescue;
+        public bool IsHospitalMorning => applied && hospitalMorning;
 
         public void ConfigureEvening()
         {
             evening = true;
             nightSearch = false;
             dawnRescue = false;
+            hospitalMorning = false;
         }
 
         public void ConfigureNightSearch()
@@ -41,6 +44,7 @@ namespace NetaJi.Prototype
             evening = false;
             nightSearch = true;
             dawnRescue = false;
+            hospitalMorning = false;
         }
 
         public void ConfigureDawnRescue()
@@ -48,11 +52,20 @@ namespace NetaJi.Prototype
             evening = false;
             nightSearch = false;
             dawnRescue = true;
+            hospitalMorning = false;
+        }
+
+        public void ConfigureHospitalMorning()
+        {
+            evening = false;
+            nightSearch = false;
+            dawnRescue = false;
+            hospitalMorning = true;
         }
 
         private void OnEnable()
         {
-            if (!evening && !nightSearch && !dawnRescue)
+            if (!evening && !nightSearch && !dawnRescue && !hospitalMorning)
             {
                 return;
             }
@@ -68,45 +81,61 @@ namespace NetaJi.Prototype
             previousSkybox = RenderSettings.skybox;
 
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = nightSearch
+            RenderSettings.ambientSkyColor = hospitalMorning
+                ? new Color(0.50f, 0.66f, 0.78f)
+                : nightSearch
                 ? new Color(0.13f, 0.18f, 0.30f)
                 : dawnRescue ? new Color(0.34f, 0.43f, 0.60f)
                 : new Color(0.28f, 0.32f, 0.48f);
-            RenderSettings.ambientEquatorColor = nightSearch
+            RenderSettings.ambientEquatorColor = hospitalMorning
+                ? new Color(0.54f, 0.58f, 0.58f)
+                : nightSearch
                 ? new Color(0.10f, 0.14f, 0.22f)
                 : dawnRescue ? new Color(0.48f, 0.34f, 0.27f)
                 : new Color(0.16f, 0.20f, 0.31f);
-            RenderSettings.ambientGroundColor = nightSearch
+            RenderSettings.ambientGroundColor = hospitalMorning
+                ? new Color(0.20f, 0.23f, 0.24f)
+                : nightSearch
                 ? new Color(0.035f, 0.05f, 0.09f)
                 : dawnRescue ? new Color(0.12f, 0.13f, 0.15f)
                 : new Color(0.08f, 0.10f, 0.16f);
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.ExponentialSquared;
-            RenderSettings.fogColor = nightSearch
+            RenderSettings.fogColor = hospitalMorning
+                ? new Color(0.66f, 0.72f, 0.76f)
+                : nightSearch
                 ? new Color(0.07f, 0.11f, 0.20f)
                 : dawnRescue ? new Color(0.28f, 0.34f, 0.45f)
                 : new Color(0.18f, 0.24f, 0.35f);
-            RenderSettings.fogDensity = nightSearch ? 0.0026f : dawnRescue ? 0.0015f : 0.0018f;
+            RenderSettings.fogDensity = hospitalMorning
+                ? 0.0008f
+                : nightSearch ? 0.0026f : dawnRescue ? 0.0015f : 0.0018f;
             if (previousSkybox != null)
             {
                 missionSkybox = new Material(previousSkybox);
                 if (missionSkybox.HasProperty("_SkyTint"))
                 {
-                    missionSkybox.SetColor("_SkyTint", nightSearch
+                    missionSkybox.SetColor("_SkyTint", hospitalMorning
+                        ? new Color(0.65f, 0.75f, 0.86f)
+                        : nightSearch
                         ? new Color(0.035f, 0.08f, 0.18f)
                         : dawnRescue ? new Color(0.40f, 0.48f, 0.64f)
                         : new Color(0.16f, 0.24f, 0.43f));
                 }
                 if (missionSkybox.HasProperty("_GroundColor"))
                 {
-                    missionSkybox.SetColor("_GroundColor", nightSearch
+                    missionSkybox.SetColor("_GroundColor", hospitalMorning
+                        ? new Color(0.30f, 0.32f, 0.32f)
+                        : nightSearch
                         ? new Color(0.012f, 0.02f, 0.045f)
                         : dawnRescue ? new Color(0.18f, 0.13f, 0.11f)
                         : new Color(0.045f, 0.06f, 0.11f));
                 }
                 if (missionSkybox.HasProperty("_Exposure"))
                 {
-                    missionSkybox.SetFloat("_Exposure", nightSearch ? 0.20f : dawnRescue ? 0.56f : 0.42f);
+                    missionSkybox.SetFloat("_Exposure", hospitalMorning
+                        ? 0.78f
+                        : nightSearch ? 0.20f : dawnRescue ? 0.56f : 0.42f);
                 }
                 RenderSettings.skybox = missionSkybox;
                 DynamicGI.UpdateEnvironment();
@@ -126,12 +155,18 @@ namespace NetaJi.Prototype
                 previousSunColor = sun.color;
                 previousSunIntensity = sun.intensity;
                 previousSunRotation = sun.transform.rotation;
-                sun.color = nightSearch
+                sun.color = hospitalMorning
+                    ? new Color(0.86f, 0.92f, 1f)
+                    : nightSearch
                     ? new Color(0.58f, 0.70f, 1f)
                     : dawnRescue ? new Color(1f, 0.72f, 0.48f)
                     : new Color(1f, 0.66f, 0.38f);
-                sun.intensity = nightSearch ? 0.52f : dawnRescue ? 0.88f : 0.72f;
-                sun.transform.rotation = nightSearch
+                sun.intensity = hospitalMorning
+                    ? 0.94f
+                    : nightSearch ? 0.52f : dawnRescue ? 0.88f : 0.72f;
+                sun.transform.rotation = hospitalMorning
+                    ? Quaternion.Euler(38f, -18f, 0f)
+                    : nightSearch
                     ? Quaternion.Euler(40f, -24f, 0f)
                     : dawnRescue ? Quaternion.Euler(27f, -35f, 0f)
                     : Quaternion.Euler(18f, -35f, 0f);

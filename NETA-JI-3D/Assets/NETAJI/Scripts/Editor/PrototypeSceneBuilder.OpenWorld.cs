@@ -445,6 +445,22 @@ namespace NetaJi.Prototype.Editor
                 policeKhaki,
                 foliage,
                 trunk);
+            GameObject chapterFiveRoot = CreateOpenWorldChapterFiveMission(
+                world.transform,
+                sand,
+                stone,
+                darkStone,
+                teal,
+                yellow,
+                white,
+                marketRed,
+                skin,
+                hair,
+                shantiDress,
+                volunteerDress,
+                policeKhaki,
+                foliage,
+                trunk);
             OpenWorldMissionDirector missionDirector = systems.AddComponent<OpenWorldMissionDirector>();
             missionDirector.Configure(
                 controller,
@@ -452,7 +468,8 @@ namespace NetaJi.Prototype.Editor
                 chapterOneRoot,
                 chapterTwoRoot,
                 chapterThreeRoot,
-                chapterFourRoot);
+                chapterFourRoot,
+                chapterFiveRoot);
             CreateOpenWorldLighting();
 
             EditorSceneManager.MarkSceneDirty(freeRoamScene);
@@ -1482,6 +1499,298 @@ namespace NetaJi.Prototype.Editor
             mission.ConfigureIntro(
                 "CHAPTER 4 / OPERATION UMEED",
                 "Riverside godown. Sandhya ki safety pehle; gussa aur jaldbazi baad mein.");
+            return root;
+        }
+
+        private static GameObject CreateOpenWorldChapterFiveMission(
+            Transform parent,
+            Material sand,
+            Material stone,
+            Material darkStone,
+            Material teal,
+            Material yellow,
+            Material white,
+            Material alertRed,
+            Material skin,
+            Material hair,
+            Material shantiDress,
+            Material volunteerDress,
+            Material policeKhaki,
+            Material foliage,
+            Material trunk)
+        {
+            GameObject root = new GameObject("Open World Chapter 05 - Dawa Ka Sach");
+            root.transform.SetParent(parent);
+            root.AddComponent<OpenWorldMissionHud>();
+            root.AddComponent<OpenWorldMissionAtmosphere>().ConfigureHospitalMorning();
+            MissionController mission = root.AddComponent<MissionController>();
+            List<MissionObjective> objectives = new List<MissionObjective>();
+            List<string> labels = new List<string>();
+
+            CreateBox("Mission Hospital Forecourt", new Vector3(82f, -0.08f, -198f),
+                new Vector3(68f, 0.18f, 52f), stone, root.transform);
+            CreateBox("Mission Hospital Entry Walk", new Vector3(82f, 0.02f, -180f),
+                new Vector3(12f, 0.10f, 16f), white, root.transform);
+            CreateBox("Mission Ambulance Lane", new Vector3(51f, 0.02f, -201f),
+                new Vector3(10f, 0.10f, 30f), darkStone, root.transform);
+            for (int marker = 0; marker < 4; marker++)
+            {
+                CreateBox($"Mission Ambulance Lane Mark {marker + 1}",
+                    new Vector3(51f, 0.08f, -190f - marker * 7f),
+                    new Vector3(0.32f, 0.03f, 3.2f), yellow, root.transform);
+            }
+
+            CreateBox("Mission Emergency Bay Floor", new Vector3(69f, 0.04f, -185f),
+                new Vector3(24f, 0.12f, 13f), teal, root.transform);
+            CreateBox("Mission Emergency Bay Roof", new Vector3(69f, 4.0f, -185f),
+                new Vector3(24.5f, 0.30f, 13.5f), white, root.transform);
+            Vector3[] canopyPosts =
+            {
+                new Vector3(57.2f, 2f, -191.2f), new Vector3(80.8f, 2f, -191.2f),
+                new Vector3(57.2f, 2f, -178.8f), new Vector3(80.8f, 2f, -178.8f)
+            };
+            for (int index = 0; index < canopyPosts.Length; index++)
+            {
+                CreateBox($"Mission Emergency Canopy Post {index + 1}", canopyPosts[index],
+                    new Vector3(0.28f, 4f, 0.28f), teal, root.transform);
+            }
+            CreateWorldLabel("Mission Emergency Bay Sign", "EMERGENCY  /  MATERNITY",
+                new Vector3(69f, 3.05f, -191.7f), new Vector3(0f, 180f, 0f), alertRed, root.transform, 0.026f);
+
+            CreateBox("Mission Pharmacy Evidence Floor", new Vector3(102f, 0.04f, -187f),
+                new Vector3(20f, 0.12f, 14f), white, root.transform);
+            CreateBox("Mission Pharmacy Evidence Back", new Vector3(102f, 2.0f, -180.2f),
+                new Vector3(20f, 4f, 0.35f), teal, root.transform);
+            CreateBox("Mission Pharmacy Evidence Roof", new Vector3(102f, 4.0f, -187f),
+                new Vector3(20.5f, 0.28f, 14.5f), teal, root.transform);
+            CreateWorldLabel("Mission Pharmacy Sign", "PHARMACY STOCK CHECK",
+                new Vector3(102f, 3.0f, -193.9f), new Vector3(0f, 180f, 0f), darkStone, root.transform, 0.021f);
+            for (int shelf = 0; shelf < 3; shelf++)
+            {
+                CreateBox($"Mission Pharmacy Shelf {shelf + 1}",
+                    new Vector3(96f + shelf * 5.8f, 1.15f, -182f),
+                    new Vector3(3.8f, 2.3f, 0.45f), shelf % 2 == 0 ? white : yellow, root.transform);
+            }
+
+            CreateBox("Mission Records Desk Floor", new Vector3(102f, 0.04f, -204f),
+                new Vector3(20f, 0.12f, 13f), sand, root.transform);
+            CreateBox("Mission Records Desk Counter", new Vector3(102f, 0.72f, -201f),
+                new Vector3(14f, 1.44f, 1.0f), darkStone, root.transform);
+            CreateBox("Mission Records Desk Roof", new Vector3(102f, 3.8f, -204f),
+                new Vector3(20.5f, 0.26f, 13.5f), white, root.transform);
+            CreateWorldLabel("Mission Records Sign", "CERTIFIED RECORDS DESK",
+                new Vector3(102f, 2.9f, -210.4f), new Vector3(0f, 180f, 0f), teal, root.transform, 0.021f);
+
+            CreateBox("Mission Recovery Garden", new Vector3(78f, 0.03f, -218f),
+                new Vector3(38f, 0.12f, 15f), foliage, root.transform);
+            CreateBox("Mission Recovery Garden Walk", new Vector3(78f, 0.10f, -218f),
+                new Vector3(26f, 0.05f, 3.2f), sand, root.transform);
+            CreateWorldLabel("Mission Recovery Garden Sign", "RECOVERY GARDEN  /  QUIET ZONE",
+                new Vector3(78f, 2.8f, -225.2f), new Vector3(0f, 180f, 0f), yellow, root.transform, 0.020f);
+            CreateTree("Mission Recovery Neem Left", new Vector3(63f, 0f, -218f), foliage, trunk, root.transform);
+            CreateTree("Mission Recovery Neem Right", new Vector3(93f, 0f, -218f), foliage, trunk, root.transform);
+            CreateBench("Mission Recovery Bench", new Vector3(78f, 0f, -218f), 180f,
+                darkStone, teal, root.transform);
+
+            GameObject ambulance = new GameObject("Mission Emergency Ambulance");
+            ambulance.transform.SetParent(root.transform);
+            ambulance.transform.position = new Vector3(51f, 0f, -194f);
+            CreatePrimitiveChild("Ambulance Body", PrimitiveType.Cube, ambulance.transform,
+                new Vector3(0f, 1.25f, 0f), new Vector3(2.3f, 2.5f, 5.2f), white);
+            CreatePrimitiveChild("Ambulance Cabin", PrimitiveType.Cube, ambulance.transform,
+                new Vector3(0f, 1.25f, 1.85f), new Vector3(2.2f, 2.1f, 1.7f), white);
+            CreatePrimitiveChild("Ambulance Mark Horizontal", PrimitiveType.Cube, ambulance.transform,
+                new Vector3(-1.17f, 1.35f, -0.25f), new Vector3(0.04f, 0.16f, 0.95f), alertRed);
+            CreatePrimitiveChild("Ambulance Mark Vertical", PrimitiveType.Cube, ambulance.transform,
+                new Vector3(-1.18f, 1.35f, -0.25f), new Vector3(0.04f, 0.75f, 0.16f), alertRed);
+            for (int wheel = 0; wheel < 4; wheel++)
+            {
+                float x = wheel % 2 == 0 ? -1.18f : 1.18f;
+                float z = wheel < 2 ? -1.55f : 1.55f;
+                CreatePrimitiveChild($"Mission Ambulance Wheel {wheel + 1}", PrimitiveType.Cylinder,
+                    ambulance.transform, new Vector3(x, 0.45f, z), new Vector3(0.42f, 0.18f, 0.42f), darkStone)
+                    .transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            }
+
+            CreateStreetLamp("Mission Hospital Lamp Left", new Vector3(55f, 0f, -211f),
+                darkStone, yellow, root.transform);
+            CreateStreetLamp("Mission Hospital Lamp Right", new Vector3(110f, 0f, -216f),
+                darkStone, yellow, root.transform);
+            CreateMissionPointLight("Mission Emergency Cool Light", new Vector3(69f, 3.65f, -185f),
+                root.transform, new Color(0.70f, 0.88f, 1f), 1.2f, 18f);
+            CreateMissionPointLight("Mission Pharmacy Cool Light", new Vector3(102f, 3.55f, -187f),
+                root.transform, new Color(0.74f, 0.92f, 1f), 1.0f, 16f);
+
+            GameObject shantiArrival = ParentPerson(CreatePerson(
+                "Mission 05 Shanti Emergency", new Vector3(58f, 0f, -184f),
+                shantiDress, darkStone, skin, hair, false), root.transform);
+            AddScarf(shantiArrival.transform, shantiDress);
+            objectives.Add(AddObjective(
+                shantiArrival, "shanti-emergency", "Shanti ko sambhalein", "Shanti",
+                "Azad, chakkar aa raha hai aur dard badh raha hai. Sandhya safe hai... ab hospital chalo.",
+                0, 0, 0, false));
+            labels.Add("Emergency bay par Shanti ki condition samjhein");
+
+            GameObject transportDesk = new GameObject("Mission Emergency Transport Receipt");
+            transportDesk.transform.SetParent(root.transform);
+            transportDesk.transform.position = new Vector3(54f, 0.82f, -205f);
+            CreatePrimitiveChild("Transport Phone", PrimitiveType.Cube, transportDesk.transform,
+                Vector3.zero, new Vector3(0.45f, 0.72f, 0.24f), darkStone);
+            CreatePrimitiveChild("Transport Receipt", PrimitiveType.Cube, transportDesk.transform,
+                new Vector3(0.5f, -0.18f, 0f), new Vector3(0.72f, 0.05f, 0.95f), white);
+            objectives.Add(AddObjective(
+                transportDesk, "transport", "Emergency transport confirm karein", "Azad",
+                "Ambulance route clear hai. Advance receipt le li; har payment ka record rakhenge.",
+                1, -200, 1, false));
+            labels.Add("Emergency transport aur receipt confirm karein");
+
+            GameObject nurse = ParentPerson(CreatePerson(
+                "Mission 05 Triage Nurse", new Vector3(70f, 0f, -184f),
+                white, teal, skin, hair, false), root.transform);
+            objectives.Add(AddObjective(
+                nurse, "triage", "Triage nurse ko history dein", "Triage Nurse",
+                "Vitals unstable the, ab monitor par hain. Pregnancy file aur current medicines ki list turant chahiye.",
+                1, -50, 1, false));
+            labels.Add("Triage desk par Shanti ki medical history dein");
+
+            GameObject consent = new GameObject("Mission Emergency Consent Form");
+            consent.transform.SetParent(root.transform);
+            consent.transform.position = new Vector3(77f, 0.84f, -186f);
+            CreatePrimitiveChild("Consent Form", PrimitiveType.Cube, consent.transform,
+                Vector3.zero, new Vector3(0.78f, 0.08f, 1.0f), white);
+            CreatePrimitiveChild("Consent Pen", PrimitiveType.Cylinder, consent.transform,
+                new Vector3(0.38f, 0.12f, 0f), new Vector3(0.05f, 0.42f, 0.05f), teal)
+                .transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            objectives.Add(AddObjective(
+                consent, "consent", "Consent form padhein", "Azad",
+                "Procedure, risk aur cost padhe bina sign nahi. Doctor ne questions clear kiye; copy mere paas rahegi.",
+                1, 0, 1, false));
+            labels.Add("Emergency consent ko padhkar signed copy lein");
+
+            GameObject donor = ParentPerson(CreatePerson(
+                "Mission 05 Donor Coordinator", new Vector3(66f, 0f, -198f),
+                volunteerDress, darkStone, skin, hair, false), root.transform);
+            CreatePrimitiveChild("Donor List Folder", PrimitiveType.Cube, donor.transform,
+                new Vector3(0.48f, 0.88f, 0f), new Vector3(0.22f, 0.62f, 0.48f), yellow);
+            objectives.Add(AddObjective(
+                donor, "donor-network", "Donor network activate karein", "Helpers Hand Coordinator",
+                "Do verified donors blood bank pahunch rahe hain. Kisi se paise nahi liye jayenge; screening hospital karega.",
+                2, -100, 1, false));
+            labels.Add("Helpers Hand verified donor network activate karein");
+
+            GameObject stockRegister = new GameObject("Mission Pharmacy Stock Register");
+            stockRegister.transform.SetParent(root.transform);
+            stockRegister.transform.position = new Vector3(98f, 0.92f, -185f);
+            CreatePrimitiveChild("Stock Book", PrimitiveType.Cube, stockRegister.transform,
+                Vector3.zero, new Vector3(0.9f, 0.14f, 1.1f), yellow);
+            CreatePrimitiveChild("Stock Shelf Tag", PrimitiveType.Cube, stockRegister.transform,
+                new Vector3(0f, 0.18f, -0.2f), new Vector3(0.55f, 0.08f, 0.32f), teal);
+            objectives.Add(AddObjective(
+                stockRegister, "stock-register", "Medicine stock register dekhein", "Pharmacist",
+                "Emergency injection shelf par nahi thi, jabki register mein available likhi hai. Issue time aur signature ka photo le lo.",
+                1, 0, 1, false, 2));
+            labels.Add("Pharmacy stock register aur issue time verify karein");
+
+            GameObject batchLabel = new GameObject("Mission Medicine Batch Label");
+            batchLabel.transform.SetParent(root.transform);
+            batchLabel.transform.position = new Vector3(106f, 0.96f, -189f);
+            CreatePrimitiveChild("Medicine Box", PrimitiveType.Cube, batchLabel.transform,
+                Vector3.zero, new Vector3(1.2f, 0.65f, 0.72f), white);
+            CreatePrimitiveChild("Batch Strip", PrimitiveType.Cube, batchLabel.transform,
+                new Vector3(0f, 0.05f, -0.40f), new Vector3(0.82f, 0.20f, 0.05f), alertRed);
+            objectives.Add(AddObjective(
+                batchLabel, "batch-label", "Batch label preserve karein", "Azad",
+                "Supply label aur invoice batch match nahi karte. Box seal karke doctor aur Samrat dono ko dikhayenge.",
+                1, 0, 1, false, 3));
+            labels.Add("Medicine batch label aur invoice mismatch preserve karein");
+
+            GameObject doctor = ParentPerson(CreatePerson(
+                "Mission 05 Duty Doctor", new Vector3(83f, 0f, -183f),
+                white, darkStone, skin, hair, false), root.transform);
+            CreatePrimitiveChild("Doctor File", PrimitiveType.Cube, doctor.transform,
+                new Vector3(0.48f, 0.90f, 0f), new Vector3(0.18f, 0.64f, 0.46f), teal);
+            objectives.Add(AddObjective(
+                doctor, "doctor-update", "Doctor se Shanti ka update lein", "Duty Doctor",
+                "Shanti ab stable hai. Humein afsos hai, pregnancy ko nahi bacha sake. Ab unki recovery aur sachchi case review dono zaroori hain.",
+                0, 0, 0, false));
+            labels.Add("Duty doctor se private medical update lein");
+
+            GameObject strategy = new GameObject("Mission Hospital Case Strategy Board");
+            strategy.transform.SetParent(root.transform);
+            strategy.transform.position = new Vector3(85f, 1.05f, -199f);
+            CreatePrimitiveChild("Case Board", PrimitiveType.Cube, strategy.transform,
+                Vector3.zero, new Vector3(2.8f, 1.5f, 0.18f), darkStone);
+            CreatePrimitiveChild("Verified File", PrimitiveType.Cube, strategy.transform,
+                new Vector3(-0.62f, 0f, -0.13f), new Vector3(0.75f, 0.9f, 0.05f), teal);
+            CreatePrimitiveChild("Phone Post", PrimitiveType.Cube, strategy.transform,
+                new Vector3(0.62f, 0f, -0.13f), new Vector3(0.55f, 0.9f, 0.05f), alertRed);
+            MissionObjective decision = AddObjective(
+                strategy, "hospital-decision", "Case strategy chunein", "Azad",
+                "Pehle batch, stock aur tender file verify karenge. Sach dheere chale, par adhoora nahi.",
+                2, -100, 3, false, 5);
+            decision.ConfigureDecision(
+                "hospital-approach",
+                "CASE STRATEGY",
+                "Supplier ka naam abhi post karna tez pressure banayega, par unverified claim case ko kamzor kar sakta hai.",
+                "VERIFIED CASE FILE\nRs -100 / Proof +5",
+                "ABHI PUBLIC POST\nTrust +4 / Rep -4",
+                "Azad supplier list turant post karta hai. Public pressure badhta hai, par incomplete proof se official case weak hota hai.",
+                4, 0, -4, -3);
+            objectives.Add(decision);
+            labels.Add("Verified case file ya instant public post chunein");
+
+            GameObject tender = new GameObject("Mission Certified Tender Copy");
+            tender.transform.SetParent(root.transform);
+            tender.transform.position = new Vector3(102f, 0.92f, -204f);
+            CreatePrimitiveChild("Tender Folder", PrimitiveType.Cube, tender.transform,
+                Vector3.zero, new Vector3(0.9f, 0.16f, 1.15f), teal);
+            CreatePrimitiveChild("Certified Stamp", PrimitiveType.Cylinder, tender.transform,
+                new Vector3(0f, 0.18f, 0.16f), new Vector3(0.18f, 0.05f, 0.18f), alertRed);
+            objectives.Add(AddObjective(
+                tender, "tender-copy", "Tender copy receive karein", "Records Clerk",
+                "Certified copy number aur dispatch date yahan hai. Personal data cover karke case file mein lagaiye.",
+                1, -50, 2, false, 4));
+            labels.Add("Records desk se certified tender copy lein");
+
+            GameObject samrat = ParentPerson(CreatePerson(
+                "Mission 05 Constable Samrat", new Vector3(94f, 0f, -211f),
+                policeKhaki, darkStone, skin, hair, false), root.transform);
+            AddPoliceDetails(samrat.transform, policeKhaki, darkStone);
+            objectives.Add(AddObjective(
+                samrat, "evidence-chain", "Samrat ko sealed evidence dein", "Constable Samrat",
+                "Batch box, stock photo aur tender copy receive ho gaye. Main seizure memo aur complaint number banwata hoon.",
+                1, 0, 2, false, 3));
+            labels.Add("Samrat ke saath healthcare evidence chain complete karein");
+
+            GameObject shantiRecovery = ParentPerson(CreatePerson(
+                "Mission 05 Shanti Recovery", new Vector3(78f, 0f, -218f),
+                shantiDress, darkStone, skin, hair, false), root.transform);
+            AddScarf(shantiRecovery.transform, shantiDress);
+            objectives.Add(AddObjective(
+                shantiRecovery, "recovery-promise", "Shanti ke saath baithen", "Shanti",
+                "Humne apna bachcha khoya hai, par main tumhare saath hoon. Charity se jaan bachti hai; system badlega toh har ghar bachega.",
+                3, 0, 2, false));
+            labels.Add("Recovery garden mein Shanti ke saath agla kadam tay karein");
+
+            mission.Configure(
+                "Dawa Ka Sach: Seva Hospital",
+                objectives,
+                labels,
+                "CHAPTER 5 COMPLETE",
+                "Shanti stable hai. Verified healthcare case file ne Azad ke system-change sankalp ko janam diya.");
+            mission.ConfigureMilestones(
+                new List<int> { 5, 8, 11 },
+                new List<string> { "EMERGENCY SUPPORT READY", "DIFFICULT TRUTH", "CASE FILE SEALED" },
+                new List<string>
+                {
+                    "Transport, triage, consent aur donors ready hain. Ab pharmacy records verify karo.",
+                    "Shanti stable hai, par family ne pregnancy kho di. Gusse ko verified case mein badalna hoga.",
+                    "Tender aur medicine evidence sealed hai. Recovery garden mein Shanti intezar kar rahi hai."
+                });
+            mission.ConfigureChapter(5, "Chapter06");
+            mission.ConfigureIntro(
+                "CHAPTER 5 / DAWA KA SACH",
+                "Rescue ke baad ek nayi emergency. Shanti ki jaan, documents aur sach tino sambhalo.");
             return root;
         }
 
