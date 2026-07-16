@@ -320,7 +320,7 @@ namespace NetaJi.Prototype.Editor
             Material tyre = CreateMaterial("VehicleTyre", new Color(0.025f, 0.028f, 0.03f), 0.03f);
 
             GameObject world = new GameObject("Connected Prayagraj Free Roam World");
-            CreateOpenWorldGround(world.transform, grass, sand, stone, road, roadLine, darkStone, cleanWater);
+            CreateOpenWorldGround(world.transform, grass, sand, stone, road, roadLine, darkStone, cleanWater, white);
             CreateOpenWorldDistricts(world.transform, brick, cream, teal, yellow, white, glass, darkStone, foliage, trunk);
             CreateOpenWorldGhatsAndMarket(world.transform, stone, darkStone, cleanWater, teal, yellow, white, marketRed, foliage, trunk);
             CreateOpenWorldStreetLife(world.transform, shirt, trousers, shantiDress, volunteerDress, teal, yellow, darkStone, skin, hair);
@@ -330,12 +330,13 @@ namespace NetaJi.Prototype.Editor
             CreateDrivableScooter("Helpers Hand Scooter", new Vector3(-52f, 0.08f, 0f), Quaternion.Euler(0f, 90f, 0f),
                 scooterBlue, tyre, darkStone, yellow, shirt, trousers, skin, hair, world.transform);
             CreateParkedTraffic(world.transform, carRed, scooterBlue, glass, tyre, darkStone, cream);
+            CreateAmbientTraffic(world.transform, marketRed, teal, yellow, cream, glass, tyre, darkStone);
 
             GameObject systems = new GameObject("Free Roam Systems");
             systems.AddComponent<GameSession>();
             PrototypeInput freeRoamInput = systems.AddComponent<PrototypeInput>();
             freeRoamInput.SetActionLabel("USE");
-            systems.AddComponent<PrototypeAudio>();
+            PrototypeAudio freeRoamAudio = systems.AddComponent<PrototypeAudio>();
             systems.AddComponent<FreeRoamAutomation>();
 
             GameObject azad = CreatePerson("Azad Free Roam", new Vector3(104f, 0f, -48f), shirt, trousers, skin, hair, true);
@@ -348,6 +349,7 @@ namespace NetaJi.Prototype.Editor
             characterController.slopeLimit = 48f;
             azad.AddComponent<ProceduralWalker>();
             SetLayerRecursively(azad, 2);
+            freeRoamAudio.ConfigureOpenWorld(azad.transform);
 
             GameObject cameraObject = new GameObject("Main Camera");
             cameraObject.tag = "MainCamera";
@@ -357,13 +359,15 @@ namespace NetaJi.Prototype.Editor
             gameCamera.nearClipPlane = 0.12f;
             gameCamera.farClipPlane = 650f;
             gameCamera.allowHDR = false;
-            gameCamera.allowMSAA = false;
+            gameCamera.allowMSAA = true;
             cameraObject.AddComponent<AudioListener>();
             ThirdPersonCamera orbitCamera = cameraObject.AddComponent<ThirdPersonCamera>();
             orbitCamera.SetCollisionMask(~(1 << 2));
             orbitCamera.SetTarget(azad.transform, new Vector3(0f, 1.45f, 0f), 6.2f, true);
             cameraObject.transform.position = new Vector3(104f, 4.2f, -55f);
             controller.SetCamera(cameraObject.transform);
+            OpenWorldPresentation presentation = systems.AddComponent<OpenWorldPresentation>();
+            presentation.Configure(gameCamera);
 
             FreeRoamMapHud mapHud = systems.AddComponent<FreeRoamMapHud>();
             mapHud.Configure(
@@ -422,9 +426,9 @@ namespace NetaJi.Prototype.Editor
 
         private static void CreateOpenWorldGround(
             Transform root, Material grass, Material sand, Material stone, Material road,
-            Material roadLine, Material darkStone, Material water)
+            Material roadLine, Material darkStone, Material water, Material crosswalk)
         {
-            CreateBox("City Ground", new Vector3(0f, -0.42f, 0f), new Vector3(460f, 0.84f, 460f), grass, root);
+            CreateBox("City Ground", new Vector3(-48f, -0.42f, 0f), new Vector3(364f, 0.84f, 460f), grass, root);
             CreateBox("Central East West Road", new Vector3(-42f, 0.02f, 0f), new Vector3(374f, 0.10f, 24f), road, root);
             CreateBox("Central North South Road", new Vector3(0f, 0.025f, -40f), new Vector3(24f, 0.11f, 374f), road, root);
             CreateBox("University Civic Road", new Vector3(-32f, 0.03f, 101f), new Vector3(354f, 0.11f, 19f), road, root);
@@ -444,6 +448,84 @@ namespace NetaJi.Prototype.Editor
             CreateBox("West Boundary", new Vector3(-230f, 0.65f, 0f), new Vector3(1.2f, 1.3f, 460f), darkStone, root);
             CreateBox("North Boundary", new Vector3(0f, 0.65f, 230f), new Vector3(460f, 1.3f, 1.2f), darkStone, root);
             CreateBox("South Boundary", new Vector3(0f, 0.65f, -230f), new Vector3(460f, 1.3f, 1.2f), darkStone, root);
+            CreateOpenWorldRoadDetails(root, stone, roadLine, crosswalk, darkStone);
+        }
+
+        private static void CreateOpenWorldRoadDetails(
+            Transform root, Material pavement, Material marking, Material crosswalk, Material darkStone)
+        {
+            CreatePrimitiveChild("Central North Footpath", PrimitiveType.Cube, root,
+                new Vector3(-42f, 0.09f, 13.4f), new Vector3(374f, 0.14f, 2.8f), pavement);
+            CreatePrimitiveChild("Central South Footpath", PrimitiveType.Cube, root,
+                new Vector3(-42f, 0.09f, -13.4f), new Vector3(374f, 0.14f, 2.8f), pavement);
+            CreatePrimitiveChild("Central West Footpath", PrimitiveType.Cube, root,
+                new Vector3(-13.4f, 0.09f, -40f), new Vector3(2.8f, 0.14f, 374f), pavement);
+            CreatePrimitiveChild("Central East Footpath", PrimitiveType.Cube, root,
+                new Vector3(13.4f, 0.09f, -40f), new Vector3(2.8f, 0.14f, 374f), pavement);
+
+            CreatePrimitiveChild("University North Footpath", PrimitiveType.Cube, root,
+                new Vector3(-32f, 0.085f, 111.6f), new Vector3(354f, 0.13f, 2.4f), pavement);
+            CreatePrimitiveChild("University South Footpath", PrimitiveType.Cube, root,
+                new Vector3(-32f, 0.085f, 90.4f), new Vector3(354f, 0.13f, 2.4f), pavement);
+            CreatePrimitiveChild("Allahpur North Footpath", PrimitiveType.Cube, root,
+                new Vector3(-30f, 0.085f, -114.4f), new Vector3(340f, 0.13f, 2.4f), pavement);
+            CreatePrimitiveChild("Allahpur South Footpath", PrimitiveType.Cube, root,
+                new Vector3(-30f, 0.085f, -135.6f), new Vector3(340f, 0.13f, 2.4f), pavement);
+            CreatePrimitiveChild("Allahpur Connector West Footpath", PrimitiveType.Cube, root,
+                new Vector3(-121.6f, 0.085f, -48f), new Vector3(2.4f, 0.13f, 320f), pavement);
+            CreatePrimitiveChild("Allahpur Connector East Footpath", PrimitiveType.Cube, root,
+                new Vector3(-100.4f, 0.085f, -48f), new Vector3(2.4f, 0.13f, 320f), pavement);
+            CreatePrimitiveChild("Commercial Connector West Footpath", PrimitiveType.Cube, root,
+                new Vector3(68.4f, 0.085f, -40f), new Vector3(2.4f, 0.13f, 370f), pavement);
+            CreatePrimitiveChild("Commercial Connector East Footpath", PrimitiveType.Cube, root,
+                new Vector3(89.6f, 0.085f, -40f), new Vector3(2.4f, 0.13f, 370f), pavement);
+            CreatePrimitiveChild("Ghat Road West Footpath", PrimitiveType.Cube, root,
+                new Vector3(117.4f, 0.085f, -20f), new Vector3(2.0f, 0.13f, 380f), pavement);
+
+            for (int index = -8; index <= 7; index++)
+            {
+                float offset = index * 20f;
+                CreatePrimitiveChild($"University Lane Dash {index + 9}", PrimitiveType.Cube, root,
+                    new Vector3(offset - 32f, 0.105f, 101f), new Vector3(8f, 0.024f, 0.22f), marking);
+                CreatePrimitiveChild($"Allahpur Lane Dash {index + 9}", PrimitiveType.Cube, root,
+                    new Vector3(offset - 30f, 0.105f, -125f), new Vector3(8f, 0.024f, 0.22f), marking);
+                CreatePrimitiveChild($"Allahpur Connector Dash {index + 9}", PrimitiveType.Cube, root,
+                    new Vector3(-111f, 0.105f, offset - 48f), new Vector3(0.22f, 0.024f, 8f), marking);
+                CreatePrimitiveChild($"Commercial Connector Dash {index + 9}", PrimitiveType.Cube, root,
+                    new Vector3(79f, 0.105f, offset - 40f), new Vector3(0.22f, 0.024f, 8f), marking);
+                CreatePrimitiveChild($"Ghat Road Dash {index + 9}", PrimitiveType.Cube, root,
+                    new Vector3(126f, 0.105f, offset - 20f), new Vector3(0.22f, 0.024f, 8f), marking);
+            }
+
+            CreateCrosswalk("Allahpur Junction", new Vector3(-111f, 0f, 0f), true, root, crosswalk);
+            CreateCrosswalk("Central Junction", Vector3.zero, true, root, crosswalk);
+            CreateCrosswalk("Commercial Junction", new Vector3(79f, 0f, 0f), true, root, crosswalk);
+            CreateCrosswalk("University Junction", new Vector3(0f, 0f, 101f), false, root, crosswalk);
+            CreateCrosswalk("South Junction", new Vector3(0f, 0f, -125f), false, root, crosswalk);
+
+            for (int index = 0; index < 12; index++)
+            {
+                float x = -198f + index * 32f;
+                CreatePrimitiveChild($"Central Safety Bollard {index + 1}", PrimitiveType.Cylinder, root,
+                    new Vector3(x, 0.42f, index % 2 == 0 ? 14.2f : -14.2f),
+                    new Vector3(0.13f, 0.42f, 0.13f), darkStone);
+            }
+        }
+
+        private static void CreateCrosswalk(
+            string name, Vector3 center, bool spansNorthSouth, Transform root, Material marking)
+        {
+            for (int stripe = -3; stripe <= 3; stripe++)
+            {
+                Vector3 position = center + (spansNorthSouth
+                    ? new Vector3(stripe * 1.45f, 0.13f, 0f)
+                    : new Vector3(0f, 0.13f, stripe * 1.45f));
+                Vector3 size = spansNorthSouth
+                    ? new Vector3(0.74f, 0.025f, 17f)
+                    : new Vector3(17f, 0.025f, 0.74f);
+                CreatePrimitiveChild($"{name} Stripe {stripe + 4}", PrimitiveType.Cube, root,
+                    position, size, marking);
+            }
         }
 
         private static void CreateOpenWorldDistricts(
@@ -502,11 +584,16 @@ namespace NetaJi.Prototype.Editor
             Material foliage, Material trunk)
         {
             CreateBox("Daraganj Ghat Promenade", new Vector3(112f, -0.10f, -20f), new Vector3(22f, 0.24f, 370f), stone, root);
-            for (int index = 0; index < 8; index++)
+            for (int index = 0; index < 10; index++)
             {
+                float stepY = -0.05f - index * 0.25f;
+                float stepX = 136f + index * 3.6f;
                 CreateBox($"Daraganj Ghat Step {index + 1}",
-                    new Vector3(136f + index * 3.6f, -0.35f - index * 0.25f, -20f),
+                    new Vector3(stepX, stepY, -20f),
                     new Vector3(4.0f, 0.42f, 360f), stone, root);
+                CreatePrimitiveChild($"Daraganj Ghat Step Edge {index + 1}", PrimitiveType.Cube, root,
+                    new Vector3(stepX + 1.82f, stepY + 0.225f, -20f),
+                    new Vector3(0.16f, 0.045f, 360f), darkStone);
             }
             for (int index = 0; index < 18; index++)
             {
@@ -519,6 +606,15 @@ namespace NetaJi.Prototype.Editor
                     new Vector3(180f + (index % 2) * 15f, -2.05f, -176f + index * 38f),
                     index % 2 == 0 ? 8f : -12f, index % 2 == 0 ? darkStone : teal, yellow, root);
             }
+            for (int index = 0; index < 16; index++)
+            {
+                GameObject glint = CreatePrimitiveChild($"Ganga Sun Glint {index + 1}", PrimitiveType.Cube, root,
+                    new Vector3(165f + (index % 3) * 16f, -2.23f, -210f + index * 28f),
+                    new Vector3(7f + (index % 4) * 1.8f, 0.025f, 0.16f), white);
+                glint.transform.localRotation = Quaternion.Euler(0f, -8f + (index % 5) * 4f, 0f);
+                glint.AddComponent<WorldMotion>().Configure(
+                    WorldMotionKind.Float, 0.025f, 0.75f + index * 0.035f, Vector3.up);
+            }
             CreateWorldLabel("Daraganj Ghat Open World Sign", "DARAGANJ GHATS", new Vector3(113f, 5.2f, -45f), new Vector3(0f, 90f, 0f), yellow, root, 0.035f);
 
             for (int index = 0; index < 8; index++)
@@ -527,6 +623,22 @@ namespace NetaJi.Prototype.Editor
                 CreateFoodStall($"Ghat Food Stall {index + 1}", new Vector3(103f, 0f, z),
                     index % 2 == 0 ? teal : marketRed, yellow, white, darkStone, root,
                     index % 4 == 0 ? "CHAI" : index % 4 == 1 ? "KACHORI" : index % 4 == 2 ? "LASSI" : "FRUIT");
+            }
+            for (int index = 0; index < 6; index++)
+            {
+                Vector3 shadePosition = new Vector3(108.5f, 0f, -148f + index * 58f);
+                GameObject shade = new GameObject($"Ghat Shade {index + 1}");
+                shade.transform.SetParent(root);
+                shade.transform.position = shadePosition;
+                CreatePrimitiveChild("Shade Pole", PrimitiveType.Cylinder, shade.transform,
+                    new Vector3(0f, 1.55f, 0f), new Vector3(0.08f, 1.55f, 0.08f), darkStone);
+                CreatePrimitiveChild("Shade Canopy", PrimitiveType.Sphere, shade.transform,
+                    new Vector3(0f, 3.05f, 0f), new Vector3(2.25f, 0.34f, 2.25f),
+                    index % 2 == 0 ? teal : marketRed);
+                CreatePrimitiveChild("Shade Table", PrimitiveType.Cylinder, shade.transform,
+                    new Vector3(0f, 0.82f, 0f), new Vector3(0.85f, 0.12f, 0.85f), yellow);
+                CreateBench($"Ghat Rest Bench {index + 1}", shadePosition + new Vector3(-3.2f, 0f, 0f),
+                    90f, darkStone, index % 2 == 0 ? teal : marketRed, root);
             }
 
             CreateBox("Loknath Market Plaza", new Vector3(32f, -0.08f, -69f), new Vector3(68f, 0.18f, 70f), stone, root);
@@ -558,7 +670,9 @@ namespace NetaJi.Prototype.Editor
             {
                 new Vector3(-145f, 0f, 98f), new Vector3(-130f, 0f, 23f),
                 new Vector3(-148f, 0f, -124f), new Vector3(27f, 0f, -67f),
-                new Vector3(73f, 0f, 42f), new Vector3(108f, 0f, -28f)
+                new Vector3(73f, 0f, 42f), new Vector3(108f, 0f, -28f),
+                new Vector3(108f, 0f, -142f), new Vector3(108f, 0f, 128f),
+                new Vector3(45f, 0f, -178f)
             };
             for (int zone = 0; zone < zones.Length; zone++)
             {
@@ -583,12 +697,20 @@ namespace NetaJi.Prototype.Editor
             GameObject building = new GameObject(name);
             building.transform.SetParent(parent);
             building.transform.position = position;
+            CreatePrimitiveChild("Foundation Plinth", PrimitiveType.Cube, building.transform,
+                new Vector3(0f, 0.18f, 0f), new Vector3(size.x + 1.2f, 0.36f, size.z + 1.2f), accent);
             CreatePrimitiveChild("Main Structure", PrimitiveType.Cube, building.transform,
                 new Vector3(0f, size.y * 0.5f, 0f), size, wall, true);
             CreatePrimitiveChild("Roof Line", PrimitiveType.Cube, building.transform,
                 new Vector3(0f, size.y + 0.32f, 0f), new Vector3(size.x + 0.6f, 0.64f, size.z + 0.6f), accent);
             CreatePrimitiveChild("Entrance", PrimitiveType.Cube, building.transform,
                 new Vector3(0f, 1.8f, -size.z * 0.5f - 0.06f), new Vector3(Mathf.Min(4.5f, size.x * 0.22f), 3.6f, 0.14f), accent);
+            CreatePrimitiveChild("Entrance Step", PrimitiveType.Cube, building.transform,
+                new Vector3(0f, 0.18f, -size.z * 0.5f - 0.92f),
+                new Vector3(Mathf.Min(5.8f, size.x * 0.30f), 0.34f, 1.65f), wall);
+            CreatePrimitiveChild("Entrance Canopy", PrimitiveType.Cube, building.transform,
+                new Vector3(0f, 3.65f, -size.z * 0.5f - 0.68f),
+                new Vector3(Mathf.Min(6.4f, size.x * 0.34f), 0.22f, 1.42f), accent);
             int columns = Mathf.Clamp(Mathf.RoundToInt(size.x / 7f), 3, 9);
             int safeStoreys = Mathf.Clamp(storeys, 1, 5);
             for (int floor = 0; floor < safeStoreys; floor++)
@@ -601,9 +723,75 @@ namespace NetaJi.Prototype.Editor
                         new Vector3(x, Mathf.Min(y, size.y - 1f), -size.z * 0.5f - 0.08f),
                         new Vector3(Mathf.Max(1.5f, size.x / columns * 0.52f), 1.35f, 0.10f), glass);
                 }
+
+                int sideWindows = Mathf.Clamp(Mathf.RoundToInt(size.z / 10f), 2, 4);
+                for (int sideWindow = 0; sideWindow < sideWindows; sideWindow++)
+                {
+                    float z = Mathf.Lerp(-size.z * 0.34f, size.z * 0.34f,
+                        sideWindows == 1 ? 0.5f : sideWindow / (float)(sideWindows - 1));
+                    Vector3 sideSize = new Vector3(0.10f, 1.28f, Mathf.Max(1.4f, size.z / sideWindows * 0.42f));
+                    CreatePrimitiveChild($"Left Window {floor + 1}-{sideWindow + 1}", PrimitiveType.Cube,
+                        building.transform, new Vector3(-size.x * 0.5f - 0.08f, Mathf.Min(y, size.y - 1f), z), sideSize, glass);
+                    CreatePrimitiveChild($"Right Window {floor + 1}-{sideWindow + 1}", PrimitiveType.Cube,
+                        building.transform, new Vector3(size.x * 0.5f + 0.08f, Mathf.Min(y, size.y - 1f), z), sideSize, glass);
+                }
+
+                if (floor > 0 && floor % 2 == 1)
+                {
+                    float balconyWidth = Mathf.Min(12f, size.x * 0.56f);
+                    CreatePrimitiveChild($"Balcony Slab {floor + 1}", PrimitiveType.Cube, building.transform,
+                        new Vector3(0f, Mathf.Min(y - 0.95f, size.y - 1.4f), -size.z * 0.5f - 0.58f),
+                        new Vector3(balconyWidth, 0.16f, 1.25f), accent);
+                    CreatePrimitiveChild($"Balcony Rail {floor + 1}", PrimitiveType.Cube, building.transform,
+                        new Vector3(0f, Mathf.Min(y - 0.46f, size.y - 0.9f), -size.z * 0.5f - 1.14f),
+                        new Vector3(balconyWidth, 0.72f, 0.10f), accent);
+                }
             }
-            GameObjectUtility.SetStaticEditorFlags(building,
-                StaticEditorFlags.BatchingStatic | StaticEditorFlags.OccluderStatic | StaticEditorFlags.OccludeeStatic);
+
+            for (int floorLine = 1; floorLine < safeStoreys; floorLine++)
+            {
+                float y = size.y * floorLine / safeStoreys;
+                CreatePrimitiveChild($"Facade Floor Band {floorLine}", PrimitiveType.Cube, building.transform,
+                    new Vector3(0f, y, 0f), new Vector3(size.x + 0.32f, 0.15f, size.z + 0.32f), accent);
+            }
+
+            float parapetY = size.y + 0.88f;
+            CreatePrimitiveChild("Roof Parapet Front", PrimitiveType.Cube, building.transform,
+                new Vector3(0f, parapetY, -size.z * 0.5f), new Vector3(size.x + 0.4f, 0.92f, 0.28f), accent);
+            CreatePrimitiveChild("Roof Parapet Rear", PrimitiveType.Cube, building.transform,
+                new Vector3(0f, parapetY, size.z * 0.5f), new Vector3(size.x + 0.4f, 0.92f, 0.28f), accent);
+            CreatePrimitiveChild("Roof Parapet Left", PrimitiveType.Cube, building.transform,
+                new Vector3(-size.x * 0.5f, parapetY, 0f), new Vector3(0.28f, 0.92f, size.z), accent);
+            CreatePrimitiveChild("Roof Parapet Right", PrimitiveType.Cube, building.transform,
+                new Vector3(size.x * 0.5f, parapetY, 0f), new Vector3(0.28f, 0.92f, size.z), accent);
+
+            if (size.x <= 20f)
+            {
+                CreatePrimitiveChild("Rooftop Water Tank", PrimitiveType.Cylinder, building.transform,
+                    new Vector3(size.x * 0.24f, size.y + 2.0f, size.z * 0.14f),
+                    new Vector3(1.15f, 0.95f, 1.15f), accent);
+                CreatePrimitiveChild("Water Tank Lid", PrimitiveType.Cylinder, building.transform,
+                    new Vector3(size.x * 0.24f, size.y + 3.0f, size.z * 0.14f),
+                    new Vector3(1.22f, 0.08f, 1.22f), wall);
+            }
+            else
+            {
+                for (int panel = 0; panel < 2; panel++)
+                {
+                    GameObject solarPanel = CreatePrimitiveChild($"Rooftop Solar Panel {panel + 1}", PrimitiveType.Cube,
+                        building.transform, new Vector3(-3.2f + panel * 6.4f, size.y + 1.46f, 1.4f),
+                        new Vector3(5.2f, 0.12f, 2.6f), glass);
+                    solarPanel.transform.localRotation = Quaternion.Euler(12f, 0f, 0f);
+                }
+            }
+
+            StaticEditorFlags flags = StaticEditorFlags.BatchingStatic
+                | StaticEditorFlags.OccluderStatic
+                | StaticEditorFlags.OccludeeStatic;
+            foreach (Transform item in building.GetComponentsInChildren<Transform>(true))
+            {
+                GameObjectUtility.SetStaticEditorFlags(item.gameObject, flags);
+            }
         }
 
         private static void CreateFoodStall(
@@ -614,9 +802,24 @@ namespace NetaJi.Prototype.Editor
             stall.transform.SetParent(parent);
             stall.transform.position = position;
             CreatePrimitiveChild("Counter", PrimitiveType.Cube, stall.transform, new Vector3(0f, 0.8f, 0f), new Vector3(4.8f, 1.6f, 2.4f), counter, true);
+            CreatePrimitiveChild("Counter Front", PrimitiveType.Cube, stall.transform,
+                new Vector3(0f, 0.82f, -1.23f), new Vector3(4.15f, 1.12f, 0.10f), canopy);
+            CreatePrimitiveChild("Display Shelf", PrimitiveType.Cube, stall.transform,
+                new Vector3(0f, 1.66f, -0.30f), new Vector3(4.25f, 0.12f, 1.05f), frame);
             CreatePrimitiveChild("Canopy", PrimitiveType.Cube, stall.transform, new Vector3(0f, 2.8f, 0f), new Vector3(5.4f, 0.28f, 3.2f), canopy);
             CreatePrimitiveChild("Post Left", PrimitiveType.Cube, stall.transform, new Vector3(-2.2f, 1.6f, 1.1f), new Vector3(0.16f, 2.8f, 0.16f), frame);
             CreatePrimitiveChild("Post Right", PrimitiveType.Cube, stall.transform, new Vector3(2.2f, 1.6f, 1.1f), new Vector3(0.16f, 2.8f, 0.16f), frame);
+            for (int item = 0; item < 4; item++)
+            {
+                float x = -1.45f + item * 0.96f;
+                CreatePrimitiveChild($"Serving Plate {item + 1}", PrimitiveType.Cylinder, stall.transform,
+                    new Vector3(x, 1.78f, -0.32f), new Vector3(0.38f, 0.045f, 0.38f), counter);
+                CreatePrimitiveChild($"Food Display {item + 1}", PrimitiveType.Sphere, stall.transform,
+                    new Vector3(x, 1.91f, -0.32f), new Vector3(0.27f, 0.16f, 0.27f),
+                    item % 2 == 0 ? trim : canopy);
+            }
+            CreatePrimitiveChild("Side Supply Crate", PrimitiveType.Cube, stall.transform,
+                new Vector3(2.75f, 0.42f, 0.65f), new Vector3(0.72f, 0.82f, 0.72f), frame);
             CreateWorldLabel(name + " Sign", label, position + new Vector3(0f, 2.85f, -1.65f), Vector3.zero, trim, parent, 0.021f);
         }
 
@@ -856,6 +1059,94 @@ namespace NetaJi.Prototype.Editor
             }
         }
 
+        private static void CreateAmbientTraffic(
+            Transform root, Material red, Material teal, Material yellow, Material cream,
+            Material glass, Material tyre, Material dark)
+        {
+            CreateAmbientAuto("Prayagraj Auto 1", new Vector3(-208f, 0f, -4.2f),
+                new Vector3(135f, 0f, -4.2f), 0f, 32f, yellow, dark, teal, glass, tyre, root);
+            CreateAmbientAuto("Prayagraj Auto 2", new Vector3(135f, 0f, 4.2f),
+                new Vector3(-208f, 0f, 4.2f), 2.4f, 36f, teal, dark, yellow, glass, tyre, root);
+            CreateAmbientAuto("Prayagraj Auto 3", new Vector3(-4.2f, 0f, -208f),
+                new Vector3(-4.2f, 0f, 164f), 1.2f, 35f, yellow, dark, red, glass, tyre, root);
+            CreateAmbientAuto("Prayagraj Auto 4", new Vector3(75f, 0f, 164f),
+                new Vector3(75f, 0f, -208f), 4.1f, 39f, red, dark, cream, glass, tyre, root);
+            CreateAmbientBus("Prayagraj City Bus", new Vector3(-202f, 0f, 97f),
+                new Vector3(132f, 0f, 97f), 5.5f, 44f, cream, red, glass, tyre, dark, root);
+            CreateAmbientBus("Allahpur Seva Bus", new Vector3(132f, 0f, -129f),
+                new Vector3(-205f, 0f, -129f), 9f, 48f, teal, yellow, glass, tyre, dark, root);
+        }
+
+        private static void CreateAmbientAuto(
+            string name, Vector3 start, Vector3 destination, float delay, float duration,
+            Material body, Material canopy, Material accent, Material glass, Material tyre, Transform root)
+        {
+            GameObject auto = new GameObject(name);
+            auto.transform.SetParent(root);
+            auto.transform.localPosition = start;
+            CreatePrimitiveChild("Auto Lower Body", PrimitiveType.Cube, auto.transform,
+                new Vector3(0f, 0.58f, 0f), new Vector3(1.35f, 0.55f, 2.15f), body);
+            CreatePrimitiveChild("Auto Cabin", PrimitiveType.Cube, auto.transform,
+                new Vector3(0f, 1.25f, -0.18f), new Vector3(1.28f, 1.10f, 1.55f), canopy);
+            CreatePrimitiveChild("Auto Roof", PrimitiveType.Cube, auto.transform,
+                new Vector3(0f, 1.90f, -0.18f), new Vector3(1.52f, 0.16f, 1.82f), accent);
+            CreatePrimitiveChild("Auto Windscreen", PrimitiveType.Cube, auto.transform,
+                new Vector3(0f, 1.38f, 0.62f), new Vector3(1.08f, 0.58f, 0.08f), glass);
+            CreatePrimitiveChild("Auto Headlight", PrimitiveType.Sphere, auto.transform,
+                new Vector3(0f, 0.72f, 1.10f), new Vector3(0.24f, 0.20f, 0.12f), accent);
+            Vector3[] wheels =
+            {
+                new Vector3(0f, 0.35f, 0.82f),
+                new Vector3(-0.68f, 0.35f, -0.72f),
+                new Vector3(0.68f, 0.35f, -0.72f)
+            };
+            for (int index = 0; index < wheels.Length; index++)
+            {
+                Transform wheel = CreatePrimitiveChild($"Auto Wheel {index + 1}", PrimitiveType.Cylinder,
+                    auto.transform, wheels[index], new Vector3(0.30f, 0.12f, 0.30f), tyre).transform;
+                wheel.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            }
+            auto.AddComponent<CinematicActorMotion>().Configure(destination, delay, duration, true);
+        }
+
+        private static void CreateAmbientBus(
+            string name, Vector3 start, Vector3 destination, float delay, float duration,
+            Material body, Material accent, Material glass, Material tyre, Material dark, Transform root)
+        {
+            GameObject bus = new GameObject(name);
+            bus.transform.SetParent(root);
+            bus.transform.localPosition = start;
+            CreatePrimitiveChild("Bus Body", PrimitiveType.Cube, bus.transform,
+                new Vector3(0f, 1.15f, 0f), new Vector3(2.25f, 1.85f, 5.8f), body);
+            CreatePrimitiveChild("Bus Lower Trim", PrimitiveType.Cube, bus.transform,
+                new Vector3(0f, 0.48f, 0f), new Vector3(2.35f, 0.34f, 5.92f), accent);
+            CreatePrimitiveChild("Bus Windscreen", PrimitiveType.Cube, bus.transform,
+                new Vector3(0f, 1.48f, 2.94f), new Vector3(1.90f, 0.88f, 0.10f), glass);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                for (int window = 0; window < 4; window++)
+                {
+                    CreatePrimitiveChild($"Bus Window {side}-{window + 1}", PrimitiveType.Cube, bus.transform,
+                        new Vector3(side * 1.14f, 1.48f, -1.75f + window * 1.15f),
+                        new Vector3(0.08f, 0.72f, 0.88f), glass);
+                }
+            }
+            Vector3[] wheels =
+            {
+                new Vector3(-1.17f, 0.38f, 1.85f), new Vector3(1.17f, 0.38f, 1.85f),
+                new Vector3(-1.17f, 0.38f, -1.85f), new Vector3(1.17f, 0.38f, -1.85f)
+            };
+            for (int index = 0; index < wheels.Length; index++)
+            {
+                Transform wheel = CreatePrimitiveChild($"Bus Wheel {index + 1}", PrimitiveType.Cylinder,
+                    bus.transform, wheels[index], new Vector3(0.42f, 0.16f, 0.42f), tyre).transform;
+                wheel.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            }
+            CreatePrimitiveChild("Bus Front Grille", PrimitiveType.Cube, bus.transform,
+                new Vector3(0f, 0.76f, 2.96f), new Vector3(1.25f, 0.36f, 0.08f), dark);
+            bus.AddComponent<CinematicActorMotion>().Configure(destination, delay, duration, true);
+        }
+
         private static GameObject CreateCinematicRoot(string name)
         {
             return new GameObject(name);
@@ -887,19 +1178,21 @@ namespace NetaJi.Prototype.Editor
             Light sunlight = lightObject.AddComponent<Light>();
             sunlight.type = LightType.Directional;
             sunlight.color = new Color(1f, 0.94f, 0.82f);
-            sunlight.intensity = 1.14f;
+            sunlight.intensity = 1.08f;
             sunlight.shadows = LightShadows.Hard;
-            sunlight.shadowStrength = 0.46f;
+            sunlight.shadowStrength = 0.58f;
             lightObject.transform.rotation = Quaternion.Euler(42f, -34f, 0f);
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.45f, 0.70f, 0.90f);
-            RenderSettings.ambientEquatorColor = new Color(0.78f, 0.72f, 0.59f);
-            RenderSettings.ambientGroundColor = new Color(0.25f, 0.31f, 0.24f);
+            RenderSettings.ambientSkyColor = new Color(0.36f, 0.58f, 0.76f);
+            RenderSettings.ambientEquatorColor = new Color(0.62f, 0.60f, 0.50f);
+            RenderSettings.ambientGroundColor = new Color(0.19f, 0.24f, 0.18f);
+            RenderSettings.ambientIntensity = 0.88f;
+            RenderSettings.reflectionIntensity = 0.58f;
             RenderSettings.fog = true;
-            RenderSettings.fogColor = new Color(0.72f, 0.84f, 0.90f);
+            RenderSettings.fogColor = new Color(0.67f, 0.79f, 0.86f);
             RenderSettings.fogMode = FogMode.Linear;
-            RenderSettings.fogStartDistance = 245f;
-            RenderSettings.fogEndDistance = 620f;
+            RenderSettings.fogStartDistance = 205f;
+            RenderSettings.fogEndDistance = 560f;
         }
     }
 }

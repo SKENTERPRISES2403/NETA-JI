@@ -62,6 +62,22 @@ namespace NetaJi.Prototype
             collisionMask = value;
         }
 
+        public void SetOrbit(float heading, float verticalPitch, bool snap)
+        {
+            yaw = heading;
+            pitch = Mathf.Clamp(verticalPitch, -10f, 62f);
+            headingYawOffset = 0f;
+            if (!snap || target == null)
+            {
+                return;
+            }
+
+            Vector3 focus = target.position + targetOffset;
+            smoothedPosition = focus + Quaternion.Euler(pitch, yaw, 0f) * Vector3.back * distance;
+            transform.position = smoothedPosition;
+            transform.rotation = Quaternion.LookRotation(focus - transform.position, Vector3.up);
+        }
+
         private void Start()
         {
             pedestrianOffset = targetOffset;

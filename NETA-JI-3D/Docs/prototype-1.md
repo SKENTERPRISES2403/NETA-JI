@@ -11,7 +11,7 @@
 
 The first playable space is a connected Prayagraj/Daraganj-inspired district. It includes a riverfront, ghats, markets, homes, parks, public buildings, roads, and stylized references to Allahabad University, the High Court, Chandrashekhar Azad Park, and Sangam. Real landmarks provide geographic and visual context, while all NGOs, hospitals, police cases, gangs, contractors, and political groups are fictional.
 
-Players can enter the district directly from the main menu and walk around without accepting a mission. A live minimap, full city map, driveable car, and driveable scooter support free exploration. Helpers Hand is also the save-aware story hub: it presents the next incomplete chapter, launches it after confirmation, and receives Azad back after a completed mission. The current world and characters are procedural low-poly prototype art; production-quality models, animation, traffic, and environmental audio remain later work.
+Players can enter the district directly from the main menu and walk around without accepting a mission. A live minimap, full city map, driveable car, and driveable scooter support free exploration. Helpers Hand is also the save-aware story hub: it presents the next incomplete chapter, launches it after confirmation, and receives Azad back after a completed mission. The district now has detailed road edges and crossings, richer building facades and rooftops, visible Ganga/ghat geometry, food displays, moving fictional traffic, and location-aware ambience. The current world and characters remain procedural low-poly prototype art; production-quality models, authored animation, and physical-device tuning remain later work.
 
 ## Opening
 
@@ -39,6 +39,7 @@ A short seven-shot cinematic introduces Azad through family life, community serv
 - Prologue automation renders and visually verifies all seven wordless shots
 - Free-roam automation verifies walking, full-map display, car entry/exit, scooter entry/exit, player collision lifecycle, grounded wheels, and measured vehicle travel
 - Story-hub automation verifies a fresh Chapter 1 launch, mission completion, persisted progress, return near Helpers Hand, `1/24` HUD state, and Chapter 2 availability
+- Open-world presentation automation verifies six moving ambient vehicles, adaptive MSAA/shadow setup, location-aware audio, landmark captures, and unchanged car/scooter physics
 - Outfit automation verifies the political kurta/stole/kolhapuri set from four cardinal views and checks left/right symmetry
 - Legacy `missionStep` and save-v2 through save-v23 profiles migrate into twenty-four-chapter save progress
 - Chapter 9 automation verifies safe and risky constituency-expansion routes plus computed MLA nomination
@@ -58,7 +59,7 @@ A short seven-shot cinematic introduces Azad through family life, community serv
 - Chapter 23 automation verifies both ten-year national-development strategies and the computed four-outcome public review
 - Chapter 24 automation verifies cooperation and spectacle routes, the independent four-pillar review, and the earned Vishwa Guru outcome
 - Windows and Android demo packages build without Unity's Development Build watermark
-- Android version is `0.28.0` (`versionCode 28`), min SDK 26, target SDK 36, sensor-landscape, ARM64 plus ARMv7, and IL2CPP
+- Android version is `0.29.0` (`versionCode 29`), min SDK 26, target SDK 36, sensor-landscape, ARM64 plus ARMv7, and IL2CPP
 - APK package metadata, both native ABI libraries, absence of the debuggable manifest flag, and Android v2 signature are verified after the consolidated build
 - The current APK uses an Android debug certificate for local/company demo installs; a production keystore and AAB remain required for store submission
 - Physical Android install and touch-feel testing still require a connected phone

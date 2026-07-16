@@ -42,14 +42,42 @@ namespace NetaJi.Prototype
             AzadController player = FindFirstObjectByType<AzadController>();
             FreeRoamMapHud map = FindFirstObjectByType<FreeRoamMapHud>();
             StoryHubController storyHub = FindFirstObjectByType<StoryHubController>();
+            OpenWorldPresentation presentation = FindFirstObjectByType<OpenWorldPresentation>();
+            PrototypeAudio audio = FindFirstObjectByType<PrototypeAudio>();
+            ThirdPersonCamera orbitCamera = FindFirstObjectByType<ThirdPersonCamera>();
             FreeRoamVehicle[] vehicles = FindObjectsByType<FreeRoamVehicle>(FindObjectsSortMode.None);
-            bool requiredSystems = player != null && map != null && storyHub != null && vehicles.Length >= 2;
+            string[] ambientNames =
+            {
+                "Prayagraj Auto 1", "Prayagraj Auto 2", "Prayagraj Auto 3",
+                "Prayagraj Auto 4", "Prayagraj City Bus", "Allahpur Seva Bus"
+            };
+            int ambientVehicles = 0;
+            GameObject trackedAmbientVehicle = null;
+            foreach (string ambientName in ambientNames)
+            {
+                GameObject ambientVehicle = GameObject.Find(ambientName);
+                if (ambientVehicle != null)
+                {
+                    ambientVehicles++;
+                    trackedAmbientVehicle ??= ambientVehicle;
+                }
+            }
+            bool requiredSystems = player != null && map != null && storyHub != null
+                && presentation != null && presentation.IsApplied
+                && audio != null && audio.IsLocationAware
+                && orbitCamera != null
+                && vehicles.Length >= 2 && ambientVehicles == ambientNames.Length;
             if (!requiredSystems)
             {
-                Debug.LogError($"FREE_ROAM_SMOKE_FAILED: player={player != null}, map={map != null}, story={storyHub != null}, vehicles={vehicles.Length}.");
+                Debug.LogError(
+                    $"FREE_ROAM_SMOKE_FAILED: player={player != null}, map={map != null}, "
+                    + $"story={storyHub != null}, presentation={presentation?.IsApplied ?? false}, "
+                    + $"audio={audio?.IsLocationAware ?? false}, camera={orbitCamera != null}, "
+                    + $"vehicles={vehicles.Length}, ambient={ambientVehicles}.");
                 Application.Quit(3);
                 yield break;
             }
+            Vector3 ambientStart = trackedAmbientVehicle.transform.position;
 
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "free-roam-walk.png"));
             yield return new WaitForSeconds(0.8f);
@@ -59,7 +87,25 @@ namespace NetaJi.Prototype
             yield return new WaitForSeconds(0.7f);
             map.SetFullMapOpen(false);
 
+            player.Teleport(new Vector3(124f, 0f, -42f), Quaternion.Euler(0f, 90f, 0f));
+            orbitCamera.SetTarget(player.transform, new Vector3(0f, 1.45f, 0f), 6.2f, true);
+            orbitCamera.SetOrbit(90f, 30f, true);
+            yield return new WaitForSeconds(0.75f);
+            ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "free-roam-ghat.png"));
+            yield return new WaitForSeconds(0.45f);
+            player.Teleport(new Vector3(27f, 0f, -101f), Quaternion.identity);
+            orbitCamera.SetTarget(player.transform, new Vector3(0f, 1.45f, 0f), 6.2f, true);
+            yield return new WaitForSeconds(0.75f);
+            ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "free-roam-market.png"));
+            yield return new WaitForSeconds(0.45f);
+            player.Teleport(new Vector3(-100f, 0f, 86f), Quaternion.Euler(0f, -45f, 0f));
+            orbitCamera.SetTarget(player.transform, new Vector3(0f, 1.45f, 0f), 6.2f, true);
+            yield return new WaitForSeconds(0.75f);
+            ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "free-roam-civic.png"));
+            yield return new WaitForSeconds(0.45f);
+
             player.Teleport(storyHub.transform.position + new Vector3(0f, 0f, -3.2f), Quaternion.identity);
+            orbitCamera.SetTarget(player.transform, new Vector3(0f, 1.45f, 0f), 6.2f, true);
             yield return new WaitForSeconds(0.35f);
             ScreenCapture.CaptureScreenshot(Path.Combine(outputDirectory, "free-roam-story-beacon.png"));
             yield return new WaitForSeconds(0.55f);
@@ -115,10 +161,21 @@ namespace NetaJi.Prototype
             scooter.ExitForAutomation();
             yield return new WaitForSeconds(0.45f);
 
-            bool passed = storyReady && distance >= 4f && scooterDistance >= 3f;
+            float ambientDistance = Vector3.Distance(ambientStart, trackedAmbientVehicle.transform.position);
+            bool passed = storyReady
+                && presentation.IsApplied
+                && audio.IsLocationAware
+                && ambientDistance >= 1f
+                && distance >= 4f
+                && scooterDistance >= 3f;
             Debug.Log(passed
-                ? $"FREE_ROAM_SMOKE_PASSED: story=chapter{storyHub.ActiveChapter}, vehicles={vehicles.Length}, car={distance:F1}m/{carSpeed:F1}kph, scooter={scooterDistance:F1}m/{scooterSpeed:F1}kph, map=live."
-                : $"FREE_ROAM_SMOKE_FAILED: story={storyReady}, car={distance:F1}m/{carSpeed:F1}kph, scooter={scooterDistance:F1}m/{scooterSpeed:F1}kph.");
+                ? $"FREE_ROAM_SMOKE_PASSED: story=chapter{storyHub.ActiveChapter}, vehicles={vehicles.Length}, "
+                    + $"ambient={ambientVehicles}/{ambientDistance:F1}m, msaa={presentation.AppliedAntiAliasing}, "
+                    + $"audio=location-aware, car={distance:F1}m/{carSpeed:F1}kph, "
+                    + $"scooter={scooterDistance:F1}m/{scooterSpeed:F1}kph, map=live."
+                : $"FREE_ROAM_SMOKE_FAILED: story={storyReady}, presentation={presentation.IsApplied}, "
+                    + $"audio={audio.IsLocationAware}, ambient={ambientDistance:F1}m, "
+                    + $"car={distance:F1}m/{carSpeed:F1}kph, scooter={scooterDistance:F1}m/{scooterSpeed:F1}kph.");
             Application.Quit(passed ? 0 : 3);
         }
 
